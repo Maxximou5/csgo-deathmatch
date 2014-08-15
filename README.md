@@ -17,6 +17,10 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 ### Commands
 
 - sm_guns - Opens the !guns menu
+- dm_spawn_menu - Opens the spawn point menu.
+- dm_respawn_all - Respawns all players.
+- dm_stats - Displays spawn statistics.
+- dm_reset_stats - Resets spawn statistics.
 
 ### ConVars
 
