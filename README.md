@@ -12,7 +12,7 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - Unlimited Ammo & Grenades
 - Kill Reward (HP/Ammo/Grenades)
 - Line of Sight Spawning
-
+- Auto Update Support
 
 ### Commands
 
