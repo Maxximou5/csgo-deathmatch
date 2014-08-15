@@ -3,16 +3,19 @@
 #include <sourcemod>
 #include <sdktools>
 #include <cstrike>
+#include <updater>
 
-#define VERSION "2.0.0"
+#define PLUGIN_VERSION 	"2.0.0"
+#define PLUGIN_NAME		"Deathmatch"
+#define UPDATE_URL 		"https://raw.githubusercontent.com/Maxximou5/csgo-deathmatch/master/update.txt"
 
 public Plugin:myinfo =
 {
-	name = "Deathmatch",
-	author = "Maxximou5",
+	name 		= PLUGIN_NAME,
+	author		= "Maxximou5",
 	description = "Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc).",
-	version = VERSION,
-	url = "http://www.maxximou5.com/"
+	version 	= PLUGIN_VERSION,
+	url 		= "https://github.com/Maxximou5/csgo-deathmatch/"
 };
 
 enum Teams
@@ -180,7 +183,7 @@ new spawnPointSearchFailures = 0;
 public OnPluginStart()
 {
 	// Create spawns directory if necessary.
-	decl String:spawnsPath[] = "cfg/sourcemod/spawns";
+	decl String:spawnsPath[] = "addons/sourcemod/configs/deathmatch/spawns";
 	if (!DirExists(spawnsPath))
 		CreateDirectory(spawnsPath, 711);
 	// Find offsets
@@ -231,7 +234,7 @@ public OnPluginStart()
 	backup_ammo_grenade_limit_flashbang = GetConVarInt(ammo_grenade_limit_flashbang);
 	backup_ammo_grenade_limit_total = GetConVarInt(ammo_grenade_limit_total);
 	// Create console variables
-	CreateConVar("na_dm_version", VERSION, "Deathmatch version.", FCVAR_PLUGIN | FCVAR_SPONLY | FCVAR_REPLICATED | FCVAR_NOTIFY | FCVAR_DONTRECORD);
+	CreateConVar("na_dm_version", PLUGIN_VERSION, "Deathmatch version.", FCVAR_PLUGIN | FCVAR_SPONLY | FCVAR_REPLICATED | FCVAR_NOTIFY | FCVAR_DONTRECORD);
 	cvar_dm_enabled = CreateConVar("dm_enabled", "1", "Enable deathmatch.");
 	cvar_dm_free_for_all = CreateConVar("dm_free_for_all", "0", "Free for all mode.");
 	cvar_dm_remove_objectives = CreateConVar("dm_remove_objectives", "1", "Remove objectives (disables bomb sites, and removes c4 and hostages).");
@@ -322,6 +325,24 @@ public OnPluginStart()
 	CreateTimer(0.5, UpdateSpawnPointStatus, INVALID_HANDLE, TIMER_REPEAT);
 	CreateTimer(10.0, RemoveGroundWeapons, INVALID_HANDLE, TIMER_REPEAT);
 	CreateTimer(5.0, GiveAmmo, INVALID_HANDLE, TIMER_REPEAT);
+
+	if (LibraryExists("updater"))
+	{
+		Updater_AddPlugin(UPDATE_URL);
+	}
+}
+
+public OnLibraryAdded(const String:name[])
+{
+	if (StrEqual(name, "updater"))
+	{
+		Updater_AddPlugin(UPDATE_URL);
+	}
+}
+
+public OnLibraryRemoved(const String:name[])
+{
+ if (StrEqual(name, "updater")) Updater_RemovePlugin();
 }
 
 public OnPluginEnd()
@@ -451,7 +472,7 @@ public Event_CvarChange(Handle:cvar, const String:oldValue[], const String:newVa
 LoadConfig()
 {
 	new Handle:keyValues = CreateKeyValues("Deathmatch Config");
-	decl String:path[] = "cfg/sourcemod/deathmatch.ini";
+	decl String:path[] = "addons/sourcemod/configs/deathmatch/deathmatch.ini";
 	
 	if (!FileToKeyValues(keyValues, path))
 		SetFailState("The configuration file could not be read.");
@@ -799,7 +820,7 @@ LoadMapConfig()
 	GetCurrentMap(map, sizeof(map));
 	
 	decl String:path[PLATFORM_MAX_PATH];
-	Format(path, sizeof(path), "cfg/sourcemod/spawns/%s.txt", map);
+	Format(path, sizeof(path), "addons/sourcemod/configs/deathmatch/spawns/%s.txt", map);
 	
 	spawnPointCount = 0;
 	
@@ -831,7 +852,7 @@ bool:WriteMapConfig()
 	GetCurrentMap(map, sizeof(map));
 	
 	decl String:path[PLATFORM_MAX_PATH];
-	Format(path, sizeof(path), "cfg/sourcemod/spawns/%s.txt", map);
+	Format(path, sizeof(path), "addons/sourcemod/configs/deathmatch/spawns/%s.txt", map);
 	
 	// Open file
 	new Handle:file = OpenFile(path, "w");
@@ -1104,115 +1125,115 @@ public Action:RemoveRadar(Handle:timer, any:clientIndex)
 
 public Action:Event_HegrenadeDetonate(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    if(!replenishHEGrenade)
-    {
-        return Plugin_Continue;
-    }
-
-    if(!replenishGrenade)
-    {
-        return Plugin_Continue;
-    }
-
-    new clientIndex = GetClientOfUserId(GetEventInt(event, "userid"));   
-    
-    if (replenishGrenade)
+	if(!replenishHEGrenade)
 	{
-    	if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
-    	{
-    	    GivePlayerItem(clientIndex, "weapon_hegrenade");
-    	}
-    }
+		return Plugin_Continue;
+	}
 
-    if (replenishHEGrenade)
+	if(!replenishGrenade)
 	{
-    	if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
-    	{
-    	    GivePlayerItem(clientIndex, "weapon_hegrenade");
-    	}
-    }
+		return Plugin_Continue;
+	}
 
-    return Plugin_Continue;
+	new clientIndex = GetClientOfUserId(GetEventInt(event, "userid"));   
+	
+	if (replenishGrenade)
+	{
+		if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
+		{
+			GivePlayerItem(clientIndex, "weapon_hegrenade");
+		}
+	}
+
+	if (replenishHEGrenade)
+	{
+		if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
+		{
+			GivePlayerItem(clientIndex, "weapon_hegrenade");
+		}
+	}
+
+	return Plugin_Continue;
 }
 
 public Action:Event_SmokegrenadeDetonate(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    if(!replenishGrenade)
-    {
-        return Plugin_Continue;
-    }
-
-    new clientIndex = GetClientOfUserId(GetEventInt(event, "userid"));   
-    
-    if (replenishGrenade)
+	if(!replenishGrenade)
 	{
-    	if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
-    	{
-    	    GivePlayerItem(clientIndex, "weapon_smokegrenade");
-    	}
-    }
+		return Plugin_Continue;
+	}
 
-    return Plugin_Continue;
+	new clientIndex = GetClientOfUserId(GetEventInt(event, "userid"));   
+	
+	if (replenishGrenade)
+	{
+		if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
+		{
+			GivePlayerItem(clientIndex, "weapon_smokegrenade");
+		}
+	}
+
+	return Plugin_Continue;
 }
 
 public Action:Event_FlashbangDetonate(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    if(!replenishGrenade)
-    {
-        return Plugin_Continue;
-    }
-
-    new clientIndex = GetClientOfUserId(GetEventInt(event, "userid"));   
-    
-    if (replenishGrenade)
+	if(!replenishGrenade)
 	{
-    	if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
-    	{
-    	    GivePlayerItem(clientIndex, "weapon_flashbang");
-    	}
-    }
+		return Plugin_Continue;
+	}
 
-    return Plugin_Continue;
+	new clientIndex = GetClientOfUserId(GetEventInt(event, "userid"));   
+	
+	if (replenishGrenade)
+	{
+		if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
+		{
+			GivePlayerItem(clientIndex, "weapon_flashbang");
+		}
+	}
+
+	return Plugin_Continue;
 }
 
 public Action:Event_DecoyStarted(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    if(!replenishGrenade)
-    {
-        return Plugin_Continue;
-    }
-
-    new clientIndex = GetClientOfUserId(GetEventInt(event, "userid"));   
-    
-    if (replenishGrenade)
+	if(!replenishGrenade)
 	{
-    	if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
-    	{
-    	    GivePlayerItem(clientIndex, "weapon_decoy");
-    	}
-    }
+		return Plugin_Continue;
+	}
 
-    return Plugin_Continue;
+	new clientIndex = GetClientOfUserId(GetEventInt(event, "userid"));   
+	
+	if (replenishGrenade)
+	{
+		if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
+		{
+			GivePlayerItem(clientIndex, "weapon_decoy");
+		}
+	}
+
+	return Plugin_Continue;
 }
 
 public Action:Event_MolotovDetonate(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    if(!replenishGrenade)
-    {
-        return Plugin_Continue;
-    }
-
-    new clientIndex = GetClientOfUserId(GetEventInt(event, "userid"));   
-    
-    if (replenishGrenade)
+	if(!replenishGrenade)
 	{
-    	if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
-    	{
-    	    GivePlayerItem(clientIndex, "weapon_incgrenade");
-    	}
-    }
+		return Plugin_Continue;
+	}
 
-    return Plugin_Continue;
+	new clientIndex = GetClientOfUserId(GetEventInt(event, "userid"));   
+	
+	if (replenishGrenade)
+	{
+		if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
+		{
+			GivePlayerItem(clientIndex, "weapon_incgrenade");
+		}
+	}
+
+	return Plugin_Continue;
 }
 
 public Action:GiveAmmo(Handle:timer)

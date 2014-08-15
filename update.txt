@@ -1,0 +1,23 @@
+"Updater"
+{
+	"Information"
+	{
+		"Version"
+		{
+			"Latest"	"2.0.0"
+		}
+		
+		"Notes"	"Changes in 2.0.0:"
+		"Notes"	"Added autoupdate support"
+		"Notes" "Added all weapons from previous update"
+		"Notes" "Added grenade replenish feature"
+		"Notes" "Fixed ammo count for all weapons"
+	}
+	
+	"Files"
+	{
+		"Plugin"	"Path_SM/plugins/deathmatch.smx"
+		"Plugin"	"Path_SM/configs/deathmatch/deathmatch.ini"
+		"Source"	"Path_SM/scripting/deathmatch.sp"
+	}
+}
