@@ -25,3 +25,4 @@ This plugin is tested on the following Sourcemod & Metamod Versions.
 Full documentation and instructions can be found here.
 
 <b><a href="http://maxximou5.com/sourcemod">http://maxximou5.com/sourcemod</a></b>
+
