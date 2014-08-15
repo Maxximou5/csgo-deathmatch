@@ -21,6 +21,7 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - dm_respawn_all - Respawns all players.
 - dm_stats - Displays spawn statistics.
 - dm_reset_stats - Resets spawn statistics.
+- sm_guns - Opens the !guns menu
 
 ### Compatibility
 
