@@ -12,7 +12,7 @@ public Plugin:myinfo =
 	author = "Maxximou5",
 	description = "Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc).",
 	version = VERSION,
-	url = "http://www.fragworks.net"
+	url = "http://www.maxximou5.com/"
 };
 
 enum Teams
@@ -180,7 +180,7 @@ new spawnPointSearchFailures = 0;
 public OnPluginStart()
 {
 	// Create spawns directory if necessary.
-	decl String:spawnsPath[] = "cfg/deathmatch/spawns";
+	decl String:spawnsPath[] = "cfg/sourcemod/spawns";
 	if (!DirExists(spawnsPath))
 		CreateDirectory(spawnsPath, 711);
 	// Find offsets
@@ -831,7 +831,7 @@ bool:WriteMapConfig()
 	GetCurrentMap(map, sizeof(map));
 	
 	decl String:path[PLATFORM_MAX_PATH];
-	Format(path, sizeof(path), "cfg/deathmatch/spawns/%s.txt", map);
+	Format(path, sizeof(path), "cfg/sourcemod/spawns/%s.txt", map);
 	
 	// Open file
 	new Handle:file = OpenFile(path, "w");
