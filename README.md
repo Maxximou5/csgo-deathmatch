@@ -1,5 +1,5 @@
 ### [CS:GO] Deathmatch (v2.0.0, 2014-08-14)
-<a href="http://maxximou5.com/sourcemod"><img src="http://maxximou5.com/sourcemod/images/deathmatch-logo.png" alt="csgo deathmatch plugin" width="600" /></a>
+<a href="http://maxximou5.com/sourcemod"><img src="http://maxximou5.com/sourcemod/assests/img/csgo_dm.png" alt="csgo deathmatch plugin" width="600" /></a>
 ===============
 
 Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc).
