@@ -29,4 +29,4 @@ Full documentation and instructions can be found here.
 <b><a href="http://maxximou5.com/sourcemod">http://maxximou5.com/sourcemod</a></b>
 
 ### Download
-Please download the latest **deathmatch.zip** file from <a href="https://github.com/Maxximou5/csgo-deathmatch/releases">my releases/a>.
+Please download the latest **deathmatch.zip** file from <a href="https://github.com/Maxximou5/csgo-deathmatch/releases">my releases</a>.
