@@ -6,24 +6,25 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 
 ### Main features
 
-- **Weapon Menu**
-- **Free For All (FFA)**
-- **Spawn Editor and Menu**
-- **Unlimited Ammo & Grenades**
-- **Kill Reward (HP/Ammo/Grenades)**
-- **Line of Sight Spawning**
+- Weapon Menu
+- Free For All (FFA)
+- Spawn Editor and Menu
+- Unlimited Ammo & Grenades
+- Kill Reward (HP/Ammo/Grenades)
+- Line of Sight Spawning
 
 
 ### Commands
 
-- **.setup**, begins the setup phase and sets the pug leader
+- dm_enabled - Enable deathmatch
+- dm_spawn_menu - Opens the spawn point menu.
 
 ### Compatibility
 
 This plugin is tested on the following Sourcemod & Metamod Versions.
 
-- **Sourcemod 1.6.1+**
-- **Metamod 1.10.0+**
+- Sourcemod 1.6.1+
+- Metamod 1.10.0+
 
 ### Instructions
 Full documentation and instructions can be found here.
