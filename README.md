@@ -4,7 +4,7 @@
 
 Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc).
 
-<h2>Main features</h2>
+### Main features
 
 <ul>
 	<li>Weapon Menu</li>
@@ -14,15 +14,19 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 	<li>Kill Reward (HP/Ammo/Grenades)</li>
 	<li>Line of Sight Spawning</li>
 </ul>
-<h2>Compatibility</h2>
+
+### Compatibility
+
 This plugin is tested on the following Sourcemod & Metamod Versions.
 <ul>
 	<li>Sourcemod 1.6.1+</li>
 	<li>Metamod 1.10.0+</li>
 </ul>
 
-<h2>Instructions</h2>
+### Instructions
 Full documentation and instructions can be found here.
 
 <b><a href="http://maxximou5.com/sourcemod">http://maxximou5.com/sourcemod</a></b>
 
+### Download
+Please download the latest **deathmatch.zip** file from <a href="https://github.com/Maxximou5/csgo-deathmatch/releases">my releases/a>.
