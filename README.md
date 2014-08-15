@@ -60,10 +60,24 @@ This plugin is tested on the following Sourcemod & Metamod Versions.
 - Sourcemod 1.6.1+
 - Metamod 1.10.0+
 
-### Instructions
-Full documentation and instructions can be found here.
+### Requirements
 
-<a href="http://maxximou5.com/sourcemod">http://maxximou5.com/sourcemod</a>
+Your server must be running at least one of the following extensions:
+- <a href="https://forums.alliedmods.net/showthread.php?t=152216">cURL</a>
+- <a href="https://forums.alliedmods.net/showthread.php?t=67640">Socket</a>
+- <a href="https://forums.alliedmods.net/forumdisplay.php?f=147">SteamTools (0.8.1+)</a>
+
+Autoupdate Support requires <a href="https://forums.alliedmods.net/showthread.php?t=169095">updater</a> to be installed.
+
+### Instructions
+
+- Extract zip file and place files in the corresponding directories of **/addons/sourcemod**
+- /configs/deathmatch/deathmatch.ini
+- /configs/deathmatch/spawns/*.txt
+- /plugins/deathmatch.smx
+- /scripting/deathmatch.sp (necessary only for compiling)
 
 ### Download
+
+Once installed, the plugin will update itself as long as you've done as described in the requirements section; otherwise, downloaded the latest release below.
 Please download the latest **deathmatch.zip** file from <a href="https://github.com/Maxximou5/csgo-deathmatch/releases">my releases</a>.
