@@ -5,7 +5,7 @@
 #include <cstrike>
 #include <updater>
 
-#define PLUGIN_VERSION 	"2.0.0"
+#define PLUGIN_VERSION 	"2.0.1"
 #define PLUGIN_NAME		"Deathmatch"
 #define UPDATE_URL 		"https://raw.githubusercontent.com/Maxximou5/csgo-deathmatch/master/update.txt"
 

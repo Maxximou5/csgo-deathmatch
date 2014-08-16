@@ -4,10 +4,11 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.0.0"
+			"Latest"	"2.0.1"
+			"Previous"	"2.0.0"
 		}
 		
-		"Notes"	"Changes in 2.0.0:"
+		"Notes"	"Changes in 2.0.1:"
 		"Notes"	"Added autoupdate support"
 		"Notes" "Added all weapons from previous update"
 		"Notes" "Added grenade replenish feature"
