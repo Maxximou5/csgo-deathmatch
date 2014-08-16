@@ -3,6 +3,7 @@
 ===============
 
 Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc).
+Originally by <a href="https://forums.alliedmods.net/member.php?u=187003">Snip3rUK</a>, credit goes to him for initial code.
 
 ### Main features
 
@@ -82,3 +83,11 @@ Autoupdate Support requires <a href="https://forums.alliedmods.net/showthread.ph
 
 Once installed, the plugin will update itself as long as you've done as described in the requirements section; otherwise, downloaded the latest release below.
 Please download the latest **deathmatch.zip** file from <a href="https://github.com/Maxximou5/csgo-deathmatch/releases">my releases</a>.
+
+### Credit
+
+A thank you to those who helped:
+
+- SniperUK (Original Plugin)
+- Dr!fter (General Code Support)
+- DoomHammer (Debugging and Beta Testing)
