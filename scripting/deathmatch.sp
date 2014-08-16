@@ -69,6 +69,7 @@ new backup_ammo_grenade_limit_flashbang;
 new backup_ammo_grenade_limit_total;
 // Console variables
 new Handle:cvar_dm_enabled;
+new Handle:cvar_dm_welcomemsg;
 new Handle:cvar_dm_free_for_all;
 new Handle:cvar_dm_remove_objectives;
 new Handle:cvar_dm_respawning;
@@ -236,6 +237,7 @@ public OnPluginStart()
 	// Create console variables
 	CreateConVar("na_dm_version", PLUGIN_VERSION, "Deathmatch version.", FCVAR_PLUGIN | FCVAR_SPONLY | FCVAR_REPLICATED | FCVAR_NOTIFY | FCVAR_DONTRECORD);
 	cvar_dm_enabled = CreateConVar("dm_enabled", "1", "Enable deathmatch.");
+	cvar_dm_welcomemsg = CreateConVar("dm_welcomemsg", "1", "Display a message saying that your server is running Deathmatch v2.0.");
 	cvar_dm_free_for_all = CreateConVar("dm_free_for_all", "0", "Free for all mode.");
 	cvar_dm_remove_objectives = CreateConVar("dm_remove_objectives", "1", "Remove objectives (disables bomb sites, and removes c4 and hostages).");
 	cvar_dm_respawning = CreateConVar("dm_respawning", "1", "Enable respawning.");
@@ -274,6 +276,7 @@ public OnPluginStart()
 	RegConsoleCmd("sm_guns", Command_Guns, "Opens the !guns menu");
 	// Event hooks
 	HookConVarChange(cvar_dm_enabled, Event_CvarChange);
+	HookConVarChange(cvar_dm_welcomemsg, Event_CvarChange);
 	HookConVarChange(cvar_dm_free_for_all, Event_CvarChange);
 	HookConVarChange(cvar_dm_remove_objectives, Event_CvarChange);
 	HookConVarChange(cvar_dm_respawning, Event_CvarChange);
@@ -408,7 +411,22 @@ public OnMapStart()
 
 public OnClientPutInServer(clientIndex)
 {
+	if (GetConVarBool(cvar_dm_welcomemsg))
+	{
+		CreateTimer(10.0, Timer_WelcomeMsg, GetClientUserId(clientIndex), TIMER_FLAG_NO_MAPCHANGE);
+	}
 	ResetClientSettings(clientIndex);
+}
+
+public Action:Timer_WelcomeMsg(Handle:timer, any:userid)
+{
+	new clientIndex = GetClientOfUserId(userid);
+	
+	if (IsClientInGame(clientIndex))
+	{
+		PrintToChat(clientIndex, "[\x04WELCOME\x01] This server is running \x04Deathmatch \x01v2.0");
+	}
+	return Plugin_Stop;
 }
 
 public OnClientDisconnect(clientIndex)
@@ -1453,6 +1471,7 @@ GiveSavedWeapons(clientIndex, bool:primary, bool:secondary)
 				}
 				if (StrEqual(secondaryWeapon[clientIndex], "random"))
 				{
+
 					// Select random menu item (excluding "Random" option)
 					new random = GetRandomInt(0, GetArraySize(secondaryWeaponsAvailable) - 2);
 					decl String:randomWeapon[24];

@@ -25,6 +25,7 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 ### ConVars
 
 - dm_enabled - (Default) 1 - Enable deathmatch.
+- dm_welcomemsg (Default) 1 - Display a message saying that your server is running Deathmatch.
 - dm_free_for_all - (Default) 0 - Free for all mode.
 - dm_remove_objectives - (Default) 1 - Disables bomb sites, and removes c4 and hostages.
 - dm_respawning - (Default) 1 - Enable respawning. - dm_respawn_time - 2.0 - Respawn time.
