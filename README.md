@@ -3,7 +3,6 @@
 ===============
 
 Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc).
-Originally by <a href="https://forums.alliedmods.net/member.php?u=187003">Snip3rUK</a>, credit goes to him for initial code.
 
 ### Main features
 
@@ -88,6 +87,6 @@ Please download the latest **deathmatch.zip** file from <a href="https://github.
 
 A thank you to those who helped:
 
-- SniperUK (Original Plugin)
-- Dr!fter (General Code Support)
-- DoomHammer (Debugging and Beta Testing)
+- <a href="https://forums.alliedmods.net/member.php?u=187003">Snip3rUK</a> (<a href="https://forums.alliedmods.net/showthread.php?t=189577">Original Plugin</a>)
+- <a href="https://forums.alliedmods.net/member.php?u=26021">Dr!fter</a> (General Code Support)
+- <a href="http://steamcommunity.com/id/DoomHammer69/">DoomHammer</a> (Debugging and Beta Testing)
