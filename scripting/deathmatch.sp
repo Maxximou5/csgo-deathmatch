@@ -11,11 +11,11 @@
 
 public Plugin:myinfo =
 {
-	name 		= PLUGIN_NAME,
-	author		= "Maxximou5",
-	description = "Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc).",
-	version 	= PLUGIN_VERSION,
-	url 		= "https://github.com/Maxximou5/csgo-deathmatch/"
+	name 			= PLUGIN_NAME,
+	author			= "Maxximou5",
+	description		= "Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc).",
+	version 		= PLUGIN_VERSION,
+	url 			= "https://github.com/Maxximou5/csgo-deathmatch/"
 };
 
 enum Teams
