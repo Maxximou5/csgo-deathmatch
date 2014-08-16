@@ -4,7 +4,7 @@
 
 Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc).
 
-### Main features
+### Main Features
 
 - Weapon Menu
 - Free For All (FFA)
@@ -13,6 +13,13 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - Kill Reward (HP/Ammo/Grenades)
 - Line of Sight Spawning
 - Auto Update Support
+
+### Features to Add
+
+- Intergrated Stats (ELO)
+- No Knife Damage
+- Headshot Only 
+- Weapon Skins
 
 ### Commands
 
@@ -58,8 +65,8 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 
 This plugin is tested on the following Sourcemod & Metamod Versions.
 
-- Sourcemod 1.6.1+
-- Metamod 1.10.0+
+- <a href="http://www.sourcemod.net/snapshots.php">Sourcemod 1.6.1+</a>
+- <a href="http://www.sourcemm.net/snapshots">Metamod 1.10.1+</a>
 
 ### Requirements
 
@@ -82,6 +89,10 @@ Autoupdate Support requires <a href="https://forums.alliedmods.net/showthread.ph
 
 Once installed, the plugin will update itself as long as you've done as described in the requirements section; otherwise, downloaded the latest release below.
 Please download the latest **deathmatch.zip** file from <a href="https://github.com/Maxximou5/csgo-deathmatch/releases">my releases</a>.
+
+### Bugs
+
+If there are any bugs, please report them using the <a href="https://github.com/Maxximou5/csgo-deathmatch/issues">issues page</a>.
 
 ### Credit
 
