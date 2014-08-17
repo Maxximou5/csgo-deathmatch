@@ -35,7 +35,8 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - dm_welcomemsg (Default) 1 - Display a message saying that your server is running Deathmatch.
 - dm_free_for_all - (Default) 0 - Free for all mode.
 - dm_remove_objectives - (Default) 1 - Disables bomb sites, and removes c4 and hostages.
-- dm_respawning - (Default) 1 - Enable respawning. - dm_respawn_time - 2.0 - Respawn time.
+- dm_respawning - (Default) 1 - Enable respawning. 
+- dm_respawn_time - (Default) 2.0 - Respawn time.
 - dm_gun_menu_mode - (Default) 1 - 1) Enabled. 2) Disabled. 3) Random weapons every round.
 - dm_los_spawning - (Default) 1 - Enable line of sight spawning.
 - dm_los_attempts - (Default) 10 - Maximum attempts to find a suitable line of sight spawn point.
