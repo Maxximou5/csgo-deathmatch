@@ -45,12 +45,12 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - dm_spawn_distance - (Default) 0 - Minimum distance from enemies at which a player can spawn.
 - dm_sp_time - (Default) 1.0 - Spawn protection time.
 - dm_remove_weapons - (Default) 1 - Remove ground weapons.
-- dm_replenish_ammo - (Default) 1 - Unlimited player ammo
+- dm_replenish_ammo - (Default) 1 - Unlimited player ammo.
 - dm_replenish_grenade - (Default) 0 - Unlimited player grenades.
 - dm_replenish_hegrenade - (Default) 0 - Unlimited hegrenades.
 - dm_hp_start - (Default) 100 - Spawn HP.
-- dm_hp_max - (Default) 100 - Maximum HP
-- dm_hp_kill - (Default) 5 - HP per kill
+- dm_hp_max - (Default) 100 - Maximum HP.
+- dm_hp_kill - (Default) 5 - HP per kill.
 - dm_hp_hs - (Default) 10 - HP per headshot kill.
 - dm_hp_knife - (Default) 50 - HP per knife kill.
 - dm_hp_messages - (Default) 1 - Display HP messages.
