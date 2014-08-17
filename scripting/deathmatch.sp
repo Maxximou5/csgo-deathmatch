@@ -5,9 +5,9 @@
 #include <cstrike>
 #include <updater>
 
-#define PLUGIN_VERSION 	"2.0.1"
+#define PLUGIN_VERSION 	"2.0.0"
 #define PLUGIN_NAME		"Deathmatch"
-#define UPDATE_URL 		"https://raw.githubusercontent.com/Maxximou5/csgo-deathmatch/master/update.txt"
+#define UPDATE_URL 		"http://www.maxximou5.com/sourcemod/deathmatch/update.txt"
 
 public Plugin:myinfo =
 {
@@ -100,6 +100,7 @@ new Handle:cvar_dm_nades_he;
 new Handle:cvar_dm_nades_smoke;
 // Variables
 new bool:enabled = false;
+new bool:welcomemsg;
 new bool:ffa;
 new bool:removeObjectives;
 new bool:respawning;
@@ -236,8 +237,8 @@ public OnPluginStart()
 	backup_ammo_grenade_limit_total = GetConVarInt(ammo_grenade_limit_total);
 	// Create console variables
 	CreateConVar("na_dm_version", PLUGIN_VERSION, "Deathmatch version.", FCVAR_PLUGIN | FCVAR_SPONLY | FCVAR_REPLICATED | FCVAR_NOTIFY | FCVAR_DONTRECORD);
-	cvar_dm_enabled = CreateConVar("dm_enabled", "1", "Enable deathmatch.");
-	cvar_dm_welcomemsg = CreateConVar("dm_welcomemsg", "1", "Display a message saying that your server is running Deathmatch v2.0.");
+	cvar_dm_enabled = CreateConVar("dm_enabled", "1", "Enable Deathmatch.");
+	cvar_dm_welcomemsg = CreateConVar("dm_welcomemsg", "1", "Display a message saying that your server is running Deathmatch.");
 	cvar_dm_free_for_all = CreateConVar("dm_free_for_all", "0", "Free for all mode.");
 	cvar_dm_remove_objectives = CreateConVar("dm_remove_objectives", "1", "Remove objectives (disables bomb sites, and removes c4 and hostages).");
 	cvar_dm_respawning = CreateConVar("dm_respawning", "1", "Enable respawning.");
@@ -319,6 +320,7 @@ public OnPluginStart()
 	HookEvent("smokegrenade_detonate", Event_SmokegrenadeDetonate, EventHookMode_Post);
 	HookEvent("flashbang_detonate", Event_FlashbangDetonate, EventHookMode_Post);
 	HookEvent("molotov_detonate", Event_MolotovDetonate, EventHookMode_Post);
+	HookEvent("inferno_startburn", Event_InfernoStartburn, EventHookMode_Post);
 	HookEvent("decoy_started", Event_DecoyStarted, EventHookMode_Post);
 	HookEvent("player_spawn", Event_PlayerSpawn);
 	HookEvent("player_death", Event_PlayerDeath);
@@ -411,11 +413,14 @@ public OnMapStart()
 
 public OnClientPutInServer(clientIndex)
 {
-	if (GetConVarBool(cvar_dm_welcomemsg))
+	if (enabled && welcomemsg)
 	{
-		CreateTimer(10.0, Timer_WelcomeMsg, GetClientUserId(clientIndex), TIMER_FLAG_NO_MAPCHANGE);
+		if (GetConVarBool(cvar_dm_welcomemsg))
+		{
+			CreateTimer(10.0, Timer_WelcomeMsg, GetClientUserId(clientIndex), TIMER_FLAG_NO_MAPCHANGE);
+		}
+		ResetClientSettings(clientIndex);
 	}
-	ResetClientSettings(clientIndex);
 }
 
 public Action:Timer_WelcomeMsg(Handle:timer, any:userid)
@@ -424,7 +429,8 @@ public Action:Timer_WelcomeMsg(Handle:timer, any:userid)
 	
 	if (IsClientInGame(clientIndex))
 	{
-		PrintToChat(clientIndex, "[\x04WELCOME\x01] This server is running \x04Deathmatch \x01v2.0");
+		PrintHintText(clientIndex, "This server is running Deathmatch Version 2.0.0");
+		//PrintToChat(clientIndex, "[\x04WELCOME\x01] This server is running \x04Deathmatch \x01v2.0");
 	}
 	return Plugin_Stop;
 }
@@ -501,6 +507,14 @@ LoadConfig()
 	if (!KvJumpToKey(keyValues, "Options"))
 		SetFailState("The configuration file is corrupt (\"Options\" section could not be found).");
 	
+	KvGetString(keyValues, "enabled", value, sizeof(value), "yes");
+	value = (StrEqual(value, "yes")) ? "1" : "0";
+	SetConVarString(cvar_dm_enabled, value);
+
+	KvGetString(keyValues, "welcomemsg", value, sizeof(value), "yes");
+	value = (StrEqual(value, "yes")) ? "1" : "0";
+	SetConVarString(cvar_dm_welcomemsg, value);
+
 	KvGetString(keyValues, "free_for_all", value, sizeof(value), "no");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_free_for_all, value);
@@ -541,12 +555,12 @@ LoadConfig()
 	SetConVarString(cvar_dm_replenish_ammo, value);
 
 	KvGetString(keyValues, "replenish_grenade", value, sizeof(value), "no");
-	value = (StrEqual(value, "no")) ? "0" : "1";
+	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_replenish_grenade, value);
 
 	KvGetString(keyValues, "replenish_hegrenade", value, sizeof(value), "no");
-	value = (StrEqual(value, "no")) ? "0" : "1";
-	SetConVarString(cvar_dm_replenish_grenade, value);
+	value = (StrEqual(value, "yes")) ? "1" : "0";
+	SetConVarString(cvar_dm_replenish_hegrenade, value);
 	
 	KvGetString(keyValues, "player_hp_start", value, sizeof(value), "100");
 	SetConVarString(cvar_dm_hp_start, value);
@@ -651,6 +665,7 @@ UpdateState()
 	new old_gunMenuMode = gunMenuMode;
 	
 	enabled = GetConVarBool(cvar_dm_enabled);
+	welcomemsg = GetConVarBool(cvar_dm_welcomemsg);
 	ffa = GetConVarBool(cvar_dm_free_for_all);
 	removeObjectives = GetConVarBool(cvar_dm_remove_objectives);
 	respawning = GetConVarBool(cvar_dm_respawning);
@@ -1143,19 +1158,9 @@ public Action:RemoveRadar(Handle:timer, any:clientIndex)
 
 public Action:Event_HegrenadeDetonate(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if(!replenishHEGrenade)
-	{
-		return Plugin_Continue;
-	}
-
-	if(!replenishGrenade)
-	{
-		return Plugin_Continue;
-	}
-
 	new clientIndex = GetClientOfUserId(GetEventInt(event, "userid"));   
 	
-	if (replenishGrenade)
+	if (replenishGrenade && !replenishHEGrenade)
 	{
 		if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
 		{
@@ -1163,7 +1168,15 @@ public Action:Event_HegrenadeDetonate(Handle:event, const String:name[], bool:do
 		}
 	}
 
-	if (replenishHEGrenade)
+	else if (replenishHEGrenade && !replenishGrenade)
+	{
+		if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
+		{
+			GivePlayerItem(clientIndex, "weapon_hegrenade");
+		}
+	}
+
+	else if (replenishGrenade && replenishHEGrenade)
 	{
 		if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
 		{
@@ -1235,6 +1248,26 @@ public Action:Event_DecoyStarted(Handle:event, const String:name[], bool:dontBro
 }
 
 public Action:Event_MolotovDetonate(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	if(!replenishGrenade)
+	{
+		return Plugin_Continue;
+	}
+
+	new clientIndex = GetClientOfUserId(GetEventInt(event, "userid"));   
+	
+	if (replenishGrenade)
+	{
+		if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
+		{
+			GivePlayerItem(clientIndex, "weapon_molotov");
+		}
+	}
+
+	return Plugin_Continue;
+}
+
+public Action:Event_InfernoStartburn(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(!replenishGrenade)
 	{
