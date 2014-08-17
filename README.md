@@ -108,3 +108,10 @@ A thank you to those who helped:
 - <a href="https://forums.alliedmods.net/member.php?u=187003">Snip3rUK</a> (<a href="https://forums.alliedmods.net/showthread.php?t=189577">Original Plugin</a>)
 - <a href="https://forums.alliedmods.net/member.php?u=26021">Dr!fter</a> (General Code Support)
 - <a href="http://steamcommunity.com/id/DoomHammer69/">DoomHammer</a> (Debugging and Beta Testing)
+ 
+### Donate
+
+If you think I am doing a good job or you want to buy me a beer or feed my cat, please donate.
+Thanks!
+
+<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VSHQ7J8HR95SG"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" alt="csgo deathmatch plugin donate"/></a>
