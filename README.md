@@ -16,7 +16,7 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 
 ### Features to Add
 
-- Intergrated Stats (ELO)
+- Integrated Stats (ELO)
 - No Knife Damage
 - Headshot Only 
 - Weapon Skins
@@ -52,7 +52,7 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - dm_hp_knife - (Default) 50 - HP per knife kill.
 - dm_hp_messages - (Default) 1 - Display HP messages.
 - dm_nade_messages - (Default) 1 - Display grenade messages.
-- dm_armour - (Default) 1 - Give players armour.
+- dm_armour - (Default) 1 - Give players armor.
 - dm_zeus - (Default) 0 - Give players a taser.
 - dm_nades_incendiary - (Default) 0 - Number of incendiary grenades to give each player.
 - dm_nades_molotov - (Default) 0 - Number of molotov grenades to give each player.
@@ -70,8 +70,8 @@ This plugin is tested on the following Sourcemod & Metamod Versions.
 
 ### Requirements
 
-Your server must be running at least one of the following extensions:
-- <a href="https://forums.alliedmods.net/showthread.php?t=152216">cURL</a>
+Your server must be running at least **one** of the following extensions:
+- <a href="https://forums.alliedmods.net/showthread.php?t=152216">cURL</a> (Recommended)
 - <a href="https://forums.alliedmods.net/showthread.php?t=67640">Socket</a>
 - <a href="https://forums.alliedmods.net/forumdisplay.php?f=147">SteamTools (0.8.1+)</a>
 
