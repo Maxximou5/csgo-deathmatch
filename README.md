@@ -12,7 +12,7 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - Unlimited Ammo & Grenades
 - Kill Reward (HP/Ammo/Grenades)
 - Line of Sight Spawning
-- Auto Update Support
+- Auto-Update Support
 
 ### Features to Add
 
@@ -75,7 +75,7 @@ Your server must be running at least **one** of the following extensions:
 - <a href="https://forums.alliedmods.net/showthread.php?t=67640">Socket</a>
 - <a href="https://forums.alliedmods.net/forumdisplay.php?f=147">SteamTools (0.8.1+)</a>
 
-Autoupdate Support requires <a href="https://forums.alliedmods.net/showthread.php?t=169095">updater</a> to be installed.
+Auto-Update Support requires <a href="https://forums.alliedmods.net/showthread.php?t=169095">updater</a> to be installed.
 
 ### Instructions
 
