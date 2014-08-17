@@ -8,8 +8,10 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 
 - Weapon Menu
 - Free For All (FFA)
+- Objective Removal (C4/Hostage)
 - Spawn Editor and Menu
-- Unlimited Ammo & Grenades
+- Unlimited & Replenish Ammo
+- Unlimited & Replenish Grenades
 - Kill Reward (HP/Ammo/Grenades)
 - Line of Sight Spawning
 - Auto-Update Support
@@ -18,7 +20,7 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 
 - Integrated Stats (ELO)
 - No Knife Damage
-- Headshot Only 
+- Headshot Only Mode
 - Weapon Skins
 
 ### Commands
