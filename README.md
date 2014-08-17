@@ -85,6 +85,10 @@ Auto-Update Support requires <a href="https://forums.alliedmods.net/showthread.p
 - /plugins/deathmatch.smx
 - /scripting/deathmatch.sp (necessary only for compiling)
 
+### Changelog
+
+To view the most recent changelog visit the <a href="https://github.com/Maxximou5/csgo-deathmatch/blob/master/CHANGELOG.md">changelog</a> file.
+
 ### Download
 
 Once installed, the plugin will update itself as long as you've done as described in the requirements section; otherwise, downloaded the latest release below.
