@@ -3,9 +3,10 @@
 #include <sourcemod>
 #include <sdktools>
 #include <cstrike>
-#include <updater>
+#undef REQUIRE_PLUGIN
+#include <updater>  
 
-#define PLUGIN_VERSION 	"2.0.0"
+#define PLUGIN_VERSION 	"2.0.1"
 #define PLUGIN_NAME		"Deathmatch"
 #define UPDATE_URL 		"http://www.maxximou5.com/sourcemod/deathmatch/update.txt"
 
@@ -429,7 +430,7 @@ public Action:Timer_WelcomeMsg(Handle:timer, any:userid)
 	
 	if (IsClientInGame(clientIndex))
 	{
-		PrintHintText(clientIndex, "This server is running Deathmatch Version 2.0.0");
+		PrintHintText(clientIndex, "This server is running Deathmatch Version 2.0.1");
 		//PrintToChat(clientIndex, "[\x04WELCOME\x01] This server is running \x04Deathmatch \x01v2.0");
 	}
 	return Plugin_Stop;
