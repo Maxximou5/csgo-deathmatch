@@ -2,13 +2,16 @@
 
 #include <sourcemod>
 #include <sdktools>
+#include <sdkhooks>
 #include <cstrike>
 #undef REQUIRE_PLUGIN
 #include <updater>  
 
-#define PLUGIN_VERSION 	"2.0.1"
+#define PLUGIN_VERSION 	"2.0.2"
 #define PLUGIN_NAME		"Deathmatch"
 #define UPDATE_URL 		"http://www.maxximou5.com/sourcemod/deathmatch/update.txt"
+
+#define DMG_HEADSHOT (1 << 30)
 
 public Plugin:myinfo =
 {
@@ -72,6 +75,11 @@ new backup_ammo_grenade_limit_total;
 new Handle:cvar_dm_enabled;
 new Handle:cvar_dm_welcomemsg;
 new Handle:cvar_dm_free_for_all;
+new Handle:cvar_dm_headshot_only;
+new Handle:cvar_dm_headshot_only_allow_world;
+new Handle:cvar_dm_headshot_only_allow_knife;
+new Handle:cvar_dm_headshot_only_allow_taser;
+new Handle:cvar_dm_headshot_only_allow_nade;
 new Handle:cvar_dm_remove_objectives;
 new Handle:cvar_dm_respawning;
 new Handle:cvar_dm_respawn_time;
@@ -89,6 +97,7 @@ new Handle:cvar_dm_hp_max;
 new Handle:cvar_dm_hp_kill;
 new Handle:cvar_dm_hp_hs;
 new Handle:cvar_dm_hp_knife;
+new Handle:cvar_dm_hp_nade;
 new Handle:cvar_dm_hp_messages;
 new Handle:cvar_dm_nade_messages;
 new Handle:cvar_dm_armour;
@@ -103,6 +112,11 @@ new Handle:cvar_dm_nades_smoke;
 new bool:enabled = false;
 new bool:welcomemsg;
 new bool:ffa;
+new bool:hsOnly;
+new bool:hsOnly_AllowWorld;
+new bool:hsOnly_AllowKnife;
+new bool:hsOnly_AllowTaser;
+new bool:hsOnly_AllowNade;
 new bool:removeObjectives;
 new bool:respawning;
 new Float:respawnTime;
@@ -120,6 +134,7 @@ new maxHP;
 new HPPerKill;
 new HPPerHeadshotKill;
 new HPPerKnifeKill;
+new HPPerNadeKill;
 new bool:displayHPMessages;
 new bool:displayGrenadeMessages;
 new bool:roundEnded = false;
@@ -182,6 +197,9 @@ new distanceSearchAttempts = 0;
 new distanceSearchSuccesses = 0;
 new distanceSearchFailures = 0;
 new spawnPointSearchFailures = 0;
+// Strings for HS Only
+new String:g_sGrenade[32],
+	String:g_sWeapon[32];
 
 public OnPluginStart()
 {
@@ -241,6 +259,11 @@ public OnPluginStart()
 	cvar_dm_enabled = CreateConVar("dm_enabled", "1", "Enable Deathmatch.");
 	cvar_dm_welcomemsg = CreateConVar("dm_welcomemsg", "1", "Display a message saying that your server is running Deathmatch.");
 	cvar_dm_free_for_all = CreateConVar("dm_free_for_all", "0", "Free for all mode.");
+	cvar_dm_headshot_only = CreateConVar("dm_headshot_only", "0", "Enable headshot only mode.");
+	cvar_dm_headshot_only_allow_world = CreateConVar("dm_headshot_only_allow_world", "0", "Enable world damage during headshot only mode.");
+	cvar_dm_headshot_only_allow_knife = CreateConVar("dm_headshot_only_allow_knife", "0", "Enable knife damage during headshot only mode.");
+	cvar_dm_headshot_only_allow_taser = CreateConVar("dm_headshot_only_allow_taser", "0", "Enable taser damage during headshot only mode.");
+	cvar_dm_headshot_only_allow_nade = CreateConVar("dm_headshot_only_allow_nade", "0", "Enable grenade damage during headshot only mode.");
 	cvar_dm_remove_objectives = CreateConVar("dm_remove_objectives", "1", "Remove objectives (disables bomb sites, and removes c4 and hostages).");
 	cvar_dm_respawning = CreateConVar("dm_respawning", "1", "Enable respawning.");
 	cvar_dm_respawn_time = CreateConVar("dm_respawn_time", "2.0", "Respawn time.");
@@ -258,6 +281,7 @@ public OnPluginStart()
 	cvar_dm_hp_kill = CreateConVar("dm_hp_kill", "5", "HP per kill.");
 	cvar_dm_hp_hs = CreateConVar("dm_hp_hs", "10", "HP per headshot kill.");
 	cvar_dm_hp_knife = CreateConVar("dm_hp_knife", "50", "HP per knife kill.");
+	cvar_dm_hp_nade = CreateConVar("dm_hp_nade", "30", "HP per nade kill.");
 	cvar_dm_hp_messages = CreateConVar("dm_hp_messages", "1", "Display HP messages.");
 	cvar_dm_nade_messages = CreateConVar("dm_nade_messages", "1", "Display grenade messages.");
 	cvar_dm_armour = CreateConVar("dm_armour", "1", "Give players armour.");
@@ -280,6 +304,11 @@ public OnPluginStart()
 	HookConVarChange(cvar_dm_enabled, Event_CvarChange);
 	HookConVarChange(cvar_dm_welcomemsg, Event_CvarChange);
 	HookConVarChange(cvar_dm_free_for_all, Event_CvarChange);
+	HookConVarChange(cvar_dm_headshot_only, Event_CvarChange);
+	HookConVarChange(cvar_dm_headshot_only_allow_world, Event_CvarChange);
+	HookConVarChange(cvar_dm_headshot_only_allow_knife, Event_CvarChange);
+	HookConVarChange(cvar_dm_headshot_only_allow_taser, Event_CvarChange);
+	HookConVarChange(cvar_dm_headshot_only_allow_nade, Event_CvarChange);
 	HookConVarChange(cvar_dm_remove_objectives, Event_CvarChange);
 	HookConVarChange(cvar_dm_respawning, Event_CvarChange);
 	HookConVarChange(cvar_dm_respawn_time, Event_CvarChange);
@@ -297,6 +326,7 @@ public OnPluginStart()
 	HookConVarChange(cvar_dm_hp_kill, Event_CvarChange);
 	HookConVarChange(cvar_dm_hp_hs, Event_CvarChange);
 	HookConVarChange(cvar_dm_hp_knife, Event_CvarChange);
+	HookConVarChange(cvar_dm_hp_nade, Event_CvarChange);
 	HookConVarChange(cvar_dm_hp_messages, Event_CvarChange);
 	HookConVarChange(cvar_dm_nade_messages, Event_CvarChange);
 	HookConVarChange(cvar_dm_armour, Event_CvarChange);
@@ -331,6 +361,14 @@ public OnPluginStart()
 	CreateTimer(0.5, UpdateSpawnPointStatus, INVALID_HANDLE, TIMER_REPEAT);
 	CreateTimer(10.0, RemoveGroundWeapons, INVALID_HANDLE, TIMER_REPEAT);
 	CreateTimer(5.0, GiveAmmo, INVALID_HANDLE, TIMER_REPEAT);
+
+	for(new i = 1; i <= MaxClients; i++)
+	{
+		if(IsClientValid(i))
+		{
+			SDKHook(i, SDKHook_OnTakeDamage, OnTakeDamage);
+		}
+	}
 
 	if (LibraryExists("updater"))
 	{
@@ -422,16 +460,20 @@ public OnClientPutInServer(clientIndex)
 		}
 		ResetClientSettings(clientIndex);
 	}
-}
 
+	if (hsOnly)
+	{
+		SDKHook(clientIndex, SDKHook_OnTakeDamage, OnTakeDamage);
+	}
+}
 public Action:Timer_WelcomeMsg(Handle:timer, any:userid)
 {
 	new clientIndex = GetClientOfUserId(userid);
-	
-	if (IsClientInGame(clientIndex))
+
+	if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
 	{
-		PrintHintText(clientIndex, "This server is running Deathmatch Version 2.0.1");
-		//PrintToChat(clientIndex, "[\x04WELCOME\x01] This server is running \x04Deathmatch \x01v2.0");
+		PrintHintText(clientIndex, "This server is running <font color='#FF0000'>Deathmatch</font> \n<font color='#00FF00'>Version</font> 2.0.2");
+		//PrintToChat(clientIndex, "[\x04WELCOME\x01] This server is running \x04Deathmatch \x01v2.0.2");
 	}
 	return Plugin_Stop;
 }
@@ -519,6 +561,26 @@ LoadConfig()
 	KvGetString(keyValues, "free_for_all", value, sizeof(value), "no");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_free_for_all, value);
+
+	KvGetString(keyValues, "headshot_only", value, sizeof(value), "no");
+	value = (StrEqual(value, "yes")) ? "1" : "0";
+	SetConVarString(cvar_dm_headshot_only, value);
+
+	KvGetString(keyValues, "headshot_only_allow_world", value, sizeof(value), "no");
+	value = (StrEqual(value, "yes")) ? "1" : "0";
+	SetConVarString(cvar_dm_headshot_only_allow_world, value);
+
+	KvGetString(keyValues, "headshot_only_allow_knife", value, sizeof(value), "no");
+	value = (StrEqual(value, "yes")) ? "1" : "0";
+	SetConVarString(cvar_dm_headshot_only_allow_knife, value);
+
+	KvGetString(keyValues, "headshot_only_allow_taser", value, sizeof(value), "no");
+	value = (StrEqual(value, "yes")) ? "1" : "0";
+	SetConVarString(cvar_dm_headshot_only_allow_taser, value);
+
+	KvGetString(keyValues, "headshot_only_allow_nade", value, sizeof(value), "no");
+	value = (StrEqual(value, "yes")) ? "1" : "0";
+	SetConVarString(cvar_dm_headshot_only_allow_nade, value);
 	
 	KvGetString(keyValues, "remove_objectives", value, sizeof(value), "yes");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
@@ -577,6 +639,9 @@ LoadConfig()
 	
 	KvGetString(keyValues, "hp_per_knife_kill", value, sizeof(value), "50");
 	SetConVarString(cvar_dm_hp_knife, value);
+
+	KvGetString(keyValues, "hp_per_nade_kill", value, sizeof(value), "30");
+	SetConVarString(cvar_dm_hp_nade, value);
 	
 	KvGetString(keyValues, "display_hp_messages", value, sizeof(value), "yes");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
@@ -668,6 +733,11 @@ UpdateState()
 	enabled = GetConVarBool(cvar_dm_enabled);
 	welcomemsg = GetConVarBool(cvar_dm_welcomemsg);
 	ffa = GetConVarBool(cvar_dm_free_for_all);
+	hsOnly = GetConVarBool(cvar_dm_headshot_only);
+	hsOnly_AllowWorld = GetConVarBool(cvar_dm_headshot_only_allow_world);
+	hsOnly_AllowKnife = GetConVarBool(cvar_dm_headshot_only_allow_knife);
+	hsOnly_AllowTaser = GetConVarBool(cvar_dm_headshot_only_allow_taser);
+	hsOnly_AllowNade = GetConVarBool(cvar_dm_headshot_only_allow_nade);
 	removeObjectives = GetConVarBool(cvar_dm_remove_objectives);
 	respawning = GetConVarBool(cvar_dm_respawning);
 	respawnTime = GetConVarFloat(cvar_dm_respawn_time);
@@ -685,6 +755,7 @@ UpdateState()
 	HPPerKill = GetConVarInt(cvar_dm_hp_kill);
 	HPPerHeadshotKill = GetConVarInt(cvar_dm_hp_hs);
 	HPPerKnifeKill = GetConVarInt(cvar_dm_hp_knife);
+	HPPerNadeKill = GetConVarInt(cvar_dm_hp_nade);
 	displayHPMessages = GetConVarBool(cvar_dm_hp_messages);
 	displayGrenadeMessages = GetConVarBool(cvar_dm_nade_messages);
 	armour = GetConVarBool(cvar_dm_armour);
@@ -695,7 +766,7 @@ UpdateState()
 	flashbang = GetConVarInt(cvar_dm_nades_flashbang);
 	he = GetConVarInt(cvar_dm_nades_he);
 	smoke = GetConVarInt(cvar_dm_nades_smoke);
-	
+
 	if (respawnTime < 0.0) respawnTime = 0.0;
 	if (gunMenuMode < 1) gunMenuMode = 1;
 	if (gunMenuMode > 3) gunMenuMode = 3;
@@ -707,6 +778,7 @@ UpdateState()
 	if (HPPerKill < 0) HPPerKill = 0;
 	if (HPPerHeadshotKill < 0) HPPerHeadshotKill = 0;
 	if (HPPerKnifeKill < 0) HPPerKnifeKill = 0;
+	if (HPPerNadeKill < 0) HPPerNadeKill = 0;
 	if (incendiary < 0) incendiary = 0;
 	if (molotov < 0) molotov = 0;
 	if (decoy < 0) decoy = 0;
@@ -1101,16 +1173,19 @@ public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroa
 	{
 		new clientIndex = GetClientOfUserId(GetEventInt(event, "userid"));
 		new attackerIndex = GetClientOfUserId(GetEventInt(event, "attacker"));
-		decl String:attackerWeapon[6];
-		GetEventString(event, "weapon", attackerWeapon, sizeof(attackerWeapon));
+		decl String:weapon[6];
+		decl String:grenade[16];
+		GetEventString(event, "weapon", weapon, sizeof(weapon));
+		GetEventString(event, "weapon", grenade, sizeof(grenade));
 		
 		// Reward attacker with HP.
 		if ((attackerIndex != 0) && IsPlayerAlive(attackerIndex))
 		{
-			new bool:knifed = StrEqual(attackerWeapon, "knife");
+			new bool:knifed = StrEqual(weapon, "knife");
+			new bool:nade = StrEqual(grenade, "hegrenade");
 			new bool:headshot = GetEventBool(event, "headshot");
-			
-			if ((knifed && (HPPerKnifeKill > 0)) || (!headshot && (HPPerKill > 0)) || (headshot && (HPPerHeadshotKill > 0)))
+
+			if ((knifed && (HPPerKnifeKill > 0)) || (!knifed && (HPPerKill > 0)) || (headshot && (HPPerHeadshotKill > 0)) || (!headshot && (HPPerKill > 0)))
 			{
 				new attackerHP = GetClientHealth(attackerIndex);
 				
@@ -1121,6 +1196,8 @@ public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroa
 						addHP = HPPerKnifeKill;
 					else if (headshot)
 						addHP = HPPerHeadshotKill;
+					else if (nade)
+						addHP = HPPerNadeKill;
 					else
 						addHP = HPPerKill;
 					new newHP = attackerHP + addHP;
@@ -1135,6 +1212,8 @@ public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroa
 						PrintToChat(attackerIndex, "[\x04DM\x01] \x04+%iHP\x01 for killing an enemy (knife).", HPPerKnifeKill);
 					else if (headshot)
 						PrintToChat(attackerIndex, "[\x04DM\x01] \x04+%iHP\x01 for killing an enemy (headshot).", HPPerHeadshotKill);
+					else if (nade)
+						PrintToChat(attackerIndex, "[\x04DM\x01] \x04+%iHP\x01 for killing an enemy (hegrenade).", HPPerNadeKill);
 					else
 						PrintToChat(attackerIndex, "[\x04DM\x01] \x04+%iHP\x01 for killing an enemy.", HPPerKill);
 				}
@@ -1152,9 +1231,115 @@ public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroa
 	}
 }
 
+public Action:OnTraceAttack(victim, &attacker, &inflictor, &Float:damage, &damagetype, &ammotype, hitbox, hitgroup)
+{
+	if (hsOnly)
+	{
+		decl String:weapon[32];
+		decl String:grenade[32];
+		GetEdictClassname(inflictor, grenade, sizeof(grenade));
+		GetClientWeapon(attacker, weapon, sizeof(weapon));
+		
+
+		if (hsOnly_AllowKnife && StrEqual(weapon, "weapon_knife"))
+		{
+			return Plugin_Continue;
+		}
+		else if (hsOnly_AllowNade && StrEqual(grenade, "hegrenade_projectile"))
+		{
+			return Plugin_Continue;
+		}
+		else if (hsOnly_AllowTaser && StrEqual(weapon, "weapon_taser"))
+		{
+			return Plugin_Continue;
+		}
+		else
+		{
+			return Plugin_Handled;
+		}
+	}
+	return Plugin_Continue;
+}
+
+public Action:OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damagetype, &weapon, Float:damageForce[3], Float:damagePosition[3])
+{
+	if(hsOnly)
+	{
+		if(IsClientValid(victim))
+		{
+			if(damagetype & DMG_FALL || attacker == 0)
+			{
+				if(hsOnly_AllowWorld)
+				{
+					return Plugin_Continue;
+				}
+				else
+				{
+					return Plugin_Handled;
+				}
+			}
+
+			if(IsClientValid(attacker))
+			{
+				GetEdictClassname(inflictor, g_sGrenade, sizeof(g_sGrenade));
+				GetClientWeapon(attacker, g_sWeapon, sizeof(g_sWeapon));
+
+				if(damagetype & DMG_HEADSHOT)
+				{
+
+					return Plugin_Continue;
+				}
+				else
+				{
+					if(hsOnly_AllowKnife)
+					{
+						if(StrEqual(g_sWeapon, "weapon_knife"))
+						{
+							return Plugin_Continue;
+						}
+					}
+
+					if(hsOnly_AllowNade)
+					{
+						if(StrEqual(g_sGrenade, "hegrenade_projectile") || StrEqual(g_sGrenade, "decoy_projectile") || StrEqual(g_sGrenade, "molotov_projectile"))
+						{
+							return Plugin_Continue;
+						}
+					}
+					return Plugin_Handled;
+				}
+			}
+			else
+			{
+				return Plugin_Handled;
+			}
+		}
+		else
+		{
+			return Plugin_Handled;
+		}
+	}
+	else
+	{
+		return Plugin_Continue;
+	}
+}
+
+stock bool:IsClientValid(client)
+{
+	if(client > 0 && client <= MaxClients && IsClientInGame(client))
+	{
+		return true;
+	}
+	return false;
+}
+
 public Action:RemoveRadar(Handle:timer, any:clientIndex)
 {
-	SetEntProp(clientIndex, Prop_Send, "m_iHideHUD", HIDEHUD_RADAR);
+	if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
+	{
+		SetEntProp(clientIndex, Prop_Send, "m_iHideHUD", HIDEHUD_RADAR);
+	}
 }
 
 public Action:Event_HegrenadeDetonate(Handle:event, const String:name[], bool:dontBroadcast)
@@ -1547,9 +1732,8 @@ RemoveWeapons(clientIndex)
 	FakeClientCommand(clientIndex, "use weapon_knife");
 	for (new i = 0; i < 4; i++)
 	{
-		if (i == 2) continue; // Keep knife.
-		new entityIndex;
-		while ((entityIndex = GetPlayerWeaponSlot(clientIndex, i)) != -1)
+		new entityIndex = GetPlayerWeaponSlot(clientIndex, _:SlotKnife);
+		if (entityIndex != -1)
 		{
 			RemovePlayerItem(clientIndex, entityIndex);
 			AcceptEntityInput(entityIndex, "Kill");
