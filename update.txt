@@ -14,6 +14,7 @@
 		"Notes" "Allow knife kills"
 		"Notes" "Allow taser kills"
 		"Notes" "Allow grenade kills"
+		"Notes" "Added HP for grenade kills"
 		"Notes" "Fixed Native "IsClientInGame" reported: Client index 0 is invalid"
 		"Notes" "Fixed Native "SetEntProp" reported: Entity 1 (1) is invalid"
 		"Notes" "A thank you too versatile_bfg again"

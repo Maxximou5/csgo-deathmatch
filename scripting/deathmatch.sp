@@ -259,7 +259,7 @@ public OnPluginStart()
 	cvar_dm_enabled = CreateConVar("dm_enabled", "1", "Enable Deathmatch.");
 	cvar_dm_welcomemsg = CreateConVar("dm_welcomemsg", "1", "Display a message saying that your server is running Deathmatch.");
 	cvar_dm_free_for_all = CreateConVar("dm_free_for_all", "0", "Free for all mode.");
-	cvar_dm_headshot_only = CreateConVar("dm_headshot_only", "0", "Enable headshot only mode.");
+	cvar_dm_headshot_only = CreateConVar("dm_headshot_only", "0", "Headshot only mode.");
 	cvar_dm_headshot_only_allow_world = CreateConVar("dm_headshot_only_allow_world", "0", "Enable world damage during headshot only mode.");
 	cvar_dm_headshot_only_allow_knife = CreateConVar("dm_headshot_only_allow_knife", "0", "Enable knife damage during headshot only mode.");
 	cvar_dm_headshot_only_allow_taser = CreateConVar("dm_headshot_only_allow_taser", "0", "Enable taser damage during headshot only mode.");
