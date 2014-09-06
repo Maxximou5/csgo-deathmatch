@@ -1,3 +1,10 @@
+v2.0.2a:
+- Fixed issue with spawning with wrong weapon or no knife
+- Fixed Headshot Only mode displaying blood on body shots
+- Fixed minor issues that went unnoticed
+- Added support for 3rd party knife plugins
+- A thank you to klexen & Kryptos
+
 v2.0.2:
 - Added Headshot Only mode
 	- Allow world kills

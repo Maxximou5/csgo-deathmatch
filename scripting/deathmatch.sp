@@ -7,7 +7,7 @@
 #undef REQUIRE_PLUGIN
 #include <updater>  
 
-#define PLUGIN_VERSION 	"2.0.2"
+#define PLUGIN_VERSION 	"2.0.2a"
 #define PLUGIN_NAME		"Deathmatch"
 #define UPDATE_URL 		"http://www.maxximou5.com/sourcemod/deathmatch/update.txt"
 
@@ -44,6 +44,10 @@ enum Slots
 #define HIDEHUD_RADAR 1 << 12
 
 // Native console variables
+new Handle:mp_ct_default_primary;
+new Handle:mp_t_default_primary;
+new Handle:mp_ct_default_secondary;
+new Handle:mp_t_default_secondary;
 new Handle:mp_startmoney;
 new Handle:mp_playercashawards;
 new Handle:mp_teamcashawards;
@@ -200,6 +204,7 @@ new spawnPointSearchFailures = 0;
 // Strings for HS Only
 new String:g_sGrenade[32],
 	String:g_sWeapon[32];
+new g_iHealth, g_Armor;
 
 public OnPluginStart()
 {
@@ -227,6 +232,10 @@ public OnPluginStart()
 	optionsMenu1 = BuildOptionsMenu(true);
 	optionsMenu2 = BuildOptionsMenu(false);
 	// Retrieve native console variables
+	mp_ct_default_primary = FindConVar("mp_ct_default_primary");
+	mp_t_default_primary = FindConVar("mp_t_default_primary");
+	mp_ct_default_secondary = FindConVar("mp_ct_default_secondary");
+	mp_t_default_secondary = FindConVar("mp_t_default_secondary");
 	mp_startmoney = FindConVar("mp_startmoney");
 	mp_playercashawards = FindConVar("mp_playercashawards");
 	mp_teamcashawards = FindConVar("mp_teamcashawards");
@@ -344,6 +353,7 @@ public OnPluginStart()
 	HookUserMessage(GetUserMessageId("HintText"), Event_HintText, true);
 	HookUserMessage(GetUserMessageId("RadioText"), Event_RadioText, true);
 	HookEvent("player_team", Event_PlayerTeam);
+	HookEvent("player_hurt", EventPlayerHurt, EventHookMode_Pre);
 	HookEvent("round_prestart", Event_RoundPrestart, EventHookMode_PostNoCopy);
 	HookEvent("round_start", Event_RoundStart, EventHookMode_PostNoCopy);
 	HookEvent("round_end", Event_RoundEnd, EventHookMode_PostNoCopy);
@@ -369,6 +379,20 @@ public OnPluginStart()
 			SDKHook(i, SDKHook_OnTakeDamage, OnTakeDamage);
 		}
 	}
+
+	g_iHealth = FindSendPropOffs("CCSPlayer", "m_iHealth");
+	
+	if (g_iHealth == -1)
+	{
+		SetFailState("[DM] Error - Unable to get offset for CSSPlayer::m_iHealth");
+	}
+
+	g_Armor = FindSendPropOffs("CCSPlayer", "m_ArmorValue");
+  
+	if (g_Armor == -1)
+	{
+		SetFailState("[DM] Error - Unable to get offset for CSSPlayer::m_ArmorValue");
+	}	
 
 	if (LibraryExists("updater"))
 	{
@@ -445,88 +469,87 @@ public OnMapStart()
 		}
 		SetCashState();
 		SetGrenadeState();
+		SetNoSpawnWeapons();
 		if (ffa)
 			EnableFFA();
 	}
 }
 
-public OnClientPutInServer(clientIndex)
+public OnClientPutInServer(client)
 {
 	if (enabled && welcomemsg)
 	{
 		if (GetConVarBool(cvar_dm_welcomemsg))
 		{
-			CreateTimer(10.0, Timer_WelcomeMsg, GetClientUserId(clientIndex), TIMER_FLAG_NO_MAPCHANGE);
+			CreateTimer(10.0, Timer_WelcomeMsg, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 		}
-		ResetClientSettings(clientIndex);
+		ResetClientSettings(client);
 	}
 
-	if (hsOnly)
-	{
-		SDKHook(clientIndex, SDKHook_OnTakeDamage, OnTakeDamage);
-	}
+	SDKHook(client, SDKHook_TraceAttack, OnTraceAttack);
 }
+
 public Action:Timer_WelcomeMsg(Handle:timer, any:userid)
 {
-	new clientIndex = GetClientOfUserId(userid);
+	new client = GetClientOfUserId(userid);
 
-	if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
+	if (IsClientInGame(client) && IsPlayerAlive(client))
 	{
-		PrintHintText(clientIndex, "This server is running <font color='#FF0000'>Deathmatch</font> \n<font color='#00FF00'>Version</font> 2.0.2");
-		//PrintToChat(clientIndex, "[\x04WELCOME\x01] This server is running \x04Deathmatch \x01v2.0.2");
+		PrintHintText(client, "This server is running <font color='#FF0000'>Deathmatch</font> \n<font color='#00FF00'>Version</font> 2.0.2a");
+		//PrintToChat(client, "[\x04WELCOME\x01] This server is running \x04Deathmatch \x01v2.0.2a");
 	}
 	return Plugin_Stop;
 }
 
-public OnClientDisconnect(clientIndex)
+public OnClientDisconnect(client)
 {
-	RemoveRagdoll(clientIndex);
+	RemoveRagdoll(client);
 }
 
-ResetClientSettings(clientIndex)
+ResetClientSettings(client)
 {
-	lastEditorSpawnPoint[clientIndex] = -1;
-	SetClientGunModeSettings(clientIndex);
-	infoMessageCount[clientIndex] = 3;
-	weaponsGivenThisRound[clientIndex] = false;
-	newWeaponsSelected[clientIndex] = false;
-	playerMoved[clientIndex] = false;
+	lastEditorSpawnPoint[client] = -1;
+	SetClientGunModeSettings(client);
+	infoMessageCount[client] = 3;
+	weaponsGivenThisRound[client] = false;
+	newWeaponsSelected[client] = false;
+	playerMoved[client] = false;
 }
 
-SetClientGunModeSettings(clientIndex)
+SetClientGunModeSettings(client)
 {
-	if (!IsFakeClient(clientIndex))
+	if (!IsFakeClient(client))
 	{
 		if (gunMenuMode != 3)
 		{
-			primaryWeapon[clientIndex] = "none";
-			secondaryWeapon[clientIndex] = "none";
-			firstWeaponSelection[clientIndex] = true;
-			rememberChoice[clientIndex] = false;
+			primaryWeapon[client] = "none";
+			secondaryWeapon[client] = "none";
+			firstWeaponSelection[client] = true;
+			rememberChoice[client] = false;
 		}
 		else
 		{
-			primaryWeapon[clientIndex] = "random";
-			secondaryWeapon[clientIndex] = "random";
-			firstWeaponSelection[clientIndex] = false;
-			rememberChoice[clientIndex] = true;
+			primaryWeapon[client] = "random";
+			secondaryWeapon[client] = "random";
+			firstWeaponSelection[client] = false;
+			rememberChoice[client] = true;
 		}
 	}
 	else
 	{
 		if (gunMenuMode != 2)
 		{
-			primaryWeapon[clientIndex] = "random";
-			secondaryWeapon[clientIndex] = "random";
-			firstWeaponSelection[clientIndex] = false;
-			rememberChoice[clientIndex] = true;
+			primaryWeapon[client] = "random";
+			secondaryWeapon[client] = "random";
+			firstWeaponSelection[client] = false;
+			rememberChoice[client] = true;
 		}
 		else
 		{
-			primaryWeapon[clientIndex] = "none";
-			secondaryWeapon[clientIndex] = "none";
-			firstWeaponSelection[clientIndex] = true;
-			rememberChoice[clientIndex] = false;
+			primaryWeapon[client] = "none";
+			secondaryWeapon[client] = "none";
+			firstWeaponSelection[client] = true;
+			rememberChoice[client] = false;
 		}
 	}
 }
@@ -800,6 +823,7 @@ UpdateState()
 		status = (removeObjectives) ? "Disable" : "Enable";
 		SetObjectives(status);
 		SetCashState();
+		SetNoSpawnWeapons();
 	}
 	else if (!enabled && old_enabled)
 	{
@@ -851,6 +875,14 @@ UpdateState()
 		else
 			DisableFFA();
 	}
+}
+
+SetNoSpawnWeapons()
+{
+	SetConVarString(mp_ct_default_primary, "");
+	SetConVarString(mp_t_default_primary, "");
+	SetConVarString(mp_ct_default_secondary, "");
+	SetConVarString(mp_t_default_secondary, "");
 }
 
 SetCashState()
@@ -975,11 +1007,11 @@ bool:WriteMapConfig()
 	return true;
 }
 
-public Action:Event_Say(clientIndex, const String:command[], arg)
+public Action:Event_Say(client, const String:command[], arg)
 {
 	static String:menuTriggers[][] = { "gun", "!gun", "/gun", "guns", "!guns", "/guns", "menu", "!menu", "/menu", "weapon", "!weapon", "/weapon", "weapons", "!weapons", "/weapons" };
 	
-	if (enabled && (clientIndex != 0) && (Teams:GetClientTeam(clientIndex) > TeamSpectator))
+	if (enabled && (client != 0) && (Teams:GetClientTeam(client) > TeamSpectator))
 	{
 		// Retrieve and clean up text.
 		decl String:text[24];
@@ -992,9 +1024,9 @@ public Action:Event_Say(clientIndex, const String:command[], arg)
 			if (StrEqual(text, menuTriggers[i], false))
 			{
 				if (gunMenuMode == 1)
-					DisplayOptionsMenu(clientIndex);
+					DisplayOptionsMenu(client);
 				else
-					PrintToChat(clientIndex, "[\x04DM\x01] The gun menu is disabled.");
+					PrintToChat(client, "[\x04DM\x01] The gun menu is disabled.");
 				return Plugin_Handled;
 			}
 		}
@@ -1059,30 +1091,30 @@ InitialiseWeaponCounts()
 	}
 }
 
-DisplayOptionsMenu(clientIndex)
+DisplayOptionsMenu(client)
 {
-	if (!firstWeaponSelection[clientIndex])
-		DisplayMenu(optionsMenu1, clientIndex, MENU_TIME_FOREVER);
+	if (!firstWeaponSelection[client])
+		DisplayMenu(optionsMenu1, client, MENU_TIME_FOREVER);
 	else
-		DisplayMenu(optionsMenu2, clientIndex, MENU_TIME_FOREVER);
+		DisplayMenu(optionsMenu2, client, MENU_TIME_FOREVER);
 }
 
 public Event_PlayerTeam(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	new clientIndex = GetClientOfUserId(GetEventInt(event, "userid"));
+	new client = GetClientOfUserId(GetEventInt(event, "userid"));
 	
 	// If the player joins spectator, close any open menu, and remove their ragdoll.
-	if ((clientIndex != 0) && (Teams:GetClientTeam(clientIndex) == TeamSpectator))
+	if ((client != 0) && (Teams:GetClientTeam(client) == TeamSpectator))
 	{
-		CancelClientMenu(clientIndex);
-		RemoveRagdoll(clientIndex);
+		CancelClientMenu(client);
+		RemoveRagdoll(client);
 	}
 }
 
-public Action:Event_JoinClass(clientIndex, args)
+public Action:Event_JoinClass(client, args)
 {
 	if (enabled && respawning)
-		CreateTimer(respawnTime, Respawn, clientIndex);
+		CreateTimer(respawnTime, Respawn, client);
 }
 
 public Action:Event_RoundPrestart(Handle:event, const String:name[], bool:dontBroadcast)
@@ -1110,59 +1142,59 @@ public Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if (enabled)
 	{
-		new clientIndex = GetClientOfUserId(GetEventInt(event, "userid"));
+		new client = GetClientOfUserId(GetEventInt(event, "userid"));
 	
-		if (Teams:GetClientTeam(clientIndex) > TeamSpectator)
+		if (Teams:GetClientTeam(client) > TeamSpectator)
 		{
 			// Hide radar.
 			if (ffa)
-				CreateTimer(0.0, RemoveRadar, clientIndex);
+				CreateTimer(0.0, RemoveRadar, client);
 			// Display help message.
-			if ((gunMenuMode == 1) && infoMessageCount[clientIndex] > 0)
+			if ((gunMenuMode == 1) && infoMessageCount[client] > 0)
 			{
-				PrintToChat(clientIndex, "[\x04DM\x01] Type \x04guns \x01to open the weapons menu.");
-				infoMessageCount[clientIndex]--;
+				PrintToChat(client, "[\x04DM\x01] Type \x04guns \x01to open the weapons menu.");
+				infoMessageCount[client]--;
 			}
 			// Teleport player to custom spawn point.
 			if (spawnPointCount > 0)
-				MovePlayer(clientIndex);
+				MovePlayer(client);
 			// Enable player spawn protection.
 			if (spawnProtectionTime > 0.0)
-				EnableSpawnProtection(clientIndex);
+				EnableSpawnProtection(client);
 			// Set health.
 			if (startHP != 100)
-				SetEntityHealth(clientIndex, startHP);
+				SetEntityHealth(client, startHP);
 			// Give equipment
 			if (armour)
 			{
-				SetEntData(clientIndex, armourOffset, 100);
-				SetEntData(clientIndex, helmetOffset, 1);
+				SetEntData(client, armourOffset, 100);
+				SetEntData(client, helmetOffset, 1);
 			}
 			else
 			{
-				SetEntData(clientIndex, armourOffset, 0);
-				SetEntData(clientIndex, helmetOffset, 0);
+				SetEntData(client, armourOffset, 0);
+				SetEntData(client, helmetOffset, 0);
 			}
 			// Give weapons or display menu.
-			weaponsGivenThisRound[clientIndex] = false;
-			RemoveWeapons(clientIndex);
-			if (newWeaponsSelected[clientIndex])
+			weaponsGivenThisRound[client] = false;
+			RemoveWeapons(client);
+			if (newWeaponsSelected[client])
 			{
-				GiveSavedWeapons(clientIndex, true, true);
-				newWeaponsSelected[clientIndex] = false;
+				GiveSavedWeapons(client, true, true);
+				newWeaponsSelected[client] = false;
 			}
-			else if (rememberChoice[clientIndex])
+			else if (rememberChoice[client])
 			{
-				GiveSavedWeapons(clientIndex, true, true);
+				GiveSavedWeapons(client, true, true);
 			}
 			else
 			{
 				if (gunMenuMode == 1)
-					DisplayOptionsMenu(clientIndex);
+					DisplayOptionsMenu(client);
 			}
 			// Remove C4.
 			if (removeObjectives)
-				StripC4(clientIndex);
+				StripC4(client);
 		}
 	}
 }
@@ -1171,7 +1203,7 @@ public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroa
 {
 	if (enabled)
 	{
-		new clientIndex = GetClientOfUserId(GetEventInt(event, "userid"));
+		new client = GetClientOfUserId(GetEventInt(event, "userid"));
 		new attackerIndex = GetClientOfUserId(GetEventInt(event, "attacker"));
 		decl String:weapon[6];
 		decl String:grenade[16];
@@ -1222,12 +1254,12 @@ public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroa
 		// Correct the attacker's score if this was a teamkill.
 		/* if (ffa)
 		{
-			if ((attackerIndex != 0) && (clientIndex != attackerIndex) && (GetClientTeam(clientIndex) == GetClientTeam(attackerIndex)))
+			if ((attackerIndex != 0) && (client != attackerIndex) && (GetClientTeam(client) == GetClientTeam(attackerIndex)))
 				SetEntProp(attackerIndex, Prop_Data, "m_iFrags", GetClientFrags(attackerIndex) + 2);
 		} */
 		// Respawn player.
 		if (respawning)
-			CreateTimer(respawnTime, Respawn, clientIndex);
+			CreateTimer(respawnTime, Respawn, client);
 	}
 }
 
@@ -1240,8 +1272,12 @@ public Action:OnTraceAttack(victim, &attacker, &inflictor, &Float:damage, &damag
 		GetEdictClassname(inflictor, grenade, sizeof(grenade));
 		GetClientWeapon(attacker, weapon, sizeof(weapon));
 		
+		if (hitgroup == 1)
+		{
+			return Plugin_Continue;
+		}
 
-		if (hsOnly_AllowKnife && StrEqual(weapon, "weapon_knife"))
+		else if (hsOnly_AllowKnife && StrEqual(weapon, "weapon_knife"))
 		{
 			return Plugin_Continue;
 		}
@@ -1256,6 +1292,116 @@ public Action:OnTraceAttack(victim, &attacker, &inflictor, &Float:damage, &damag
 		else
 		{
 			return Plugin_Handled;
+		}
+	}
+	return Plugin_Continue;
+}
+
+public Action:EventPlayerHurt(Handle:event, const String:name[],bool:dontBroadcast)
+{
+	if (hsOnly)
+	{
+		if (!hsOnly_AllowNade)
+		{
+			new victim = GetClientOfUserId(GetEventInt(event, "userid"));
+			new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+			new dhealth = GetEventInt(event, "dmg_health");
+			new darmor = GetEventInt(event, "dmg_armor");
+			new health = GetEventInt(event, "health");
+			new armor = GetEventInt(event, "armor");
+			decl String:weapon[32];
+			GetEventString(event, "weapon", weapon, sizeof(weapon));
+			
+			if(StrEqual(weapon, "hegrenade", false))
+			{
+				if (attacker != victim && victim != 0)
+				{
+					if (dhealth > 0)
+					{
+						SetEntData(victim, g_iHealth, (health + dhealth), 4, true);
+					}
+					if (darmor > 0)
+					{
+						SetEntData(victim, g_Armor, (armor + darmor), 4, true);
+					}
+				}
+			}
+		}
+
+		if (!hsOnly_AllowTaser)
+		{
+			new victim = GetClientOfUserId(GetEventInt(event, "userid"));
+			new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+			new dhealth = GetEventInt(event, "dmg_health");
+			new darmor = GetEventInt(event, "dmg_armor");
+			new health = GetEventInt(event, "health");
+			new armor = GetEventInt(event, "armor");
+			decl String:weapon[32];
+			GetEventString(event, "weapon", weapon, sizeof(weapon));
+			
+			if(StrEqual(weapon, "taser", false))
+			{
+				if (attacker != victim && victim != 0)
+				{
+					if (dhealth > 0)
+					{
+						SetEntData(victim, g_iHealth, (health + dhealth), 4, true);
+					}
+					if (darmor > 0)
+					{
+						SetEntData(victim, g_Armor, (armor + darmor), 4, true);
+					}
+				}
+			}
+		}
+
+		if (!hsOnly_AllowKnife)
+		{
+			new victim = GetClientOfUserId(GetEventInt(event, "userid"));
+			new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+			new dhealth = GetEventInt(event, "dmg_health");
+			new darmor = GetEventInt(event, "dmg_armor");
+			new health = GetEventInt(event, "health");
+			new armor = GetEventInt(event, "armor");
+			decl String:weapon[32];
+			GetEventString(event, "weapon", weapon, sizeof(weapon));
+			
+			if(StrEqual(weapon, "knife", false))
+			{
+				if (attacker != victim && victim != 0)
+				{
+					if (dhealth > 0)
+					{
+						SetEntData(victim, g_iHealth, (health + dhealth), 4, true);
+					}
+					if (darmor > 0)
+					{
+						SetEntData(victim, g_Armor, (armor + darmor), 4, true);
+					}
+				}
+			}
+		}
+
+		if (!hsOnly_AllowWorld)
+		{
+			new victim = GetClientOfUserId(GetEventInt(event, "userid"));
+			new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+			new dhealth = GetEventInt(event, "dmg_health");
+			new darmor = GetEventInt(event, "dmg_armor");
+			new health = GetEventInt(event, "health");
+			new armor = GetEventInt(event, "armor");
+			
+			if (victim !=0 && attacker == 0)
+			{
+				if (dhealth > 0)
+				{
+					SetEntData(victim, g_iHealth, (health + dhealth), 4, true);
+				}
+				if (darmor > 0)
+				{
+					SetEntData(victim, g_Armor, (armor + darmor), 4, true);
+				}
+			}
 		}
 	}
 	return Plugin_Continue;
@@ -1334,39 +1480,39 @@ stock bool:IsClientValid(client)
 	return false;
 }
 
-public Action:RemoveRadar(Handle:timer, any:clientIndex)
+public Action:RemoveRadar(Handle:timer, any:client)
 {
-	if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
+	if (IsClientInGame(client) && IsPlayerAlive(client))
 	{
-		SetEntProp(clientIndex, Prop_Send, "m_iHideHUD", HIDEHUD_RADAR);
+		SetEntProp(client, Prop_Send, "m_iHideHUD", HIDEHUD_RADAR);
 	}
 }
 
 public Action:Event_HegrenadeDetonate(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	new clientIndex = GetClientOfUserId(GetEventInt(event, "userid"));   
+	new client = GetClientOfUserId(GetEventInt(event, "userid"));   
 	
 	if (replenishGrenade && !replenishHEGrenade)
 	{
-		if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
+		if (IsClientInGame(client) && IsPlayerAlive(client))
 		{
-			GivePlayerItem(clientIndex, "weapon_hegrenade");
+			GivePlayerItem(client, "weapon_hegrenade");
 		}
 	}
 
 	else if (replenishHEGrenade && !replenishGrenade)
 	{
-		if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
+		if (IsClientInGame(client) && IsPlayerAlive(client))
 		{
-			GivePlayerItem(clientIndex, "weapon_hegrenade");
+			GivePlayerItem(client, "weapon_hegrenade");
 		}
 	}
 
 	else if (replenishGrenade && replenishHEGrenade)
 	{
-		if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
+		if (IsClientInGame(client) && IsPlayerAlive(client))
 		{
-			GivePlayerItem(clientIndex, "weapon_hegrenade");
+			GivePlayerItem(client, "weapon_hegrenade");
 		}
 	}
 
@@ -1380,13 +1526,13 @@ public Action:Event_SmokegrenadeDetonate(Handle:event, const String:name[], bool
 		return Plugin_Continue;
 	}
 
-	new clientIndex = GetClientOfUserId(GetEventInt(event, "userid"));   
+	new client = GetClientOfUserId(GetEventInt(event, "userid"));   
 	
 	if (replenishGrenade)
 	{
-		if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
+		if (IsClientInGame(client) && IsPlayerAlive(client))
 		{
-			GivePlayerItem(clientIndex, "weapon_smokegrenade");
+			GivePlayerItem(client, "weapon_smokegrenade");
 		}
 	}
 
@@ -1400,13 +1546,13 @@ public Action:Event_FlashbangDetonate(Handle:event, const String:name[], bool:do
 		return Plugin_Continue;
 	}
 
-	new clientIndex = GetClientOfUserId(GetEventInt(event, "userid"));   
+	new client = GetClientOfUserId(GetEventInt(event, "userid"));   
 	
 	if (replenishGrenade)
 	{
-		if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
+		if (IsClientInGame(client) && IsPlayerAlive(client))
 		{
-			GivePlayerItem(clientIndex, "weapon_flashbang");
+			GivePlayerItem(client, "weapon_flashbang");
 		}
 	}
 
@@ -1420,13 +1566,13 @@ public Action:Event_DecoyStarted(Handle:event, const String:name[], bool:dontBro
 		return Plugin_Continue;
 	}
 
-	new clientIndex = GetClientOfUserId(GetEventInt(event, "userid"));   
+	new client = GetClientOfUserId(GetEventInt(event, "userid"));   
 	
 	if (replenishGrenade)
 	{
-		if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
+		if (IsClientInGame(client) && IsPlayerAlive(client))
 		{
-			GivePlayerItem(clientIndex, "weapon_decoy");
+			GivePlayerItem(client, "weapon_decoy");
 		}
 	}
 
@@ -1440,13 +1586,13 @@ public Action:Event_MolotovDetonate(Handle:event, const String:name[], bool:dont
 		return Plugin_Continue;
 	}
 
-	new clientIndex = GetClientOfUserId(GetEventInt(event, "userid"));   
+	new client = GetClientOfUserId(GetEventInt(event, "userid"));   
 	
 	if (replenishGrenade)
 	{
-		if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
+		if (IsClientInGame(client) && IsPlayerAlive(client))
 		{
-			GivePlayerItem(clientIndex, "weapon_molotov");
+			GivePlayerItem(client, "weapon_molotov");
 		}
 	}
 
@@ -1460,13 +1606,13 @@ public Action:Event_InfernoStartburn(Handle:event, const String:name[], bool:don
 		return Plugin_Continue;
 	}
 
-	new clientIndex = GetClientOfUserId(GetEventInt(event, "userid"));   
+	new client = GetClientOfUserId(GetEventInt(event, "userid"));   
 	
 	if (replenishGrenade)
 	{
-		if (IsClientInGame(clientIndex) && IsPlayerAlive(clientIndex))
+		if (IsClientInGame(client) && IsPlayerAlive(client))
 		{
-			GivePlayerItem(clientIndex, "weapon_incgrenade");
+			GivePlayerItem(client, "weapon_incgrenade");
 		}
 	}
 
@@ -1505,18 +1651,18 @@ public Event_BombPickup(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if (enabled && removeObjectives)
 	{
-		new clientIndex = GetClientOfUserId(GetEventInt(event, "userid"));
-		StripC4(clientIndex);
+		new client = GetClientOfUserId(GetEventInt(event, "userid"));
+		StripC4(client);
 	}
 }
 
-public Action:Respawn(Handle:timer, any:clientIndex)
+public Action:Respawn(Handle:timer, any:client)
 {
-	if (!roundEnded && IsClientInGame(clientIndex) && (Teams:GetClientTeam(clientIndex) > TeamSpectator) && !IsPlayerAlive(clientIndex))
+	if (!roundEnded && IsClientInGame(client) && (Teams:GetClientTeam(client) > TeamSpectator) && !IsPlayerAlive(client))
 	{
 		// We set this here rather than in Event_PlayerSpawn to catch the spawn sounds which occur before Event_PlayerSpawn is called (even with EventHookMode_Pre).
-		playerMoved[clientIndex] = false;
-		CS_RespawnPlayer(clientIndex);
+		playerMoved[client] = false;
+		CS_RespawnPlayer(client);
 	}
 }
 
@@ -1654,91 +1800,75 @@ public Menu_Secondary(Handle:menu, MenuAction:action, param1, param2)
 	}
 }
 
-public Action:Command_Guns(clientIndex, args)
+public Action:Command_Guns(client, args)
 {
 	if (enabled)
-		DisplayOptionsMenu(clientIndex);
+		DisplayOptionsMenu(client);
 }
 
-GiveSavedWeapons(clientIndex, bool:primary, bool:secondary)
+GiveSavedWeapons(client, bool:primary, bool:secondary)
 {
-	if (!weaponsGivenThisRound[clientIndex] && IsPlayerAlive(clientIndex))
+	if (!weaponsGivenThisRound[client] && IsPlayerAlive(client))
 	{
-		if (primary && !StrEqual(primaryWeapon[clientIndex], "none"))
+		if (primary && !StrEqual(primaryWeapon[client], "none"))
 		{
-			if (StrEqual(primaryWeapon[clientIndex], "random"))
+			if (StrEqual(primaryWeapon[client], "random"))
 			{
 				// Select random menu item (excluding "Random" option)
 				new random = GetRandomInt(0, GetArraySize(primaryWeaponsAvailable) - 2);
 				decl String:randomWeapon[24];
 				GetArrayString(primaryWeaponsAvailable, random, randomWeapon, sizeof(randomWeapon));
-				GivePlayerItem(clientIndex, randomWeapon);
+				GivePlayerItem(client, randomWeapon);
 			}
 			else
-				GivePlayerItem(clientIndex, primaryWeapon[clientIndex]);
+				GivePlayerItem(client, primaryWeapon[client]);
 		}
 		if (secondary)
 		{
-			if (!StrEqual(secondaryWeapon[clientIndex], "none"))
+			if (!StrEqual(secondaryWeapon[client], "none"))
 			{
-				// Strip knife, give pistol, and then give knife. This fixes the bug where pressing Q on spawn would switch to knife rather than pistol.
-				new entityIndex = GetPlayerWeaponSlot(clientIndex, _:SlotKnife);
-				if (entityIndex != -1)
+				if (StrEqual(secondaryWeapon[client], "random"))
 				{
-					RemovePlayerItem(clientIndex, entityIndex);
-					AcceptEntityInput(entityIndex, "Kill");
-				}
-				if (StrEqual(secondaryWeapon[clientIndex], "random"))
-				{
-
 					// Select random menu item (excluding "Random" option)
 					new random = GetRandomInt(0, GetArraySize(secondaryWeaponsAvailable) - 2);
 					decl String:randomWeapon[24];
 					GetArrayString(secondaryWeaponsAvailable, random, randomWeapon, sizeof(randomWeapon));
-					GivePlayerItem(clientIndex, randomWeapon);
+					GivePlayerItem(client, randomWeapon);
 				}
 				else
-					GivePlayerItem(clientIndex, secondaryWeapon[clientIndex]);
-				GivePlayerItem(clientIndex, "weapon_knife");
+				{
+					GivePlayerItem(client, secondaryWeapon[client]);
+				}
 			}
 			if (zeus)
-				GivePlayerItem(clientIndex, "weapon_taser");
+				GivePlayerItem(client, "weapon_taser");
 			if (incendiary > 0)
 			{
-				new Teams:clientTeam = Teams:GetClientTeam(clientIndex);
+				new Teams:clientTeam = Teams:GetClientTeam(client);
 				for (new i = 0; i < incendiary; i++)
 				{
 					if (clientTeam == TeamT)
-						GivePlayerItem(clientIndex, "weapon_molotov");
+						GivePlayerItem(client, "weapon_molotov");
 					else
-						GivePlayerItem(clientIndex, "weapon_incgrenade");
+						GivePlayerItem(client, "weapon_incgrenade");
 				}
 			}
 			for (new i = 0; i < decoy; i++)
-				GivePlayerItem(clientIndex, "weapon_decoy");
+				GivePlayerItem(client, "weapon_decoy");
 			for (new i = 0; i < flashbang; i++)
-				GivePlayerItem(clientIndex, "weapon_flashbang");
+				GivePlayerItem(client, "weapon_flashbang");
 			for (new i = 0; i < he; i++)
-				GivePlayerItem(clientIndex, "weapon_hegrenade");
+				GivePlayerItem(client, "weapon_hegrenade");
 			for (new i = 0; i < smoke; i++)
-				GivePlayerItem(clientIndex, "weapon_smokegrenade");
-			weaponsGivenThisRound[clientIndex] = true;
+				GivePlayerItem(client, "weapon_smokegrenade");
+			weaponsGivenThisRound[client] = true;
 		}
 	}
 }
 
-RemoveWeapons(clientIndex)
+RemoveWeapons(client)
 {
-	FakeClientCommand(clientIndex, "use weapon_knife");
-	for (new i = 0; i < 4; i++)
-	{
-		new entityIndex = GetPlayerWeaponSlot(clientIndex, _:SlotKnife);
-		if (entityIndex != -1)
-		{
-			RemovePlayerItem(clientIndex, entityIndex);
-			AcceptEntityInput(entityIndex, "Kill");
-		}
-	}
+	FakeClientCommand(client, "use weapon_knife");
 }
 
 public Action:RemoveGroundWeapons(Handle:timer)
@@ -1809,27 +1939,27 @@ RemoveC4()
 	}
 }
 
-bool:StripC4(clientIndex)
+bool:StripC4(client)
 {
-	if (IsClientInGame(clientIndex) && (Teams:GetClientTeam(clientIndex) == TeamT) && IsPlayerAlive(clientIndex))
+	if (IsClientInGame(client) && (Teams:GetClientTeam(client) == TeamT) && IsPlayerAlive(client))
 	{
-		new c4Index = GetPlayerWeaponSlot(clientIndex, _:SlotC4);
+		new c4Index = GetPlayerWeaponSlot(client, _:SlotC4);
 		if (c4Index != -1)
 		{
 			decl String:weapon[24];
-			GetClientWeapon(clientIndex, weapon, sizeof(weapon));
+			GetClientWeapon(client, weapon, sizeof(weapon));
 			// If the player is holding C4, switch to the best weapon before removing it.
 			if (StrEqual(weapon, "weapon_c4"))
 			{
-				if (GetPlayerWeaponSlot(clientIndex, _:SlotPrimary) != -1)
-					ClientCommand(clientIndex, "slot1");
-				else if (GetPlayerWeaponSlot(clientIndex, _:SlotSecondary) != -1)
-					ClientCommand(clientIndex, "slot2");
+				if (GetPlayerWeaponSlot(client, _:SlotPrimary) != -1)
+					ClientCommand(client, "slot1");
+				else if (GetPlayerWeaponSlot(client, _:SlotSecondary) != -1)
+					ClientCommand(client, "slot2");
 				else
-					ClientCommand(clientIndex, "slot3");
+					ClientCommand(client, "slot3");
 				
 			}
-			RemovePlayerItem(clientIndex, c4Index);
+			RemovePlayerItem(client, c4Index);
 			AcceptEntityInput(c4Index, "Kill");
 			return true;
 		}
@@ -1853,39 +1983,39 @@ RemoveHostages()
 	}
 }
 
-EnableSpawnProtection(clientIndex)
+EnableSpawnProtection(client)
 {
-	new Teams:clientTeam = Teams:GetClientTeam(clientIndex);
+	new Teams:clientTeam = Teams:GetClientTeam(client);
 	// Disable damage
-	SetEntProp(clientIndex, Prop_Data, "m_takedamage", 0, 1);
+	SetEntProp(client, Prop_Data, "m_takedamage", 0, 1);
 	// Set player colour
 	if (clientTeam == TeamT)
-		SetPlayerColour(clientIndex, tColour);
+		SetPlayerColour(client, tColour);
 	else if (clientTeam == TeamCT)
-		SetPlayerColour(clientIndex, ctColour);
+		SetPlayerColour(client, ctColour);
 	// Create timer to remove spawn protection
-	CreateTimer(spawnProtectionTime, DisableSpawnProtection, clientIndex);
+	CreateTimer(spawnProtectionTime, DisableSpawnProtection, client);
 }
 
-public Action:DisableSpawnProtection(Handle:Timer, any:clientIndex)
+public Action:DisableSpawnProtection(Handle:Timer, any:client)
 {
-	if (IsClientInGame(clientIndex) && (Teams:GetClientTeam(clientIndex) > TeamSpectator) && IsPlayerAlive(clientIndex))
+	if (IsClientInGame(client) && (Teams:GetClientTeam(client) > TeamSpectator) && IsPlayerAlive(client))
 	{
 		// Enable damage
-		SetEntProp(clientIndex, Prop_Data, "m_takedamage", 2, 1);
+		SetEntProp(client, Prop_Data, "m_takedamage", 2, 1);
 		// Set player colour
-		SetPlayerColour(clientIndex, defaultColour);
+		SetPlayerColour(client, defaultColour);
 	}
 }
 
-SetPlayerColour(clientIndex, const colour[4])
+SetPlayerColour(client, const colour[4])
 {
 	new RenderMode:mode = (colour[3] == 255) ? RENDER_NORMAL : RENDER_TRANSCOLOR;
-	SetEntityRenderMode(clientIndex, mode);
-	SetEntityRenderColor(clientIndex, colour[0], colour[1], colour[2], colour[3]);
+	SetEntityRenderMode(client, mode);
+	SetEntityRenderColor(client, colour[0], colour[1], colour[2], colour[3]);
 }
 
-public Action:Command_RespawnAll(clientIndex, args)
+public Action:Command_RespawnAll(client, args)
 {
 	RespawnAll();
 	return Plugin_Handled;
@@ -1910,9 +2040,9 @@ Handle:BuildSpawnEditorMenu()
 	return menu;
 }
 
-public Action:Command_SpawnMenu(clientIndex, args)
+public Action:Command_SpawnMenu(client, args)
 {
-	DisplayMenu(BuildSpawnEditorMenu(), clientIndex, MENU_TIME_FOREVER);
+	DisplayMenu(BuildSpawnEditorMenu(), client, MENU_TIME_FOREVER);
 }
 
 public Menu_SpawnEditor(Handle:menu, MenuAction:action, param1, param2)
@@ -2039,16 +2169,16 @@ public Action:RenderSpawnPoints(Handle:timer)
 	return Plugin_Continue;
 }
 
-GetNearestSpawn(clientIndex)
+GetNearestSpawn(client)
 {
 	if (spawnPointCount == 0)
 	{
-		PrintToChat(clientIndex, "[\x04DM\x01] There are no spawn points.");
+		PrintToChat(client, "[\x04DM\x01] There are no spawn points.");
 		return -1;
 	}
 	
 	decl Float:clientPosition[3];
-	GetClientAbsOrigin(clientIndex, clientPosition);
+	GetClientAbsOrigin(client, clientPosition);
 	
 	new nearestPoint = 0;
 	new Float:nearestPointDistance = GetVectorDistance(spawnPositions[0], clientPosition, true);
@@ -2065,42 +2195,42 @@ GetNearestSpawn(clientIndex)
 	return nearestPoint;
 }
 
-AddSpawn(clientIndex)
+AddSpawn(client)
 {
 	if (spawnPointCount >= MAX_SPAWNS)
 	{
-		PrintToChat(clientIndex, "[\x04DM\x01] Could not add spawn point (max limit reached).");
+		PrintToChat(client, "[\x04DM\x01] Could not add spawn point (max limit reached).");
 		return;
 	}
-	GetClientAbsOrigin(clientIndex, spawnPositions[spawnPointCount]);
-	GetClientAbsAngles(clientIndex, spawnAngles[spawnPointCount]);
+	GetClientAbsOrigin(client, spawnPositions[spawnPointCount]);
+	GetClientAbsAngles(client, spawnAngles[spawnPointCount]);
 	spawnPointCount++;
-	PrintToChat(clientIndex, "[\x04DM\x01] Added spawn point #%i (%i total).", spawnPointCount, spawnPointCount);
+	PrintToChat(client, "[\x04DM\x01] Added spawn point #%i (%i total).", spawnPointCount, spawnPointCount);
 }
 
-InsertSpawn(clientIndex)
+InsertSpawn(client)
 {
 	if (spawnPointCount >= MAX_SPAWNS)
 	{
-		PrintToChat(clientIndex, "[\x04DM\x01] Could not add spawn point (max limit reached).");
+		PrintToChat(client, "[\x04DM\x01] Could not add spawn point (max limit reached).");
 		return;
 	}
 	
 	if (spawnPointCount == 0)
-		AddSpawn(clientIndex);
+		AddSpawn(client);
 	else
 	{
 		// Move spawn points down the list to make room for insertion.
-		for (new i = spawnPointCount - 1; i >= lastEditorSpawnPoint[clientIndex]; i--)
+		for (new i = spawnPointCount - 1; i >= lastEditorSpawnPoint[client]; i--)
 		{
 			spawnPositions[i + 1] = spawnPositions[i];
 			spawnAngles[i + 1] = spawnAngles[i];
 		}
 		// Insert new spawn point.
-		GetClientAbsOrigin(clientIndex, spawnPositions[lastEditorSpawnPoint[clientIndex]]);
-		GetClientAbsAngles(clientIndex, spawnAngles[lastEditorSpawnPoint[clientIndex]]);
+		GetClientAbsOrigin(client, spawnPositions[lastEditorSpawnPoint[client]]);
+		GetClientAbsAngles(client, spawnAngles[lastEditorSpawnPoint[client]]);
 		spawnPointCount++;
-		PrintToChat(clientIndex, "[\x04DM\x01] Inserted spawn point at #%i (%i total).", lastEditorSpawnPoint[clientIndex] + 1, spawnPointCount);
+		PrintToChat(client, "[\x04DM\x01] Inserted spawn point at #%i (%i total).", lastEditorSpawnPoint[client] + 1, spawnPointCount);
 	}
 }
 
@@ -2152,11 +2282,11 @@ public Action:UpdateSpawnPointStatus(Handle:timer)
 	return Plugin_Continue;
 }
 
-MovePlayer(clientIndex)
+MovePlayer(client)
 {
 	numberOfPlayerSpawns++; // Stats
 	
-	new Teams:clientTeam = Teams:GetClientTeam(clientIndex);
+	new Teams:clientTeam = Teams:GetClientTeam(client);
 	
 	new spawnPoint;
 	new bool:spawnPointFound = false;
@@ -2268,9 +2398,9 @@ MovePlayer(clientIndex)
 	
 	if (spawnPointFound)
 	{
-		TeleportEntity(clientIndex, spawnPositions[spawnPoint], spawnAngles[spawnPoint], NULL_VECTOR);
+		TeleportEntity(client, spawnPositions[spawnPoint], spawnAngles[spawnPoint], NULL_VECTOR);
 		spawnPointOccupied[spawnPoint] = true;
-		playerMoved[clientIndex] = true;
+		playerMoved[client] = true;
 	}
 	
 	if (!spawnPointFound) spawnPointSearchFailures++; // Stats
@@ -2293,15 +2423,15 @@ public bool:TraceEntityFilterPlayer(entityIndex, mask)
 	return true;
 }
 
-public Action:Command_Stats(clientIndex, args)
+public Action:Command_Stats(client, args)
 {
-	DisplaySpawnStats(clientIndex);
+	DisplaySpawnStats(client);
 }
 
-public Action:Command_ResetStats(clientIndex, args)
+public Action:Command_ResetStats(client, args)
 {
 	ResetSpawnStats();
-	PrintToChat(clientIndex, "[\x04DM\x01] Spawn statistics have been reset.");
+	PrintToChat(client, "[\x04DM\x01] Spawn statistics have been reset.");
 }
 
 ResetSpawnStats()
@@ -2316,7 +2446,7 @@ ResetSpawnStats()
 	spawnPointSearchFailures = 0;
 }
 
-DisplaySpawnStats(clientIndex)
+DisplaySpawnStats(client)
 {
 	decl String:text[64];
 	new Handle:panel = CreatePanel();
@@ -2333,7 +2463,7 @@ DisplaySpawnStats(clientIndex)
 	DrawPanelItem(panel, text);
 	Format(text, sizeof(text), "Spawn point search failures: %i", spawnPointSearchFailures);
 	DrawPanelItem(panel, text);
-	SendPanelToClient(panel, clientIndex, Panel_SpawnStats, MENU_TIME_FOREVER);
+	SendPanelToClient(panel, client, Panel_SpawnStats, MENU_TIME_FOREVER);
 	CloseHandle(panel);
 }
 
@@ -2345,24 +2475,33 @@ public Action:Event_Sound(clients[64], &numClients, String:sample[PLATFORM_MAX_P
 	{
 		if (spawnPointCount > 0)
 		{
-			new clientIndex;
+			new client;
 			if ((entity > 0) && (entity <= MaxClients))
-				clientIndex = entity;
+				client = entity;
 			else
-				clientIndex = GetEntDataEnt2(entity, ownerOffset);
+				client = GetEntDataEnt2(entity, ownerOffset);
 	
 			// Block ammo pickup sounds.
 			if (StrEqual(sample, "items/ammopickup.wav"))
 				return Plugin_Stop;
 	
 			// Block all sounds originating from players not yet moved.
-			if ((clientIndex > 0) && (clientIndex <= MaxClients) && !playerMoved[clientIndex])
+			if ((client > 0) && (client <= MaxClients) && !playerMoved[client])
 				return Plugin_Stop;
 		}
 		if (ffa)
 		{
 			if (StrContains(sample, "friendlyfire") != -1)
 				return Plugin_Stop;
+		}
+		if (hsOnly)
+		{
+			if (StrEqual(sample, "physics/flesh/flesh_squishy_impact_hard1.wav"))
+			if (StrEqual(sample, "physics/flesh/flesh_squishy_impact_hard2.wav"))
+			if (StrEqual(sample, "physics/flesh/flesh_squishy_impact_hard3.wav"))
+			if (StrEqual(sample, "physics/flesh/flesh_squishy_impact_hard4.wav"))
+			if (StrEqual(sample, "physics/flesh/flesh_bloody_break.wav"))
+			return Plugin_Stop;
 		}
 	}
 	return Plugin_Continue;
@@ -2378,24 +2517,24 @@ public Action:CS_OnTerminateRound(&Float:delay, &CSRoundEndReason:reason)
 	return Plugin_Continue;
 }
 
-BuildDisplayWeaponMenu(clientIndex, bool:primary)
+BuildDisplayWeaponMenu(client, bool:primary)
 {
 	if (primary)
 	{
-		if (primaryMenus[clientIndex] != INVALID_HANDLE)
+		if (primaryMenus[client] != INVALID_HANDLE)
 		{
-			CancelMenu(primaryMenus[clientIndex]);
-			CloseHandle(primaryMenus[clientIndex]);
-			primaryMenus[clientIndex] = INVALID_HANDLE;
+			CancelMenu(primaryMenus[client]);
+			CloseHandle(primaryMenus[client]);
+			primaryMenus[client] = INVALID_HANDLE;
 		}
 	}
 	else
 	{
-		if (secondaryMenus[clientIndex] != INVALID_HANDLE)
+		if (secondaryMenus[client] != INVALID_HANDLE)
 		{
-			CancelMenu(secondaryMenus[clientIndex]);
-			CloseHandle(secondaryMenus[clientIndex]);
-			secondaryMenus[clientIndex] = INVALID_HANDLE;
+			CancelMenu(secondaryMenus[client]);
+			CloseHandle(secondaryMenus[client]);
+			secondaryMenus[client] = INVALID_HANDLE;
 		}
 	}
 	
@@ -2414,7 +2553,7 @@ BuildDisplayWeaponMenu(clientIndex, bool:primary)
 	new Handle:weapons = (primary) ? primaryWeaponsAvailable : secondaryWeaponsAvailable;
 	
 	decl String:currentWeapon[24];
-	currentWeapon = (primary) ? primaryWeapon[clientIndex] : secondaryWeapon[clientIndex];
+	currentWeapon = (primary) ? primaryWeapon[client] : secondaryWeapon[client];
 	
 	for (new i = 0; i < GetArraySize(weapons); i++)
 	{
@@ -2451,13 +2590,13 @@ BuildDisplayWeaponMenu(clientIndex, bool:primary)
 	}
 	if (primary)
 	{
-		primaryMenus[clientIndex] = menu;
-		DisplayMenu(primaryMenus[clientIndex], clientIndex, MENU_TIME_FOREVER);
+		primaryMenus[client] = menu;
+		DisplayMenu(primaryMenus[client], client, MENU_TIME_FOREVER);
 	}
 	else
 	{
-		secondaryMenus[clientIndex] = menu;
-		DisplayMenu(secondaryMenus[clientIndex], clientIndex, MENU_TIME_FOREVER);
+		secondaryMenus[client] = menu;
+		DisplayMenu(secondaryMenus[client], client, MENU_TIME_FOREVER);
 	}
 }
 
@@ -2559,11 +2698,11 @@ public Action:Event_RadioText(UserMsg:msg_id, Handle:bf, const players[], player
 	return Plugin_Continue;
 }
 
-RemoveRagdoll(clientIndex)
+RemoveRagdoll(client)
 {
-	if (IsValidEdict(clientIndex))
+	if (IsValidEdict(client))
 	{
-		new ragdoll = GetEntDataEnt2(clientIndex, ragdollOffset);
+		new ragdoll = GetEntDataEnt2(client, ragdollOffset);
 		if (ragdoll != -1)
 			AcceptEntityInput(ragdoll, "Kill");
 	}

@@ -4,24 +4,25 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.0.2"
-			"Previous"	"2.0.1"
+			"Latest"	"2.0.2a"
+			"Previous"	"2.0.2"
 		}
 		
-		"Notes"	"Changes in 2.0.2:"
-		"Notes" "Added Headshot Only mode"
-		"Notes" "Allow world kills"
-		"Notes" "Allow knife kills"
-		"Notes" "Allow taser kills"
-		"Notes" "Allow grenade kills"
-		"Notes" "Added HP for grenade kills"
-		"Notes" "Fixed Native "IsClientInGame" reported: Client index 0 is invalid"
-		"Notes" "Fixed Native "SetEntProp" reported: Entity 1 (1) is invalid"
-		"Notes" "A thank you too versatile_bfg again"
+		"Notes"	"Changes in 2.0.2a:"
+		"Notes" "Fixed issue with spawning with weapon or no knife"
+		"Notes" "Fixed Headshot Only mode displaying blood on body shots"
+		"Notes" "Added support for 3rd party knife plugins"
+		"Notes" "A thank you to klexen & Kryptos"
 	}
 	
 	"Files"
 	{
+		"Patch"
+		{
+			"Plugin"	"Path_SM/plugins/deathmatch.smx"
+			"Source"	"Path_SM/scripting/deathmatch.sp"
+		}
+
 		"Plugin"	"Path_SM/plugins/deathmatch.smx"
 		"Plugin"	"Path_SM/configs/deathmatch/deathmatch.ini"
 		"Source"	"Path_SM/scripting/deathmatch.sp"

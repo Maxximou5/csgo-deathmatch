@@ -1,4 +1,4 @@
-### [CS:GO] Deathmatch (v2.0.2, 2014-09-03)
+### [CS:GO] Deathmatch (v2.0.2a, 2014-09-05)
 <a href="http://www.maxximou5.com/"><img src="http://maxximou5.com/sourcemod/assests/img/deathmatch_csgo.png" alt="csgo deathmatch plugin" width="600" /></a>
 ===============
 
@@ -15,12 +15,13 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - Unlimited & Replenish Grenades
 - Kill Reward (HP/Ammo/Grenades)
 - Line of Sight Spawning
+- 3rd Party Knife Plugin Support
 - Auto-Update Support
 
 ### Features to Add
 
 - Integrated Stats (ELO)
-- No Knife Damage
+- No Knife Damage (Guns Only)
 - Team Selective Spawns
 - Weapon Skins
 
