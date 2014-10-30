@@ -1,3 +1,9 @@
+v2.0.2b:
+- Added Pistol only mode, available through gun_menu_mode
+- Fixed issue with welcome message
+- Fixed issue with bots and weapons (hopefully)
+- Fixed issue with gun menu being available to admins when it shouldn't
+
 v2.0.2a:
 - Fixed issue with spawning with wrong weapon or no knife
 - Fixed Headshot Only mode displaying blood on body shots

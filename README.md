@@ -1,4 +1,4 @@
-### [CS:GO] Deathmatch (v2.0.2a, 2014-09-05)
+### [CS:GO] Deathmatch (v2.0.2b, 2014-10-30)
 <a href="http://www.maxximou5.com/"><img src="http://maxximou5.com/sourcemod/assests/img/deathmatch_csgo.png" alt="csgo deathmatch plugin" width="600" /></a>
 ===============
 
@@ -8,7 +8,10 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 
 - Weapon Menu
 - Free For All (FFA)
-- Headshot Only
+- Different Game Modes:
+ - Headshot Only Mode
+ - Pistol Only Mode
+ - Random Weapons Mode
 - Objective Removal (C4/Hostage)
 - Spawn Editor and Menu
 - Unlimited & Replenish Ammo
@@ -46,7 +49,7 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - dm_remove_objectives - (Default) 1 - Disables bomb sites, and removes c4 and hostages.
 - dm_respawning - (Default) 1 - Enable respawning.
 - dm_respawn_time - (Default) 2.0 - Respawn time.
-- dm_gun_menu_mode - (Default) 1 - 1) Enabled. 2) Disabled. 3) Random weapons every round.
+- dm_gun_menu_mode - (Default) 1 - 1) Enabled. 2) Pistol only mode. 3) Random weapons every round. 4) Disabled.
 - dm_los_spawning - (Default) 1 - Enable line of sight spawning.
 - dm_los_attempts - (Default) 10 - Maximum attempts to find a suitable line of sight spawn point.
 - dm_spawn_distance - (Default) 0 - Minimum distance from enemies at which a player can spawn.
@@ -76,7 +79,7 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 
 This plugin is tested on the following Sourcemod & Metamod Versions.
 
-- <a href="http://www.sourcemod.net/snapshots.php">Sourcemod 1.6.1+</a>
+- <a href="http://www.sourcemod.net/snapshots.php">Sourcemod 1.6.2+</a>
 - <a href="http://www.sourcemm.net/snapshots">Metamod 1.10.1+</a>
 
 ### Requirements

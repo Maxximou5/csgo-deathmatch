@@ -7,7 +7,7 @@
 #undef REQUIRE_PLUGIN
 #include <updater>  
 
-#define PLUGIN_VERSION 	"2.0.2a"
+#define PLUGIN_VERSION 	"2.0.2b"
 #define PLUGIN_NAME		"Deathmatch"
 #define UPDATE_URL 		"http://www.maxximou5.com/sourcemod/deathmatch/update.txt"
 
@@ -477,11 +477,14 @@ public OnMapStart()
 
 public OnClientPutInServer(client)
 {
-	if (enabled && welcomemsg)
+	if (enabled)
 	{
-		if (GetConVarBool(cvar_dm_welcomemsg))
+		if (welcomemsg)
 		{
-			CreateTimer(10.0, Timer_WelcomeMsg, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+			if (GetConVarBool(cvar_dm_welcomemsg))
+			{
+				CreateTimer(10.0, Timer_WelcomeMsg, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+			}
 		}
 		ResetClientSettings(client);
 	}
@@ -495,8 +498,8 @@ public Action:Timer_WelcomeMsg(Handle:timer, any:userid)
 
 	if (IsClientInGame(client) && IsPlayerAlive(client))
 	{
-		PrintHintText(client, "This server is running <font color='#FF0000'>Deathmatch</font> \n<font color='#00FF00'>Version</font> 2.0.2a");
-		//PrintToChat(client, "[\x04WELCOME\x01] This server is running \x04Deathmatch \x01v2.0.2a");
+		PrintHintText(client, "This server is running <font color='#FF0000'>Deathmatch</font> \n<font color='#00FF00'>Version</font> 2.0.2b");
+		//PrintToChat(client, "[\x04WELCOME\x01] This server is running \x04Deathmatch \x01v2.0.2b");
 	}
 	return Plugin_Stop;
 }
@@ -518,39 +521,19 @@ ResetClientSettings(client)
 
 SetClientGunModeSettings(client)
 {
-	if (!IsFakeClient(client))
+	if (gunMenuMode != 3)
 	{
-		if (gunMenuMode != 3)
-		{
-			primaryWeapon[client] = "none";
-			secondaryWeapon[client] = "none";
-			firstWeaponSelection[client] = true;
-			rememberChoice[client] = false;
-		}
-		else
-		{
-			primaryWeapon[client] = "random";
-			secondaryWeapon[client] = "random";
-			firstWeaponSelection[client] = false;
-			rememberChoice[client] = true;
-		}
+		primaryWeapon[client] = "none";
+		secondaryWeapon[client] = "none";
+		firstWeaponSelection[client] = true;
+		rememberChoice[client] = false;
 	}
-	else
+	else if (gunMenuMode == 3)
 	{
-		if (gunMenuMode != 2)
-		{
-			primaryWeapon[client] = "random";
-			secondaryWeapon[client] = "random";
-			firstWeaponSelection[client] = false;
-			rememberChoice[client] = true;
-		}
-		else
-		{
-			primaryWeapon[client] = "none";
-			secondaryWeapon[client] = "none";
-			firstWeaponSelection[client] = true;
-			rememberChoice[client] = false;
-		}
+		primaryWeapon[client] = "random";
+		secondaryWeapon[client] = "random";
+		firstWeaponSelection[client] = false;
+		rememberChoice[client] = true;
 	}
 }
 
@@ -792,7 +775,7 @@ UpdateState()
 
 	if (respawnTime < 0.0) respawnTime = 0.0;
 	if (gunMenuMode < 1) gunMenuMode = 1;
-	if (gunMenuMode > 3) gunMenuMode = 3;
+	if (gunMenuMode > 4) gunMenuMode = 4;
 	if (lineOfSightAttempts < 0) lineOfSightAttempts = 0;
 	if (spawnDistanceFromEnemies < 0.0) spawnDistanceFromEnemies = 0.0;
 	if (spawnProtectionTime < 0.0) spawnProtectionTime = 0.0;
@@ -851,7 +834,7 @@ UpdateState()
 	{
 		if (gunMenuMode != old_gunMenuMode)
 		{
-			if (gunMenuMode != 1)
+			if (gunMenuMode == 4)
 			{
 				for (new i = 1; i <= MaxClients; i++)
 					CancelClientMenu(i);
@@ -1023,7 +1006,7 @@ public Action:Event_Say(client, const String:command[], arg)
 		{
 			if (StrEqual(text, menuTriggers[i], false))
 			{
-				if (gunMenuMode == 1)
+				if (gunMenuMode == 1 || gunMenuMode == 2)
 					DisplayOptionsMenu(client);
 				else
 					PrintToChat(client, "[\x04DM\x01] The gun menu is disabled.");
@@ -1150,7 +1133,7 @@ public Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 			if (ffa)
 				CreateTimer(0.0, RemoveRadar, client);
 			// Display help message.
-			if ((gunMenuMode == 1) && infoMessageCount[client] > 0)
+			if ((gunMenuMode == 1 || gunMenuMode == 2) && infoMessageCount[client] > 0)
 			{
 				PrintToChat(client, "[\x04DM\x01] Type \x04guns \x01to open the weapons menu.");
 				infoMessageCount[client]--;
@@ -1185,12 +1168,25 @@ public Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 			}
 			else if (rememberChoice[client])
 			{
-				GiveSavedWeapons(client, true, true);
+				if (gunMenuMode == 1 || gunMenuMode == 3)
+				{
+					GiveSavedWeapons(client, true, true);
+				}
+				else if (gunMenuMode == 2)
+				{
+					GiveSavedWeapons(client, false, true);
+				}
 			}
 			else
 			{
 				if (gunMenuMode == 1)
+				{
 					DisplayOptionsMenu(client);
+				}
+				else if (gunMenuMode == 2)
+				{
+					DisplayOptionsMenu(client);
+				}
 			}
 			// Remove C4.
 			if (removeObjectives)
@@ -1697,7 +1693,14 @@ public Menu_Options(Handle:menu, MenuAction:action, param1, param2)
 		{
 			if (weaponsGivenThisRound[param1])
 				newWeaponsSelected[param1] = true;
-			BuildDisplayWeaponMenu(param1, true);
+			if (gunMenuMode == 1)
+			{
+				BuildDisplayWeaponMenu(param1, true);
+			}
+			else if (gunMenuMode == 2)
+			{
+				BuildDisplayWeaponMenu(param1, false);
+			}
 			rememberChoice[param1] = false;
 		}
 		else if (StrEqual(info, "Same 1"))
@@ -1707,15 +1710,33 @@ public Menu_Options(Handle:menu, MenuAction:action, param1, param2)
 				newWeaponsSelected[param1] = true;
 				PrintToChat(param1, "[\x04DM\x01] You will be given the same weapons on next spawn.");
 			}
-			GiveSavedWeapons(param1, true, true);
-			rememberChoice[param1] = false;
+			if (gunMenuMode == 1 || gunMenuMode == 3)
+			{
+				GiveSavedWeapons(param1, true, true);
+				rememberChoice[param1] = false;
+			}
+			else
+			{
+				GiveSavedWeapons(param1, false, true);
+				rememberChoice[param1] = false;
+			}
 		}
 		else if (StrEqual(info, "Same All"))
 		{
 			if (weaponsGivenThisRound[param1])
+			{
 				PrintToChat(param1, "[\x04DM\x01] You will be given the same weapons starting on next spawn.");
-			GiveSavedWeapons(param1, true, true);
-			rememberChoice[param1] = true;
+			}
+			if (gunMenuMode == 1 || gunMenuMode == 3)
+			{
+				GiveSavedWeapons(param1, true, true);
+				rememberChoice[param1] = false;
+			}
+			else
+			{
+				GiveSavedWeapons(param1, false, true);
+				rememberChoice[param1] = false;
+			}
 		}
 		else if (StrEqual(info, "Random 1"))
 		{
@@ -1724,17 +1745,35 @@ public Menu_Options(Handle:menu, MenuAction:action, param1, param2)
 				newWeaponsSelected[param1] = true;
 				PrintToChat(param1, "[\x04DM\x01] You will receive random weapons on next spawn.");
 			}
-			primaryWeapon[param1] = "random";
-			secondaryWeapon[param1] = "random";
-			GiveSavedWeapons(param1, true, true);
-			rememberChoice[param1] = false;
+			if (gunMenuMode == 1 || gunMenuMode == 3)
+			{
+				primaryWeapon[param1] = "random";
+				secondaryWeapon[param1] = "random";
+				GiveSavedWeapons(param1, true, true);
+				rememberChoice[param1] = false;
+			}
+			else if (gunMenuMode == 2)
+			{
+				primaryWeapon[param1] = "none";
+				secondaryWeapon[param1] = "random";
+				GiveSavedWeapons(param1, false, true);
+				rememberChoice[param1] = false;
+			}
 		}
 		else if (StrEqual(info, "Random All"))
 		{
 			if (weaponsGivenThisRound[param1])
 				PrintToChat(param1, "[\x04DM\x01] You will receive random weapons starting on next spawn.");
-			primaryWeapon[param1] = "random";
-			secondaryWeapon[param1] = "random";
+			if (gunMenuMode == 1 || gunMenuMode == 3)
+			{
+				primaryWeapon[param1] = "random";
+				secondaryWeapon[param1] = "random";
+			}
+			else
+			{
+				primaryWeapon[param1] = "none";
+				secondaryWeapon[param1] = "random";
+			}
 			GiveSavedWeapons(param1, true, true);
 			rememberChoice[param1] = true;
 		}
@@ -1802,7 +1841,7 @@ public Menu_Secondary(Handle:menu, MenuAction:action, param1, param2)
 
 public Action:Command_Guns(client, args)
 {
-	if (enabled)
+	if (enabled && gunMenuMode != 3 && gunMenuMode != 4)
 		DisplayOptionsMenu(client);
 }
 
