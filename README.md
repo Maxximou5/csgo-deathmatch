@@ -1,4 +1,4 @@
-### [CS:GO] Deathmatch (v2.0.2b, 2014-10-30)
+### [CS:GO] Deathmatch (v2.0.2c, 2014-10-31)
 <a href="http://www.maxximou5.com/"><img src="http://maxximou5.com/sourcemod/assests/img/deathmatch_csgo.png" alt="csgo deathmatch plugin" width="600" /></a>
 ===============
 

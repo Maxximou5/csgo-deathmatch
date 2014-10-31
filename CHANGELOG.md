@@ -1,3 +1,6 @@
+v2.0.2c:
+- Fixed an issue with same all not remembering it's job
+
 v2.0.2b:
 - Added Pistol only mode, available through gun_menu_mode
 - Fixed issue with welcome message

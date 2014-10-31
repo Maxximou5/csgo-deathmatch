@@ -7,7 +7,7 @@
 #undef REQUIRE_PLUGIN
 #include <updater>  
 
-#define PLUGIN_VERSION 	"2.0.2b"
+#define PLUGIN_VERSION 	"2.0.2c"
 #define PLUGIN_NAME		"Deathmatch"
 #define UPDATE_URL 		"http://www.maxximou5.com/sourcemod/deathmatch/update.txt"
 
@@ -498,8 +498,8 @@ public Action:Timer_WelcomeMsg(Handle:timer, any:userid)
 
 	if (IsClientInGame(client) && IsPlayerAlive(client))
 	{
-		PrintHintText(client, "This server is running <font color='#FF0000'>Deathmatch</font> \n<font color='#00FF00'>Version</font> 2.0.2b");
-		//PrintToChat(client, "[\x04WELCOME\x01] This server is running \x04Deathmatch \x01v2.0.2b");
+		PrintHintText(client, "This server is running <font color='#FF0000'>Deathmatch</font> \n<font color='#00FF00'>Version</font> 2.0.2c");
+		//PrintToChat(client, "[\x04WELCOME\x01] This server is running \x04Deathmatch \x01v2.0.2c");
 	}
 	return Plugin_Stop;
 }
@@ -1713,13 +1713,12 @@ public Menu_Options(Handle:menu, MenuAction:action, param1, param2)
 			if (gunMenuMode == 1 || gunMenuMode == 3)
 			{
 				GiveSavedWeapons(param1, true, true);
-				rememberChoice[param1] = false;
 			}
-			else
+			else if (gunMenuMode == 2)
 			{
 				GiveSavedWeapons(param1, false, true);
-				rememberChoice[param1] = false;
 			}
+			rememberChoice[param1] = false;
 		}
 		else if (StrEqual(info, "Same All"))
 		{
@@ -1730,13 +1729,12 @@ public Menu_Options(Handle:menu, MenuAction:action, param1, param2)
 			if (gunMenuMode == 1 || gunMenuMode == 3)
 			{
 				GiveSavedWeapons(param1, true, true);
-				rememberChoice[param1] = false;
 			}
-			else
+			else if (gunMenuMode == 2)
 			{
 				GiveSavedWeapons(param1, false, true);
-				rememberChoice[param1] = false;
 			}
+			rememberChoice[param1] = true;
 		}
 		else if (StrEqual(info, "Random 1"))
 		{
@@ -1750,26 +1748,27 @@ public Menu_Options(Handle:menu, MenuAction:action, param1, param2)
 				primaryWeapon[param1] = "random";
 				secondaryWeapon[param1] = "random";
 				GiveSavedWeapons(param1, true, true);
-				rememberChoice[param1] = false;
 			}
 			else if (gunMenuMode == 2)
 			{
 				primaryWeapon[param1] = "none";
 				secondaryWeapon[param1] = "random";
 				GiveSavedWeapons(param1, false, true);
-				rememberChoice[param1] = false;
 			}
+			rememberChoice[param1] = false;
 		}
 		else if (StrEqual(info, "Random All"))
 		{
 			if (weaponsGivenThisRound[param1])
+			{
 				PrintToChat(param1, "[\x04DM\x01] You will receive random weapons starting on next spawn.");
+			}
 			if (gunMenuMode == 1 || gunMenuMode == 3)
 			{
 				primaryWeapon[param1] = "random";
 				secondaryWeapon[param1] = "random";
 			}
-			else
+			else if (gunMenuMode == 2)
 			{
 				primaryWeapon[param1] = "none";
 				secondaryWeapon[param1] = "random";

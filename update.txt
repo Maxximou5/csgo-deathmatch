@@ -4,21 +4,26 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.0.2b"
-			"Previous"	"2.0.2a"
+			"Latest"	"2.0.2c"
+			"Previous"	"2.0.2b"
 		}
 		
-		"Notes"	"Changes in 2.0.2b:"
-		"Notes" "Added Pistol only mode, available through gun_menu_mode"
-		"Notes" "Fixed issue with welcome message"
-		"Notes" "Fixed issue with bots and weapons (hopefully)"
-		"Notes" "Fixed issue with gun menu being available to admins when it shouldn't"
+		"Notes"	"Changes in 2.0.2c:"
+		"Notes" "Fixed an issue with same all not remembering it's job"
 	}
 	
 	"Files"
 	{
+		"Patch"
+		{
+			"Plugin"	"Path_SM/plugins/deathmatch.smx"
+
+			"Source"	"Path_SM/scripting/deathmatch.sp"
+		}
+
 		"Plugin"	"Path_SM/plugins/deathmatch.smx"
 		"Plugin"	"Path_SM/configs/deathmatch/deathmatch.ini"
+
 		"Source"	"Path_SM/scripting/deathmatch.sp"
 	}
 }
