@@ -5,7 +5,6 @@
 #include <sdkhooks>
 #include <cstrike>
 #undef REQUIRE_PLUGIN
-#include <updater>  
 
 #define PLUGIN_VERSION 	"2.0.2c"
 #define PLUGIN_NAME		"Deathmatch"
@@ -206,6 +205,8 @@ new String:g_sGrenade[32],
 	String:g_sWeapon[32];
 new g_iHealth, g_Armor;
 
+static g_iWeapons_Clip1Offset;
+  
 public OnPluginStart()
 {
 	// Create spawns directory if necessary.
@@ -370,8 +371,9 @@ public OnPluginStart()
 	// Create timers
 	CreateTimer(0.5, UpdateSpawnPointStatus, INVALID_HANDLE, TIMER_REPEAT);
 	CreateTimer(10.0, RemoveGroundWeapons, INVALID_HANDLE, TIMER_REPEAT);
-	CreateTimer(5.0, GiveAmmo, INVALID_HANDLE, TIMER_REPEAT);
 
+    g_iWeapons_Clip1Offset = FindSendPropOffs("CBaseCombatWeapon", "m_iClip1");
+	
 	for(new i = 1; i <= MaxClients; i++)
 	{
 		if(IsClientValid(i))
@@ -392,25 +394,16 @@ public OnPluginStart()
 	if (g_Armor == -1)
 	{
 		SetFailState("[DM] Error - Unable to get offset for CSSPlayer::m_ArmorValue");
-	}	
-
-	if (LibraryExists("updater"))
-	{
-		Updater_AddPlugin(UPDATE_URL);
 	}
 }
 
 public OnLibraryAdded(const String:name[])
 {
-	if (StrEqual(name, "updater"))
-	{
-		Updater_AddPlugin(UPDATE_URL);
-	}
+
 }
 
 public OnLibraryRemoved(const String:name[])
 {
- if (StrEqual(name, "updater")) Updater_RemovePlugin();
 }
 
 public OnPluginEnd()
@@ -1206,8 +1199,16 @@ public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroa
 		GetEventString(event, "weapon", weapon, sizeof(weapon));
 		GetEventString(event, "weapon", grenade, sizeof(grenade));
 		
+		new bool:validAttacker = (attackerIndex != 0) && IsPlayerAlive(attackerIndex);
+		
+		// Reward the attacker with ammo.
+		if (validAttacker)
+		{
+			GiveAmmo(INVALID_HANDLE, attackerIndex);
+		}
+		
 		// Reward attacker with HP.
-		if ((attackerIndex != 0) && IsPlayerAlive(attackerIndex))
+		if (validAttacker)
 		{
 			new bool:knifed = StrEqual(weapon, "knife");
 			new bool:nade = StrEqual(grenade, "hegrenade");
@@ -1615,32 +1616,140 @@ public Action:Event_InfernoStartburn(Handle:event, const String:name[], bool:don
 	return Plugin_Continue;
 }
 
-public Action:GiveAmmo(Handle:timer)
+public Action:GiveAmmo(Handle:timer, any:clientIndex)
 {
-	static ammoCounts[] = { 0, 35, 90, 90, 40, 200, 30, 120, 32, 100, 52, 100, 24, 100, 100, 1, 1, 1 };
-	
 	if (enabled && replenishAmmo)
 	{
-		for (new i = 1; i <= MaxClients; i++)
+		if (IsPlayerAlive(clientIndex))
 		{
-			if (!roundEnded && IsClientInGame(i) && (Teams:GetClientTeam(i) > TeamSpectator) && IsPlayerAlive(i))
-			{
-				new activeWeapon = GetEntDataEnt2(i, activeWeaponOffset);
-				if (activeWeapon != -1)
-				{
-					new primary = GetPlayerWeaponSlot(i, _:SlotPrimary);
-					new secondary = GetPlayerWeaponSlot(i, _:SlotSecondary);
-					if ((activeWeapon != primary) && (activeWeapon != secondary))
-						continue;
-					
-					new ammoType = GetEntData(activeWeapon, ammoTypeOffset);
-					if (ammoType != -1)
-						SetEntData(i, ammoOffset + (ammoType * 4), ammoCounts[ammoType], 4, true);
-				}
-			}
+			RefillWeapons(INVALID_HANDLE, clientIndex);
+			CreateTimer(0.5, RefillWeapons, clientIndex, TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
 	return Plugin_Continue;
+}
+
+public Action:RefillWeapons(Handle:timer, any:clientIndex)
+{
+	decl weaponEntity;
+
+	if(clientIndex != -1 && IsPlayerAlive(clientIndex))
+	{
+		weaponEntity = GetPlayerWeaponSlot(clientIndex, _:SlotPrimary);
+		if (weaponEntity != -1)
+			DoRefillAmmo(EntIndexToEntRef(weaponEntity), clientIndex);
+
+		weaponEntity = GetPlayerWeaponSlot(clientIndex, _:SlotSecondary);
+		if (weaponEntity != -1)
+			DoRefillAmmo(EntIndexToEntRef(weaponEntity), clientIndex);
+	}
+}
+
+DoRefillAmmo(weaponRef, any:clientIndex)
+{
+	new weaponEntity = EntRefToEntIndex(weaponRef);
+
+	if (IsValidEdict(weaponEntity))
+	{	
+		decl String:weaponName[35]; 
+		GetEntityClassname(weaponEntity, weaponName, sizeof(weaponName));
+		
+		decl int:clipSize; 
+		decl int:maxAmmoCount;
+		new ammoType = GetEntData(weaponEntity, ammoTypeOffset);
+		
+		// TODO: Not sure how to avoid this hack considering the game thinks the
+		// cz is a weapon_p250 and both the m4a4 and m4a1 are weapon_m4a1.
+		if (ammoType == 12 && StrEqual(weaponName, "weapon_p250"))
+		{
+			clipSize = 12;
+			maxAmmoCount = 12;
+		}
+		else if (ammoType == 4 && StrEqual(weaponName, "weapon_m4a1"))
+		{
+			clipSize = 20;
+			maxAmmoCount = 40;
+		}
+		else
+		{
+			clipSize = GetWeaponAmmoCount(weaponName, true);
+			maxAmmoCount = GetWeaponAmmoCount(weaponName, false);
+		}
+		
+		SetEntData(clientIndex, ammoOffset + (ammoType * 4), maxAmmoCount, true);
+		SetEntData(weaponEntity, g_iWeapons_Clip1Offset, clipSize, 4, true);
+	}
+}
+
+int:GetWeaponAmmoCount(String:weaponName[], bool:currentClip)
+{
+	// TODO: Data-drive this through deathmatch.ini.
+	if (StrEqual(weaponName,  "weapon_ak47"))
+		return currentClip ? 30 : 90;
+	else if (StrEqual(weaponName,  "weapon_m4a1"))
+		return currentClip ? 30 : 90;
+	else if (StrEqual(weaponName,  "weapon_m4a1_silencer"))
+		return currentClip ? 20 : 40;
+	else if (StrEqual(weaponName,  "weapon_awp"))
+		return currentClip ? 10 : 30;
+	else if (StrEqual(weaponName,  "weapon_sg552"))
+		return currentClip ? 30 : 90;
+	else if (StrEqual(weaponName,  "weapon_aug"))
+		return currentClip ? 30 : 90;
+	else if (StrEqual(weaponName,  "weapon_p90"))
+		return currentClip ? 50 : 100;
+	else if (StrEqual(weaponName,  "weapon_galilar"))
+		return currentClip ? 35 : 90;
+	else if (StrEqual(weaponName,  "weapon_famas"))
+		return currentClip ? 25 : 90;
+	else if (StrEqual(weaponName,  "weapon_scout"))
+		return currentClip ? 10 : 90;
+	else if (StrEqual(weaponName,  "weapon_g3sg1"))
+		return currentClip ? 20 : 90;
+	else if (StrEqual(weaponName,  "weapon_scar20"))
+		return currentClip ? 20 : 90;
+	else if (StrEqual(weaponName,  "weapon_m249"))
+		return currentClip ? 100 : 200;
+	else if (StrEqual(weaponName,  "weapon_negev"))
+		return currentClip ? 150 : 200;
+	else if (StrEqual(weaponName,  "weapon_nova"))
+		return currentClip ? 8 : 32;
+	else if (StrEqual(weaponName,  "weapon_xm1014"))
+		return currentClip ? 7 : 32;
+	else if (StrEqual(weaponName,  "weapon_sawedoff"))
+		return currentClip ? 7 : 32;
+	else if (StrEqual(weaponName,  "weapon_mag7"))
+		return currentClip ? 5 : 32;
+	else if (StrEqual(weaponName,  "weapon_mac10"))
+		return currentClip ? 30 : 100;
+	else if (StrEqual(weaponName,  "weapon_mp9"))
+		return currentClip ? 30 : 120;
+	else if (StrEqual(weaponName,  "weapon_mp7"))
+		return currentClip ? 30 : 120;
+	else if (StrEqual(weaponName,  "weapon_ump45"))
+		return currentClip ? 25 : 100;
+	else if (StrEqual(weaponName,  "weapon_bizon"))
+		return currentClip ? 64 : 120;
+	else if (StrEqual(weaponName,  "weapon_glock"))
+		return currentClip ? 20 : 120;
+	else if (StrEqual(weaponName,  "weapon_fiveseven"))
+		return currentClip ? 20 : 100;
+	else if (StrEqual(weaponName,  "weapon_deagle"))
+		return currentClip ? 7 : 35;
+	else if (StrEqual(weaponName,  "weapon_hkp2000"))
+		return currentClip ? 13 : 52;
+	else if (StrEqual(weaponName,  "weapon_usp_silencer"))
+		return currentClip ? 12 : 42;
+	else if (StrEqual(weaponName,  "weapon_p250"))
+		return currentClip ? 13 : 52;
+	else if (StrEqual(weaponName,  "weapon_elite"))
+		return currentClip ? 30 : 120;
+	else if (StrEqual(weaponName,  "weapon_tec9"))
+		return currentClip ? 32 : 120;
+	else if (StrEqual(weaponName,  "weapon_cz75a"))
+		return currentClip ? 12 : 12;
+	
+	return currentClip ? 30 : 90;
 }
 
 public Event_BombPickup(Handle:event, const String:name[], bool:dontBroadcast)
