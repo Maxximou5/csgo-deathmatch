@@ -1747,7 +1747,7 @@ int:GetWeaponAmmoCount(String:weaponName[], bool:currentClip)
 	else if (StrEqual(weaponName,  "weapon_tec9"))
 		return currentClip ? 32 : 120;
 	else if (StrEqual(weaponName,  "weapon_cz75a"))
-		return currentClip ? 12 : 12;
+		return currentClip ? 8 : 16;
 	
 	return currentClip ? 30 : 90;
 }
