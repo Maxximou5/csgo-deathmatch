@@ -1,4 +1,4 @@
-### [CS:GO] Deathmatch (v2.0.2c, 2014-10-31)
+### [CS:GO] Deathmatch (v2.0.3, 2015-01-02)
 <a href="http://www.maxximou5.com/"><img src="http://maxximou5.com/sourcemod/assests/img/deathmatch_csgo.png" alt="csgo deathmatch plugin" width="600" /></a>
 ===============
 
@@ -8,18 +8,23 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 
 - Weapon Menu
 - Free For All (FFA)
+- Display Panel for Damage
 - Different Game Modes:
  - Headshot Only Mode
  - Pistol Only Mode
  - Random Weapons Mode
 - Objective Removal (C4/Hostage)
 - Spawn Editor and Menu
-- Unlimited & Replenish Ammo
-- Unlimited & Replenish Grenades
+- Replenish Ammo & Clip
+- Replenish Grenades
 - Kill Reward (HP/Ammo/Grenades)
 - Line of Sight Spawning
 - 3rd Party Knife Plugin Support
 - Auto-Update Support
+- Multi-Lanugage Support
+ - English Supported
+ - Spanish Supported
+ - French Supported
 
 ### Features to Add
 
@@ -41,6 +46,8 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - dm_enabled - (Default) 1 - Enable deathmatch.
 - dm_welcomemsg (Default) 1 - Display a message saying that your server is running Deathmatch.
 - dm_free_for_all - (Default) 0 - Free for all mode.
+- dm_display_panel - (Default) 0 - Display a panel showing health of the victim.
+- dm_display_panel_damage - (Default) 0 - Display a panel showing damage done to a player.
 - dm_headshot_only - (Default) 0 - Headshot Only mode.
 - dm_headshot_only_allow_world - (Default) 0 - Enable world damage during headshot only mode.
 - dm_headshot_only_allow_knife - (Default) 0 - Enable knife damage during headshot only mode.
@@ -55,7 +62,8 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - dm_spawn_distance - (Default) 0 - Minimum distance from enemies at which a player can spawn.
 - dm_sp_time - (Default) 1.0 - Spawn protection time.
 - dm_remove_weapons - (Default) 1 - Remove ground weapons.
-- dm_replenish_ammo - (Default) 1 - Unlimited player ammo.
+- dm_replenish_ammo - (Default) 1 - Replenish ammo reserve.
+- dm_replenish_clip - (Default) 1 - Replenish ammo clip.
 - dm_replenish_grenade - (Default) 0 - Unlimited player grenades.
 - dm_replenish_hegrenade - (Default) 0 - Unlimited hegrenades.
 - dm_hp_start - (Default) 100 - Spawn HP.
@@ -79,8 +87,8 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 
 This plugin is tested on the following Sourcemod & Metamod Versions.
 
-- <a href="http://www.sourcemod.net/snapshots.php">Sourcemod 1.6.2+</a>
-- <a href="http://www.sourcemm.net/snapshots">Metamod 1.10.1+</a>
+- <a href="http://www.sourcemod.net/snapshots.php">Sourcemod 1.6.3+</a>
+- <a href="http://www.sourcemm.net/snapshots">Metamod 1.10.4+</a>
 
 ### Requirements
 

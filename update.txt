@@ -4,25 +4,29 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.0.2c"
-			"Previous"	"2.0.2b"
+			"Latest"	"2.0.3"
+			"Previous"	"2.0.2c"
 		}
 		
-		"Notes"	"Changes in 2.0.2c:"
-		"Notes" "Fixed an issue with same all not remembering it's job"
+		"Notes"	"Changes in 2.0.3:"
+		"Notes" "Changed the way ammo replenish works (thanks to int64 Shrandy)"
+		"Notes" "Added new cvars:"
+		"Notes" " - dm_replenish_ammo & dm_replenish_clip"
+		"Notes" " - dm_display_panel & dm_display_panel_damage"
+		"Notes" "Added new display panel for damage info"
+		"Notes" "Added Multi-Lanugage support"
+		"Notes" "Added csgocolors (need csgocolors.inc for compiling)"
+		"Notes" "Fixed blood splatter issue when turning hsonly off & on"
+		"Notes" "Fixed bots not having or not equiping guns"
+		"Notes" "Fixed timer message (client index 0)"
 	}
 	
 	"Files"
 	{
-		"Patch"
-		{
-			"Plugin"	"Path_SM/plugins/deathmatch.smx"
-
-			"Source"	"Path_SM/scripting/deathmatch.sp"
-		}
 
 		"Plugin"	"Path_SM/plugins/deathmatch.smx"
 		"Plugin"	"Path_SM/configs/deathmatch/deathmatch.ini"
+		"Plugin"	"Path_SM/translations/deathmatch.phrases.txt"
 
 		"Source"	"Path_SM/scripting/deathmatch.sp"
 	}

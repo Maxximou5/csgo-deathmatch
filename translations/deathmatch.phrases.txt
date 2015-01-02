@@ -1,0 +1,170 @@
+"Phrases"
+{
+	"Guns Menu"
+	{
+		"en"	"Type {GREEN}guns {NORMAL}to open the weapons menu."
+		"es"	"Escriba {GREEN}guns {NORMAL}para abrir el menú de armas."
+		"fr"	"Tapez {Green}guns {NORMAL}pour ouvrir le menu des armes."
+	}
+
+	"Guns Disabled"
+	{
+		"en"	"The guns menu has been {RED}disabled{NORMAL}."
+		"es"	"El menú de armas se ha {RED}desactivado{NORMAL}."
+		"fr"	"Le menu des armes a été {RED}désactivé{NORMAL}."
+	}
+
+	"Guns New Spawn"
+	{
+		"en"	"You will be given {GREEN}new {NORMAL}weapons on next spawn."
+		"es"	"Se le dará {GREEN}nuevas {NORMAL}armas en el próximo desove."
+		"fr"	"Vous recevrez de {GREEN}nouvelles {NORMAL}armes sur le prochain spawn."
+	}
+
+	"Guns Same Spawn"
+	{
+		"en"	"You will be given{GREEN} same {NORMAL}weapons on next spawn."
+		"es"	"Se le dará {GREEN}mismas {NORMAL}armas en el próximo desove."
+		"fr"	"Vous recevrez mêmes {NORMAL}armes sur le prochain spawn."
+	}
+
+	"Guns Random Spawn"
+	{
+		"en"	"You will be given{GREEN} random {NORMAL}weapons on next spawn."
+		"es"	"Se le dará armas {GREEN}al azar {NORMAL}en el próximo desove."
+		"fr"	"Vous recevrez armes {GREEN}aléatoires {NORMAL}sur le prochain spawn."
+	}
+
+	"Panel Health Remaining"
+	{
+		"en"	"Health Remaining:"
+		"es"	"Salud restante:"
+		"fr"	"Restant Santé:"
+	}
+
+	"Panel Damage Giver"
+	{
+		"en"	"You did"
+		"es"	"Lo hiciste"
+		"fr"	"Vous avez"
+	}
+
+	"Panel Damage Taker"
+	{
+		"en"	"damage to"
+		"es"	"daño a"
+		"fr"	"dommages à"
+	}
+
+	"Panel Kill Confirmed"
+	{
+		"en"	"You killed him."
+		"es"	"Usted lo mató."
+		"fr"	"Vous l'avez tué."
+	}
+
+	"HP Knife Kill"
+	{
+		"en"    "for killing an enemy ({GREEN}knife{NORMAL})."
+		"es"	"por matar a un enemigo ({GREEN}cuchillo{NORMAL})."
+		"fr"	"pour avoir frag ({GREEN}couteau{NORMAL})."
+	}
+
+	"HP Headshot Kill"
+	{
+		"en"    "for killing an enemy ({GREEN}headshot{NORMAL})."
+		"es"	"por matar a un enemigo ({GREEN}disparo a la cabeza{NORMAL})."
+		"fr"	"pour avoir frag ({GREEN}à la tête{NORMAL})."
+	}
+
+	"HP Nade Kill"
+	{
+		"en"    "for killing an enemy ({GREEN}grenade{NORMAL})."
+		"es"	"por matar a un enemigo ({GREEN}granada{NORMAL})."
+		"fr"	"pour avoir frag ({GREEN}grenade{NORMAL})."
+	}
+
+	"HP Kill"
+	{
+		"en"    "for killing an enemy."
+		"es"	"por matar a un enemigo."
+		"fr"	"pour avoir frag."
+	}
+
+	"Spawn Editor Enabled"
+	{
+		"en"	"Edit mode {GREEN}enabled{NORMAL}."
+		"es"	"El modo de edición {GREEN}activado{NORMAL}."
+		"fr"	"Modifier le mode {GREEN}activé{NORMAL}."
+	}
+
+	"Spawn Editor Disabled"
+	{
+		"en"	"Edit mode {RED}disabled{NORMAL}."
+		"es"	"El modo de edición {RED}deshabilitado{NORMAL}."
+		"fr"	"Modifier le mode {RED}désactivé{NORMAL}."
+	}
+
+	"Spawn Editor Teleported"
+	{
+		"en"	"Teleported to spawn point"
+		"es"	"Teletransportado a desovar puntos"
+		"fr"	"Téléporté pour frayer le point"
+	}
+
+	"Spawn Editor No Spawn"
+	{
+		"en"	"There are no spawn points."
+		"es"	"No hay puntos de regeneración."
+		"fr"	"Il n'y a pas de points de spawn."
+	}
+
+	"Spawn Editor Deleted Spawn"
+	{
+		"en"	"Deleted spawn point"
+		"es"	"Punto de desovar eliminados"
+		"fr"	"Point de spawn supprimé"
+	}
+
+	"Spawn Editor Deleted All"
+	{
+		"en"	"All spawn points have been deleted."
+		"es"	"Se han eliminado todos los puntos de regeneración."
+		"fr"	"Tous les points spawn ont été supprimés."
+	}
+
+	"Spawn Editor Spawn Added"
+	{
+		"en"	"Added spawn point"
+		"es"	"Punto de desovar añadido"
+		"fr"	"Point de spawn Ajouté"
+	}
+
+	"Spawn Editor Spawn Not Added"
+	{
+		"en"	"Could not add spawn point (max limit reached)."
+		"es"	"No se pudo añadir punto de desovar (límite máximo alcanzado)."
+		"fr"	"Impossible d'ajouter le point spawn (limite maximale atteinte)."
+	}
+
+	"Spawn Editor Spawn Inserted"
+	{
+		"en"	"Inserted spawn point at"
+		"es"	"Punto de desovar Insertado en"
+		"fr"	"Point de spawn inséré à"
+	}
+
+	"Spawn Editor Config Saved"
+	{
+		"en"	"Configuration has been saved."
+		"es"	"La configuración se ha guardado."
+		"fr"	"Configuration a été enregistrée."
+	}
+
+	"Spawn Editor Config Not Saved"
+	{
+		"en"	"Configuration could not be saved."
+		"es"	"La configuración no ha podido guardar."
+		"fr"	"Configuration n'a pas pu être sauvé."
+	}
+}

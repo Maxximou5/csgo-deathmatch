@@ -1,3 +1,18 @@
+v2.0.3:
+- Changed the way ammo replenish works (thanks to int64 Shrandy)
+- Added new cvars:
+	- dm_replenish_ammo & dm_replenish_clip
+	- dm_display_panel & dm_display_panel_damage
+- Added new display panel for damage info
+- Added Multi-Lanugage support
+	- English Supported
+	- Spanish Supported
+	- French Supported
+- Added csgocolors (need csgocolors.inc for compiling)
+- Fixed blood splatter issue when turning hsonly off & on
+- Fixed bots not having or not equiping guns
+- Fixed timer message (client index 0)
+
 v2.0.2c:
 - Fixed an issue with same all not remembering it's job
 
