@@ -6,10 +6,7 @@
 #include <csgocolors>
 #include <cstrike>
 #undef REQUIRE_PLUGIN
-<<<<<<< HEAD
 #include <updater>
-=======
->>>>>>> origin/master
 
 #define PLUGIN_VERSION 	"2.0.3"
 #define PLUGIN_NAME		"Deathmatch"
@@ -217,8 +214,6 @@ new g_iHealth, g_Armor;
 // Static Offsets
 static g_iWeapons_Clip1Offset;
 
-static g_iWeapons_Clip1Offset;
-  
 public OnPluginStart()
 {
 	// Load translations for multi-language
@@ -393,14 +388,9 @@ public OnPluginStart()
 	// Create timers
 	CreateTimer(0.5, UpdateSpawnPointStatus, INVALID_HANDLE, TIMER_REPEAT);
 	CreateTimer(10.0, RemoveGroundWeapons, INVALID_HANDLE, TIMER_REPEAT);
-<<<<<<< HEAD
 
 	g_iWeapons_Clip1Offset = FindSendPropOffs("CBaseCombatWeapon", "m_iClip1");
-=======
->>>>>>> origin/master
 
-    g_iWeapons_Clip1Offset = FindSendPropOffs("CBaseCombatWeapon", "m_iClip1");
-	
 	for(new i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientValid(i))
@@ -421,16 +411,25 @@ public OnPluginStart()
 	if (g_Armor == -1)
 	{
 		SetFailState("[DM] Error - Unable to get offset for CSSPlayer::m_ArmorValue");
+	}	
+
+	if (LibraryExists("updater"))
+	{
+		Updater_AddPlugin(UPDATE_URL);
 	}
 }
 
 public OnLibraryAdded(const String:name[])
 {
-
+	if (StrEqual(name, "updater"))
+	{
+		Updater_AddPlugin(UPDATE_URL);
+	}
 }
 
 public OnLibraryRemoved(const String:name[])
 {
+ if (StrEqual(name, "updater")) Updater_RemovePlugin();
 }
 
 public OnPluginEnd()
@@ -1285,25 +1284,15 @@ public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroa
 		decl String:grenade[16];
 		GetEventString(event, "weapon", weapon, sizeof(weapon));
 		GetEventString(event, "weapon", grenade, sizeof(grenade));
-<<<<<<< HEAD
 
 		new bool:validAttacker = (attackerIndex != 0) && IsPlayerAlive(attackerIndex);
 
-=======
-		
-		new bool:validAttacker = (attackerIndex != 0) && IsPlayerAlive(attackerIndex);
-		
->>>>>>> origin/master
 		// Reward the attacker with ammo.
 		if (validAttacker)
 		{
 			GiveAmmo(INVALID_HANDLE, attackerIndex);
 		}
-<<<<<<< HEAD
 
-=======
-		
->>>>>>> origin/master
 		// Reward attacker with HP.
 		if (validAttacker)
 		{
@@ -1601,7 +1590,6 @@ public Action:Event_InfernoStartburn(Handle:event, const String:name[], bool:don
 	return Plugin_Continue;
 }
 
-<<<<<<< HEAD
 public Action:OnTraceAttack(victim, &attacker, &inflictor, &Float:damage, &damagetype, &ammotype, hitbox, hitgroup)
 {
 	if (hsOnly)
@@ -1687,16 +1675,6 @@ public Action:OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damage
 			{
 				return Plugin_Handled;
 			}
-=======
-public Action:GiveAmmo(Handle:timer, any:clientIndex)
-{
-	if (enabled && replenishAmmo)
-	{
-		if (IsPlayerAlive(clientIndex))
-		{
-			RefillWeapons(INVALID_HANDLE, clientIndex);
-			CreateTimer(0.5, RefillWeapons, clientIndex, TIMER_FLAG_NO_MAPCHANGE);
->>>>>>> origin/master
 		}
 		else
 		{
@@ -1745,7 +1723,6 @@ public Action:GiveAmmo(Handle:timer, any:client)
 	return Plugin_Continue;
 }
 
-<<<<<<< HEAD
 public Action:RefillWeapons(Handle:timer, any:client)
 {
 	decl weaponEntity;
@@ -1786,25 +1763,6 @@ public Action:RefillWeapons(Handle:timer, any:client)
 }
 
 DoClipRefillAmmo(weaponRef, any:client)
-=======
-public Action:RefillWeapons(Handle:timer, any:clientIndex)
-{
-	decl weaponEntity;
-
-	if(clientIndex != -1 && IsPlayerAlive(clientIndex))
-	{
-		weaponEntity = GetPlayerWeaponSlot(clientIndex, _:SlotPrimary);
-		if (weaponEntity != -1)
-			DoRefillAmmo(EntIndexToEntRef(weaponEntity), clientIndex);
-
-		weaponEntity = GetPlayerWeaponSlot(clientIndex, _:SlotSecondary);
-		if (weaponEntity != -1)
-			DoRefillAmmo(EntIndexToEntRef(weaponEntity), clientIndex);
-	}
-}
-
-DoRefillAmmo(weaponRef, any:clientIndex)
->>>>>>> origin/master
 {
 	new weaponEntity = EntRefToEntIndex(weaponRef);
 
@@ -1813,7 +1771,6 @@ DoRefillAmmo(weaponRef, any:clientIndex)
 		decl String:weaponName[35]; 
 		GetEntityClassname(weaponEntity, weaponName, sizeof(weaponName));
 		
-<<<<<<< HEAD
 		decl String:clipSize; 
 		decl String:maxAmmoCount;
 		new ammoType = GetEntData(weaponEntity, ammoTypeOffset);
@@ -1845,15 +1802,10 @@ DoResRefillAmmo(weaponRef, any:client)
 		GetEntityClassname(weaponEntity, weaponName, sizeof(weaponName));
 		
 		decl String:maxAmmoCount;
-=======
-		decl int:clipSize; 
-		decl int:maxAmmoCount;
->>>>>>> origin/master
 		new ammoType = GetEntData(weaponEntity, ammoTypeOffset);
 		
 		// TODO: Not sure how to avoid this hack considering the game thinks the
 		// cz is a weapon_p250 and both the m4a4 and m4a1 are weapon_m4a1.
-<<<<<<< HEAD
 		if (ammoType == 4 && StrEqual(weaponName, "weapon_m4a1"))
 		{
 			maxAmmoCount = 40;
@@ -1883,14 +1835,6 @@ DoFullRefillAmmo(weaponRef, any:client)
 		// TODO: Not sure how to avoid this hack considering the game thinks the
 		// The m4a4 and m4a1 are weapon_m4a1.
 		if (ammoType == 4 && StrEqual(weaponName, "weapon_m4a1"))
-=======
-		if (ammoType == 12 && StrEqual(weaponName, "weapon_p250"))
-		{
-			clipSize = 12;
-			maxAmmoCount = 12;
-		}
-		else if (ammoType == 4 && StrEqual(weaponName, "weapon_m4a1"))
->>>>>>> origin/master
 		{
 			clipSize = 20;
 			maxAmmoCount = 40;
@@ -1901,20 +1845,12 @@ DoFullRefillAmmo(weaponRef, any:client)
 			maxAmmoCount = GetWeaponAmmoCount(weaponName, false);
 		}
 		
-<<<<<<< HEAD
 		SetEntData(client, ammoOffset + (ammoType * 4), maxAmmoCount, true);
-=======
-		SetEntData(clientIndex, ammoOffset + (ammoType * 4), maxAmmoCount, true);
->>>>>>> origin/master
 		SetEntData(weaponEntity, g_iWeapons_Clip1Offset, clipSize, 4, true);
 	}
 }
 
-<<<<<<< HEAD
 stock GetWeaponAmmoCount(String:weaponName[], bool:currentClip)
-=======
-int:GetWeaponAmmoCount(String:weaponName[], bool:currentClip)
->>>>>>> origin/master
 {
 	// TODO: Data-drive this through deathmatch.ini.
 	if (StrEqual(weaponName,  "weapon_ak47"))
@@ -1935,11 +1871,7 @@ int:GetWeaponAmmoCount(String:weaponName[], bool:currentClip)
 		return currentClip ? 35 : 90;
 	else if (StrEqual(weaponName,  "weapon_famas"))
 		return currentClip ? 25 : 90;
-<<<<<<< HEAD
 	else if (StrEqual(weaponName,  "weapon_ssg08"))
-=======
-	else if (StrEqual(weaponName,  "weapon_scout"))
->>>>>>> origin/master
 		return currentClip ? 10 : 90;
 	else if (StrEqual(weaponName,  "weapon_g3sg1"))
 		return currentClip ? 20 : 90;
@@ -1985,10 +1917,6 @@ int:GetWeaponAmmoCount(String:weaponName[], bool:currentClip)
 		return currentClip ? 32 : 120;
 	else if (StrEqual(weaponName,  "weapon_cz75a"))
 		return currentClip ? 8 : 16;
-<<<<<<< HEAD
-=======
-	
->>>>>>> origin/master
 	return currentClip ? 30 : 90;
 }
 
