@@ -1,4 +1,4 @@
-### [CS:GO] Deathmatch (v2.0.3, 2015-01-02)
+### [CS:GO] Deathmatch (v2.0.4, 2015-09-05)
 <a href="http://www.maxximou5.com/"><img src="http://maxximou5.com/sourcemod/assests/img/deathmatch_csgo.png" alt="csgo deathmatch plugin" width="600" /></a>
 ===============
 
@@ -31,7 +31,6 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - Integrated Stats (ELO)
 - No Knife Damage (Guns Only)
 - Team Selective Spawns
-- Weapon Skins
 
 ### Commands
 
@@ -66,6 +65,7 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - dm_replenish_clip - (Default) 1 - Replenish ammo clip.
 - dm_replenish_grenade - (Default) 0 - Unlimited player grenades.
 - dm_replenish_hegrenade - (Default) 0 - Unlimited hegrenades.
+- dm_replenish_grenade_kill (Default) 0 - Give players their grenade back on successful kill.
 - dm_hp_start - (Default) 100 - Spawn HP.
 - dm_hp_max - (Default) 100 - Maximum HP.
 - dm_hp_kill - (Default) 5 - HP per kill.
@@ -127,7 +127,7 @@ A thank you to those who helped:
 - <a href="https://forums.alliedmods.net/member.php?u=187003">Snip3rUK</a> (<a href="https://forums.alliedmods.net/showthread.php?t=189577">Original Plugin</a>)
 - <a href="https://forums.alliedmods.net/member.php?u=26021">Dr!fter</a> (General Code Support)
 - <a href="http://steamcommunity.com/id/DoomHammer69/">DoomHammer</a> (Debugging and Beta Testing)
- 
+
 ### Donate
 
 If you think I am doing a good job or you want to buy me a beer or feed my cat, please donate.

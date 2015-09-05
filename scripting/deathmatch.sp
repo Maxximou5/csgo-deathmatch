@@ -8,11 +8,9 @@
 #undef REQUIRE_PLUGIN
 #include <updater>
 
-#define PLUGIN_VERSION 	"2.0.3"
+#define PLUGIN_VERSION 	"2.0.4"
 #define PLUGIN_NAME		"Deathmatch"
 #define UPDATE_URL 		"http://www.maxximou5.com/sourcemod/deathmatch/update.txt"
-
-#define DMG_HEADSHOT (1 << 30)
 
 public Plugin:myinfo =
 {
@@ -43,6 +41,7 @@ enum Slots
 
 #define MAX_SPAWNS 200
 #define HIDEHUD_RADAR 1 << 12
+#define DMG_HEADSHOT (1 << 30)
 
 // Native console variables
 new Handle:mp_ct_default_primary;
@@ -100,6 +99,7 @@ new Handle:cvar_dm_replenish_ammo;
 new Handle:cvar_dm_replenish_clip;
 new Handle:cvar_dm_replenish_grenade;
 new Handle:cvar_dm_replenish_hegrenade;
+new Handle:cvar_dm_replenish_grenade_kill;
 new Handle:cvar_dm_hp_start;
 new Handle:cvar_dm_hp_max;
 new Handle:cvar_dm_hp_kill;
@@ -108,7 +108,8 @@ new Handle:cvar_dm_hp_knife;
 new Handle:cvar_dm_hp_nade;
 new Handle:cvar_dm_hp_messages;
 new Handle:cvar_dm_nade_messages;
-new Handle:cvar_dm_armour;
+new Handle:cvar_dm_armor;
+new Handle:cvar_dm_armor_full;
 new Handle:cvar_dm_zeus;
 new Handle:cvar_dm_nades_incendiary;
 new Handle:cvar_dm_nades_molotov;
@@ -140,6 +141,7 @@ new bool:replenishAmmo;
 new bool:replenishClip;
 new bool:replenishGrenade;
 new bool:replenishHEGrenade;
+new bool:replenishGrenadeKill;
 new startHP;
 new maxHP;
 new HPPerKill;
@@ -149,9 +151,9 @@ new HPPerNadeKill;
 new bool:displayHPMessages;
 new bool:displayGrenadeMessages;
 new bool:roundEnded = false;
-new defaultColour[4] = { 255, 255, 255, 255 };
-new tColour[4] = { 255, 0, 0, 200 };
-new ctColour[4] = { 0, 0, 255, 200 };
+new defaultColor[4] = { 255, 255, 255, 255 };
+new tColor[4] = { 255, 0, 0, 200 };
+new ctColor[4] = { 0, 0, 255, 200 };
 new spawnPointCount = 0;
 new Float:spawnPositions[MAX_SPAWNS][3];
 new Float:spawnAngles[MAX_SPAWNS][3];
@@ -161,7 +163,7 @@ new Float:spawnPointOffset[3] = { 0.0, 0.0, 20.0 };
 new bool:inEditMode = false;
 // Offsets
 new ownerOffset;
-new armourOffset;
+new armorOffset;
 new helmetOffset;
 new ammoTypeOffset;
 new ammoOffset;
@@ -173,7 +175,8 @@ new Handle:weaponMenuNames;
 new Handle:weaponLimits;
 new Handle:weaponCounts;
 // Grenade/Misc options
-new bool:armour;
+new bool:armorChest;
+new bool:armorFull;
 new bool:zeus;
 new molotov;
 new incendiary;
@@ -225,14 +228,14 @@ public OnPluginStart()
 		CreateDirectory(spawnsPath, 711);
 	// Find offsets
 	ownerOffset = FindSendPropOffs("CBaseCombatWeapon", "m_hOwnerEntity");
-	armourOffset = FindSendPropOffs("CCSPlayer", "m_ArmorValue");
+	armorOffset = FindSendPropOffs("CCSPlayer", "m_ArmorValue");
 	helmetOffset = FindSendPropOffs("CCSPlayer", "m_bHasHelmet");
 	ammoTypeOffset = FindSendPropOffs("CBaseCombatWeapon", "m_iPrimaryAmmoType");
 	ammoOffset = FindSendPropOffs("CCSPlayer", "m_iAmmo");
 	ragdollOffset = FindSendPropOffs("CCSPlayer", "m_hRagdoll");
 	// Create arrays to store available weapons loaded by config
 	primaryWeaponsAvailable = CreateArray(24);
-	secondaryWeaponsAvailable = CreateArray(24);
+	secondaryWeaponsAvailable = CreateArray(10);
 	// Create trie to store menu names for weapons
 	BuildWeaponMenuNames();
 	// Create trie to store weapon limits and counts
@@ -288,7 +291,7 @@ public OnPluginStart()
 	cvar_dm_remove_objectives = CreateConVar("dm_remove_objectives", "1", "Remove objectives (disables bomb sites, and removes c4 and hostages).");
 	cvar_dm_respawning = CreateConVar("dm_respawning", "1", "Enable respawning.");
 	cvar_dm_respawn_time = CreateConVar("dm_respawn_time", "2.0", "Respawn time.");
-	cvar_dm_gun_menu_mode = CreateConVar("dm_gun_menu_mode", "1", "Gun menu mode. 1) Enabled. 2) Disabled. 3) Random weapons every round.");
+	cvar_dm_gun_menu_mode = CreateConVar("dm_gun_menu_mode", "1", "Gun menu mode. 1) Enabled. 2) Pistol Only. 3) Random weapons every round. 4) Disabled.");
 	cvar_dm_los_spawning = CreateConVar("dm_los_spawning", "1", "Enable line of sight spawning. If enabled, players will be spawned at a point where they cannot see enemies, and enemies cannot see them.");
 	cvar_dm_los_attempts = CreateConVar("dm_los_attempts", "10", "Maximum number of attempts to find a suitable line of sight spawn point.");
 	cvar_dm_spawn_distance = CreateConVar("dm_spawn_distance", "0.0", "Minimum distance from enemies at which a player can spawn.");
@@ -298,6 +301,7 @@ public OnPluginStart()
 	cvar_dm_replenish_clip = CreateConVar("dm_replenish_clip", "1", "Replenish ammo clip.");
 	cvar_dm_replenish_grenade = CreateConVar("dm_replenish_grenade", "0", "Unlimited player grenades.");
 	cvar_dm_replenish_hegrenade = CreateConVar("dm_replenish_hegrenade", "0", "Unlimited hegrenades.");
+	cvar_dm_replenish_grenade_kill = CreateConVar("dm_replenish_grenade_kill", "0", "Give players their grenade back on successful kill.");
 	cvar_dm_hp_start = CreateConVar("dm_hp_start", "100", "Spawn HP.");
 	cvar_dm_hp_max = CreateConVar("dm_hp_max", "100", "Maximum HP.");
 	cvar_dm_hp_kill = CreateConVar("dm_hp_kill", "5", "HP per kill.");
@@ -306,7 +310,8 @@ public OnPluginStart()
 	cvar_dm_hp_nade = CreateConVar("dm_hp_nade", "30", "HP per nade kill.");
 	cvar_dm_hp_messages = CreateConVar("dm_hp_messages", "1", "Display HP messages.");
 	cvar_dm_nade_messages = CreateConVar("dm_nade_messages", "1", "Display grenade messages.");
-	cvar_dm_armour = CreateConVar("dm_armour", "1", "Give players armour.");
+	cvar_dm_armor = CreateConVar("dm_armor", "0", "Give players chest armor.");
+	cvar_dm_armor_full = CreateConVar("dm_armor_full", "1", "Give players head and chest armor.");
 	cvar_dm_zeus = CreateConVar("dm_zeus", "0", "Give players a taser.");
 	cvar_dm_nades_incendiary = CreateConVar("dm_nades_incendiary", "0", "Number of incendiary grenades to give each player.");
 	cvar_dm_nades_molotov = CreateConVar("dm_nades_molotov", "0", "Number of molotov grenades to give each player.");
@@ -317,7 +322,7 @@ public OnPluginStart()
 	LoadConfig();
 	// Admin commands
 	RegAdminCmd("dm_spawn_menu", Command_SpawnMenu, ADMFLAG_CHANGEMAP, "Opens the spawn point menu.");
-	RegAdminCmd("dm_respawn_all", Command_RespawnAll, ADMFLAG_CHANGEMAP, "Respawns all players.");  
+	RegAdminCmd("dm_respawn_all", Command_RespawnAll, ADMFLAG_CHANGEMAP, "Respawns all players.");
 	RegAdminCmd("dm_stats", Command_Stats, ADMFLAG_CHANGEMAP, "Displays spawn statistics.");
 	RegAdminCmd("dm_reset_stats", Command_ResetStats, ADMFLAG_CHANGEMAP, "Resets spawn statistics.");
 	// Client Commands
@@ -348,6 +353,7 @@ public OnPluginStart()
 	HookConVarChange(cvar_dm_replenish_clip, Event_CvarChange);
 	HookConVarChange(cvar_dm_replenish_grenade, Event_CvarChange);
 	HookConVarChange(cvar_dm_replenish_hegrenade, Event_CvarChange);
+	HookConVarChange(cvar_dm_replenish_grenade_kill, Event_CvarChange);
 	HookConVarChange(cvar_dm_hp_start, Event_CvarChange);
 	HookConVarChange(cvar_dm_hp_max, Event_CvarChange);
 	HookConVarChange(cvar_dm_hp_kill, Event_CvarChange);
@@ -356,7 +362,8 @@ public OnPluginStart()
 	HookConVarChange(cvar_dm_hp_nade, Event_CvarChange);
 	HookConVarChange(cvar_dm_hp_messages, Event_CvarChange);
 	HookConVarChange(cvar_dm_nade_messages, Event_CvarChange);
-	HookConVarChange(cvar_dm_armour, Event_CvarChange);
+	HookConVarChange(cvar_dm_armor, Event_CvarChange);
+	HookConVarChange(cvar_dm_armor_full, Event_CvarChange);
 	HookConVarChange(cvar_dm_zeus, Event_CvarChange);
 	HookConVarChange(cvar_dm_nades_incendiary, Event_CvarChange);
 	HookConVarChange(cvar_dm_nades_molotov, Event_CvarChange);
@@ -364,7 +371,6 @@ public OnPluginStart()
 	HookConVarChange(cvar_dm_nades_flashbang, Event_CvarChange);
 	HookConVarChange(cvar_dm_nades_he, Event_CvarChange);
 	HookConVarChange(cvar_dm_nades_smoke, Event_CvarChange);
-	RegConsoleCmd("joinclass", Event_JoinClass);
 	AddCommandListener(Event_Say, "say");
 	AddCommandListener(Event_Say, "say_team");
 	HookUserMessage(GetUserMessageId("TextMsg"), Event_TextMsg, true);
@@ -400,18 +406,18 @@ public OnPluginStart()
 	}
 
 	g_iHealth = FindSendPropOffs("CCSPlayer", "m_iHealth");
-	
+
 	if (g_iHealth == -1)
 	{
 		SetFailState("[DM] Error - Unable to get offset for CSSPlayer::m_iHealth");
 	}
 
 	g_Armor = FindSendPropOffs("CCSPlayer", "m_ArmorValue");
-  
+
 	if (g_Armor == -1)
 	{
 		SetFailState("[DM] Error - Unable to get offset for CSSPlayer::m_ArmorValue");
-	}	
+	}
 
 	if (LibraryExists("updater"))
 	{
@@ -429,7 +435,7 @@ public OnLibraryAdded(const String:name[])
 
 public OnLibraryRemoved(const String:name[])
 {
- if (StrEqual(name, "updater")) Updater_RemovePlugin();
+	if (StrEqual(name, "updater")) Updater_RemovePlugin();
 }
 
 public OnPluginEnd()
@@ -465,7 +471,7 @@ public OnMapStart()
 {
 	// Precache content
 	glowSprite = PrecacheModel("sprites/glow01.vmt", true);
-	
+
 	InitialiseWeaponCounts();
 	for (new i = 1; i <= MaxClients; i++)
 	{
@@ -513,8 +519,8 @@ public Action:Timer_WelcomeMsg(Handle:timer, any:client)
 {
 	if (IsClientInGame(client) && !IsFakeClient(client))
 	{
-		PrintHintText(client, "This server is running <font color='#FF0000'>Deathmatch</font> \n<font color='#00FF00'>Version</font> 2.0.3");
-		//CPrintToChat(client, "[\x04WELCOME\x01] This server is running \x04Deathmatch \x01v2.0.3");
+		PrintHintText(client, "This server is running <font color='#FF0000'>Deathmatch</font> \n<font color='#00FF00'>Version</font> 2.0.4");
+		//CPrintToChat(client, "[\x04WELCOME\x01] This server is running \x04Deathmatch \x01v2.0.4");
 	}
 	return Plugin_Stop;
 }
@@ -548,8 +554,14 @@ SetClientGunModeSettings(client)
 {
 	if (gunMenuMode != 3)
 	{
-		primaryWeapon[client] = "none";
-		secondaryWeapon[client] = "none";
+		if(gunMenuMode == 1 && IsClientValid(client) && !IsFakeClient(client))
+		{
+			if (StrEqual(primaryWeapon[client], "") || StrEqual(secondaryWeapon[client], ""))
+			{
+				primaryWeapon[client] = "none";
+				secondaryWeapon[client] = "none";
+			}
+		}
 		firstWeaponSelection[client] = true;
 		rememberChoice[client] = false;
 		if (gunMenuMode == 1 && IsFakeClient(client))
@@ -585,200 +597,207 @@ LoadConfig()
 {
 	new Handle:keyValues = CreateKeyValues("Deathmatch Config");
 	decl String:path[] = "addons/sourcemod/configs/deathmatch/deathmatch.ini";
-	
+
 	if (!FileToKeyValues(keyValues, path))
 		SetFailState("The configuration file could not be read.");
-	
+
 	decl String:key[25];
 	decl String:value[25];
-	
+
 	if (!KvJumpToKey(keyValues, "Options"))
 		SetFailState("The configuration file is corrupt (\"Options\" section could not be found).");
-	
-	KvGetString(keyValues, "enabled", value, sizeof(value), "yes");
+
+	KvGetString(keyValues, "dm_enabled", value, sizeof(value), "yes");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_enabled, value);
 
-	KvGetString(keyValues, "welcomemsg", value, sizeof(value), "yes");
+	KvGetString(keyValues, "dm_welcomemsg", value, sizeof(value), "yes");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_welcomemsg, value);
 
-	KvGetString(keyValues, "free_for_all", value, sizeof(value), "no");
+	KvGetString(keyValues, "dm_free_for_all", value, sizeof(value), "no");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_free_for_all, value);
 
-	KvGetString(keyValues, "displayPanel", value, sizeof(value), "no");
+	KvGetString(keyValues, "dm_display_panel", value, sizeof(value), "no");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_display_panel, value);
 
-	KvGetString(keyValues, "displayPanelDamage", value, sizeof(value), "no");
+	KvGetString(keyValues, "dm_display_panel_damage", value, sizeof(value), "no");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_display_panel_damage, value);
 
-	KvGetString(keyValues, "headshot_only", value, sizeof(value), "no");
+	KvGetString(keyValues, "dm_headshot_only", value, sizeof(value), "no");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_headshot_only, value);
 
-	KvGetString(keyValues, "headshot_only_allow_world", value, sizeof(value), "no");
+	KvGetString(keyValues, "dm_headshot_only_allow_world", value, sizeof(value), "no");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_headshot_only_allow_world, value);
 
-	KvGetString(keyValues, "headshot_only_allow_knife", value, sizeof(value), "no");
+	KvGetString(keyValues, "dm_headshot_only_allow_knife", value, sizeof(value), "no");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_headshot_only_allow_knife, value);
 
-	KvGetString(keyValues, "headshot_only_allow_taser", value, sizeof(value), "no");
+	KvGetString(keyValues, "dm_headshot_only_allow_taser", value, sizeof(value), "no");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_headshot_only_allow_taser, value);
 
-	KvGetString(keyValues, "headshot_only_allow_nade", value, sizeof(value), "no");
+	KvGetString(keyValues, "dm_headshot_only_allow_nade", value, sizeof(value), "no");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_headshot_only_allow_nade, value);
-	
-	KvGetString(keyValues, "remove_objectives", value, sizeof(value), "yes");
+
+	KvGetString(keyValues, "dm_remove_objectives", value, sizeof(value), "yes");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_remove_objectives, value);
-	
-	KvGetString(keyValues, "respawning", value, sizeof(value), "yes");
+
+	KvGetString(keyValues, "dm_respawning", value, sizeof(value), "yes");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_respawning, value);
-	
-	KvGetString(keyValues, "respawn_time", value, sizeof(value), "2.0");
+
+	KvGetString(keyValues, "dm_respawn_time", value, sizeof(value), "2.0");
 	SetConVarString(cvar_dm_respawn_time, value);
-	
-	KvGetString(keyValues, "gun_menu_mode", value, sizeof(value), "1");
+
+	KvGetString(keyValues, "dm_gun_menu_mode", value, sizeof(value), "1");
 	SetConVarString(cvar_dm_gun_menu_mode, value);
-	
-	KvGetString(keyValues, "line_of_sight_spawning", value, sizeof(value), "yes");
+
+	KvGetString(keyValues, "dm_line_of_sight_spawning", value, sizeof(value), "yes");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_los_spawning, value);
-	
-	KvGetString(keyValues, "line_of_sight_attempts", value, sizeof(value), "10");
+
+	KvGetString(keyValues, "dm_line_of_sight_attempts", value, sizeof(value), "10");
 	SetConVarString(cvar_dm_los_attempts, value);
-	
-	KvGetString(keyValues, "spawn_distance_from_enemies", value, sizeof(value), "0.0");
+
+	KvGetString(keyValues, "dm_spawn_distance_from_enemies", value, sizeof(value), "0.0");
 	SetConVarString(cvar_dm_spawn_distance, value);
-	
-	KvGetString(keyValues, "spawn_protection_time", value, sizeof(value), "1.0");
+
+	KvGetString(keyValues, "dm_spawn_protection_time", value, sizeof(value), "1.0");
 	SetConVarString(cvar_dm_spawn_time, value);
-	
-	KvGetString(keyValues, "remove_weapons", value, sizeof(value), "yes");
+
+	KvGetString(keyValues, "dm_remove_weapons", value, sizeof(value), "yes");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_remove_weapons, value);
-	
-	KvGetString(keyValues, "replenish_ammo", value, sizeof(value), "yes");
+
+	KvGetString(keyValues, "dm_replenish_ammo", value, sizeof(value), "yes");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_replenish_ammo, value);
 
-	KvGetString(keyValues, "replenish_clip", value, sizeof(value), "yes");
+	KvGetString(keyValues, "dm_replenish_clip", value, sizeof(value), "yes");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_replenish_clip, value);
 
-	KvGetString(keyValues, "replenish_grenade", value, sizeof(value), "no");
+	KvGetString(keyValues, "dm_replenish_grenade", value, sizeof(value), "no");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_replenish_grenade, value);
 
-	KvGetString(keyValues, "replenish_hegrenade", value, sizeof(value), "no");
+	KvGetString(keyValues, "dm_replenish_hegrenade", value, sizeof(value), "no");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_replenish_hegrenade, value);
-	
-	KvGetString(keyValues, "player_hp_start", value, sizeof(value), "100");
+
+	KvGetString(keyValues, "dm_replenish_grenade_kill", value, sizeof(value), "no");
+	value = (StrEqual(value, "yes")) ? "1" : "0";
+	SetConVarString(cvar_dm_replenish_grenade_kill, value);
+
+	KvGetString(keyValues, "dm_player_hp_start", value, sizeof(value), "100");
 	SetConVarString(cvar_dm_hp_start, value);
-	
-	KvGetString(keyValues, "player_hp_max", value, sizeof(value), "100");
+
+	KvGetString(keyValues, "dm_player_hp_max", value, sizeof(value), "100");
 	SetConVarString(cvar_dm_hp_max, value);
-	
-	KvGetString(keyValues, "hp_per_kill", value, sizeof(value), "5");
+
+	KvGetString(keyValues, "dm_hp_per_kill", value, sizeof(value), "5");
 	SetConVarString(cvar_dm_hp_kill, value);
-	
-	KvGetString(keyValues, "hp_per_headshot_kill", value, sizeof(value), "10");
+
+	KvGetString(keyValues, "dm_hp_per_headshot_kill", value, sizeof(value), "10");
 	SetConVarString(cvar_dm_hp_hs, value);
-	
-	KvGetString(keyValues, "hp_per_knife_kill", value, sizeof(value), "50");
+
+	KvGetString(keyValues, "dm_hp_per_knife_kill", value, sizeof(value), "50");
 	SetConVarString(cvar_dm_hp_knife, value);
 
-	KvGetString(keyValues, "hp_per_nade_kill", value, sizeof(value), "30");
+	KvGetString(keyValues, "dm_hp_per_nade_kill", value, sizeof(value), "30");
 	SetConVarString(cvar_dm_hp_nade, value);
-	
-	KvGetString(keyValues, "display_hp_messages", value, sizeof(value), "yes");
+
+	KvGetString(keyValues, "dm_display_hp_messages", value, sizeof(value), "yes");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_hp_messages, value);
-	
-	KvGetString(keyValues, "display_grenade_messages", value, sizeof(value), "yes");
+
+	KvGetString(keyValues, "dm_display_grenade_messages", value, sizeof(value), "yes");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_nade_messages, value);
-	
+
 	KvGoBack(keyValues);
-	
+
 	if (!KvJumpToKey(keyValues, "Weapons"))
 		SetFailState("The configuration file is corrupt (\"Weapons\" section could not be found).");
-	
+
 	if (!KvJumpToKey(keyValues, "Primary"))
 		SetFailState("The configuration file is corrupt (\"Primary\" section could not be found).");
-	
+
 	if (KvGotoFirstSubKey(keyValues, false))
 	{
 		do {
 			KvGetSectionName(keyValues, key, sizeof(key));
-			PushArrayString(primaryWeaponsAvailable, key);
 			new limit = KvGetNum(keyValues, NULL_STRING, -1);
+			if(limit == 0) {continue;}
+			PushArrayString(primaryWeaponsAvailable, key);
 			SetTrieValue(weaponLimits, key, limit);
 		} while (KvGotoNextKey(keyValues, false));
 	}
-	
+
 	KvGoBack(keyValues);
 	KvGoBack(keyValues);
-	
+
 	if (!KvJumpToKey(keyValues, "Secondary"))
 		SetFailState("The configuration file is corrupt (\"Secondary\" section could not be found).");
-		
+
 	if (KvGotoFirstSubKey(keyValues, false))
 	{
 		do {
 			KvGetSectionName(keyValues, key, sizeof(key));
-			PushArrayString(secondaryWeaponsAvailable, key);
 			new limit = KvGetNum(keyValues, NULL_STRING, -1);
+			if(limit == 0) {continue;}
+			PushArrayString(secondaryWeaponsAvailable, key);
 			SetTrieValue(weaponLimits, key, limit);
 		} while (KvGotoNextKey(keyValues, false));
 	}
-	
+
 	KvGoBack(keyValues);
 	KvGoBack(keyValues);
-	
+
 	if (!KvJumpToKey(keyValues, "Misc"))
 		SetFailState("The configuration file is corrupt (\"Misc\" section could not be found).");
-	
-	KvGetString(keyValues, "armour", value, sizeof(value), "yes");
-	value = (StrEqual(value, "yes")) ? "1" : "0";
-	SetConVarString(cvar_dm_armour, value);
-	
-	KvGetString(keyValues, "zeus", value, sizeof(value), "no");
-	value = (StrEqual(value, "yes")) ? "1" : "0";
+
+	KvGetString(keyValues, "armor (chest)", value, sizeof(value), "0");
+	SetConVarString(cvar_dm_armor, value);
+
+	KvGetString(keyValues, "armor (full)", value, sizeof(value), "1");
+	SetConVarString(cvar_dm_armor_full, value);
+
+	KvGetString(keyValues, "zeus", value, sizeof(value), "0");
 	SetConVarString(cvar_dm_zeus, value);
-	
+
 	KvGoBack(keyValues);
-	
+
 	if (!KvJumpToKey(keyValues, "Grenades"))
 		SetFailState("The configuration file is corrupt (\"Grenades\" section could not be found).");
-	
+
 	KvGetString(keyValues, "incendiary", value, sizeof(value), "0");
 	SetConVarString(cvar_dm_nades_incendiary, value);
-	
+
 	KvGetString(keyValues, "molotov", value, sizeof(value), "0");
 	SetConVarString(cvar_dm_nades_incendiary, value);
 
 	KvGetString(keyValues, "decoy", value, sizeof(value), "0");
 	SetConVarString(cvar_dm_nades_decoy, value);
-	
+
 	KvGetString(keyValues, "flashbang", value, sizeof(value), "0");
 	SetConVarString(cvar_dm_nades_flashbang, value);
-	
+
 	KvGetString(keyValues, "he", value, sizeof(value), "0");
 	SetConVarString(cvar_dm_nades_he, value);
-	
+
 	KvGetString(keyValues, "smoke", value, sizeof(value), "0");
 	SetConVarString(cvar_dm_nades_smoke, value);
-	
+
 	CloseHandle(keyValues);
 }
 
@@ -786,7 +805,7 @@ UpdateState()
 {
 	new old_enabled = enabled;
 	new old_gunMenuMode = gunMenuMode;
-	
+
 	enabled = GetConVarBool(cvar_dm_enabled);
 	welcomemsg = GetConVarBool(cvar_dm_welcomemsg);
 	ffa = GetConVarBool(cvar_dm_free_for_all);
@@ -810,6 +829,7 @@ UpdateState()
 	replenishClip = GetConVarBool(cvar_dm_replenish_clip);
 	replenishGrenade = GetConVarBool(cvar_dm_replenish_grenade);
 	replenishHEGrenade = GetConVarBool(cvar_dm_replenish_hegrenade);
+	replenishGrenadeKill = GetConVarBool(cvar_dm_replenish_grenade_kill);
 	startHP = GetConVarInt(cvar_dm_hp_start);
 	maxHP = GetConVarInt(cvar_dm_hp_max);
 	HPPerKill = GetConVarInt(cvar_dm_hp_kill);
@@ -818,7 +838,8 @@ UpdateState()
 	HPPerNadeKill = GetConVarInt(cvar_dm_hp_nade);
 	displayHPMessages = GetConVarBool(cvar_dm_hp_messages);
 	displayGrenadeMessages = GetConVarBool(cvar_dm_nade_messages);
-	armour = GetConVarBool(cvar_dm_armour);
+	armorChest = GetConVarBool(cvar_dm_armor);
+	armorFull = GetConVarBool(cvar_dm_armor_full);
 	zeus = GetConVarBool(cvar_dm_zeus);
 	incendiary = GetConVarInt(cvar_dm_nades_incendiary);
 	molotov = GetConVarInt(cvar_dm_nades_molotov);
@@ -845,8 +866,8 @@ UpdateState()
 	if (flashbang < 0) flashbang = 0;
 	if (he < 0) he = 0;
 	if (smoke < 0) smoke = 0;
-	
-	
+
+
 	if (enabled && !old_enabled)
 	{
 		for (new i = 1; i <= MaxClients; i++)
@@ -883,7 +904,7 @@ UpdateState()
 		RestoreCashState();
 		RestoreGrenadeState();
 	}
-	
+
 	if (enabled)
 	{
 		if (gunMenuMode != old_gunMenuMode)
@@ -993,12 +1014,12 @@ LoadMapConfig()
 {
 	decl String:map[64];
 	GetCurrentMap(map, sizeof(map));
-	
+
 	decl String:path[PLATFORM_MAX_PATH];
 	Format(path, sizeof(path), "addons/sourcemod/configs/deathmatch/spawns/%s.txt", map);
-	
+
 	spawnPointCount = 0;
-	
+
 	// Open file
 	new Handle:file = OpenFile(path, "r");
 	if (file == INVALID_HANDLE)
@@ -1025,10 +1046,10 @@ bool:WriteMapConfig()
 {
 	decl String:map[64];
 	GetCurrentMap(map, sizeof(map));
-	
+
 	decl String:path[PLATFORM_MAX_PATH];
 	Format(path, sizeof(path), "addons/sourcemod/configs/deathmatch/spawns/%s.txt", map);
-	
+
 	// Open file
 	new Handle:file = OpenFile(path, "w");
 	if (file == INVALID_HANDLE)
@@ -1047,15 +1068,15 @@ bool:WriteMapConfig()
 public Action:Event_Say(client, const String:command[], arg)
 {
 	static String:menuTriggers[][] = { "gun", "!gun", "/gun", "guns", "!guns", "/guns", "menu", "!menu", "/menu", "weapon", "!weapon", "/weapon", "weapons", "!weapons", "/weapons" };
-	
-	if (enabled && (client != 0) && (Teams:GetClientTeam(client) > TeamSpectator))
+
+	if (enabled && IsClientValid(client) && (Teams:GetClientTeam(client) > TeamSpectator))
 	{
 		// Retrieve and clean up text.
 		decl String:text[24];
 		GetCmdArgString(text, sizeof(text));
 		StripQuotes(text);
 		TrimString(text);
-	
+
 		for(new i = 0; i < sizeof(menuTriggers); i++)
 		{
 			if (StrEqual(text, menuTriggers[i], false))
@@ -1139,17 +1160,13 @@ DisplayOptionsMenu(client)
 public Event_PlayerTeam(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
-	
+
 	// If the player joins spectator, close any open menu, and remove their ragdoll.
 	if ((client != 0) && (Teams:GetClientTeam(client) == TeamSpectator))
 	{
 		CancelClientMenu(client);
 		RemoveRagdoll(client);
 	}
-}
-
-public Action:Event_JoinClass(client, args)
-{
 	if (enabled && respawning)
 		CreateTimer(respawnTime, Respawn, client);
 }
@@ -1180,7 +1197,7 @@ public Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 	if (enabled)
 	{
 		new client = GetClientOfUserId(GetEventInt(event, "userid"));
-	
+
 		if (Teams:GetClientTeam(client) > TeamSpectator)
 		{
 			// Hide radar.
@@ -1215,14 +1232,19 @@ public Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 				SetEntityHealth(client, startHP);
 			}
 			// Give equipment
-			if (armour)
+			if (armorChest)
 			{
-				SetEntData(client, armourOffset, 100);
+				SetEntData(client, armorOffset, 100);
+				SetEntData(client, helmetOffset, 0);
+			}
+			if (armorFull)
+			{
+				SetEntData(client, armorOffset, 100);
 				SetEntData(client, helmetOffset, 1);
 			}
 			else
 			{
-				SetEntData(client, armourOffset, 0);
+				SetEntData(client, armorOffset, 0);
 				SetEntData(client, helmetOffset, 0);
 			}
 			// Give weapons or display menu.
@@ -1281,9 +1303,11 @@ public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroa
 		new client = GetClientOfUserId(GetEventInt(event, "userid"));
 		new attackerIndex = GetClientOfUserId(GetEventInt(event, "attacker"));
 		decl String:weapon[6];
-		decl String:grenade[16];
+		decl String:hegrenade[16];
+		decl String:decoygrenade[16];
 		GetEventString(event, "weapon", weapon, sizeof(weapon));
-		GetEventString(event, "weapon", grenade, sizeof(grenade));
+		GetEventString(event, "weapon", hegrenade, sizeof(hegrenade));
+		GetEventString(event, "weapon", decoygrenade, sizeof(decoygrenade));
 
 		new bool:validAttacker = (attackerIndex != 0) && IsPlayerAlive(attackerIndex);
 
@@ -1297,13 +1321,14 @@ public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroa
 		if (validAttacker)
 		{
 			new bool:knifed = StrEqual(weapon, "knife");
-			new bool:nade = StrEqual(grenade, "hegrenade");
+			new bool:nades = StrEqual(hegrenade, "hegrenade");
+			new bool:decoys = StrEqual(decoygrenade, "decoy");
 			new bool:headshot = GetEventBool(event, "headshot");
 
 			if ((knifed && (HPPerKnifeKill > 0)) || (!knifed && (HPPerKill > 0)) || (headshot && (HPPerHeadshotKill > 0)) || (!headshot && (HPPerKill > 0)))
 			{
 				new attackerHP = GetClientHealth(attackerIndex);
-				
+
 				if (attackerHP < maxHP)
 				{
 					new addHP;
@@ -1311,7 +1336,7 @@ public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroa
 						addHP = HPPerKnifeKill;
 					else if (headshot)
 						addHP = HPPerHeadshotKill;
-					else if (nade)
+					else if (nades)
 						addHP = HPPerNadeKill;
 					else
 						addHP = HPPerKill;
@@ -1320,17 +1345,28 @@ public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroa
 						newHP = maxHP;
 					SetEntProp(attackerIndex, Prop_Send, "m_iHealth", newHP, 1);
 				}
-				
+
 				if (displayHPMessages)
 				{
 					if (knifed)
 						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%iHP\x01 %t", HPPerKnifeKill, "HP Knife Kill");
 					else if (headshot)
 						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%iHP\x01 %t", HPPerHeadshotKill, "HP Headshot Kill");
-					else if (nade)
+					else if (nades)
 						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%iHP\x01 %t", HPPerNadeKill, "HP Nade Kill");
 					else
 						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%iHP\x01 %t", HPPerKill, "HP Kill");
+				}
+			}
+
+			if (replenishGrenadeKill)
+			{
+				if (IsClientInGame(attackerIndex) && IsPlayerAlive(attackerIndex))
+				{
+					if (nades)
+						GivePlayerItem(attackerIndex, "weapon_hegrenade");
+					if (decoys)
+						GivePlayerItem(attackerIndex, "weapon_decoy");
 				}
 			}
 		}
@@ -1358,7 +1394,7 @@ public Action:EventPlayerHurt(Handle:event, const String:name[],bool:dontBroadca
 		{
 			if (0 < health)
 			{
-				if (displayPanelDamage) 
+				if (displayPanelDamage)
 				{
 					PrintHintText(attacker, "%t <font color='#FF0000'>%i</font> %t <font color='#00FF00'>%N</font>\n %t <font color='#00FF00'>%i</font>", "Panel Damage Giver", GetEventInt(event, "dmg_health"), "Panel Damage Taker", victim, "Panel Health Remaining", health);
 				}
@@ -1424,7 +1460,7 @@ public Action:EventPlayerHurt(Handle:event, const String:name[],bool:dontBroadca
 		}
 
 		if (!hsOnly_AllowKnife)
-		{	
+		{
 			if (StrEqual(weapon, "knife", false))
 			{
 				if (attacker != victim && victim != 0)
@@ -1461,8 +1497,8 @@ public Action:EventPlayerHurt(Handle:event, const String:name[],bool:dontBroadca
 
 public Action:Event_HegrenadeDetonate(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));   
-	
+	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+
 	if (replenishGrenade && !replenishHEGrenade)
 	{
 		if (IsClientInGame(client) && IsPlayerAlive(client))
@@ -1497,8 +1533,8 @@ public Action:Event_SmokegrenadeDetonate(Handle:event, const String:name[], bool
 		return Plugin_Continue;
 	}
 
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));   
-	
+	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+
 	if (replenishGrenade)
 	{
 		if (IsClientInGame(client) && IsPlayerAlive(client))
@@ -1517,8 +1553,8 @@ public Action:Event_FlashbangDetonate(Handle:event, const String:name[], bool:do
 		return Plugin_Continue;
 	}
 
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));   
-	
+	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+
 	if (replenishGrenade)
 	{
 		if (IsClientInGame(client) && IsPlayerAlive(client))
@@ -1537,8 +1573,8 @@ public Action:Event_DecoyStarted(Handle:event, const String:name[], bool:dontBro
 		return Plugin_Continue;
 	}
 
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));   
-	
+	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+
 	if (replenishGrenade)
 	{
 		if (IsClientInGame(client) && IsPlayerAlive(client))
@@ -1557,8 +1593,8 @@ public Action:Event_MolotovDetonate(Handle:event, const String:name[], bool:dont
 		return Plugin_Continue;
 	}
 
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));   
-	
+	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+
 	if (replenishGrenade)
 	{
 		if (IsClientInGame(client) && IsPlayerAlive(client))
@@ -1577,8 +1613,8 @@ public Action:Event_InfernoStartburn(Handle:event, const String:name[], bool:don
 		return Plugin_Continue;
 	}
 
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));   
-	
+	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+
 	if (replenishGrenade)
 	{
 		if (IsClientInGame(client) && IsPlayerAlive(client))
@@ -1598,7 +1634,7 @@ public Action:OnTraceAttack(victim, &attacker, &inflictor, &Float:damage, &damag
 		decl String:grenade[32];
 		GetEdictClassname(inflictor, grenade, sizeof(grenade));
 		GetClientWeapon(attacker, weapon, sizeof(weapon));
-		
+
 		if (hitgroup == 1)
 		{
 			return Plugin_Continue;
@@ -1727,7 +1763,7 @@ public Action:RefillWeapons(Handle:timer, any:client)
 {
 	decl weaponEntity;
 
-	if(client != -1 && IsPlayerAlive(client) && IsClientValid(client) && !IsFakeClient(client))
+	if(client != -1 && IsClientValid(client) && IsPlayerAlive(client) && !IsFakeClient(client))
 	{
 		if (replenishAmmo && replenishClip)
 		{
@@ -1767,14 +1803,14 @@ DoClipRefillAmmo(weaponRef, any:client)
 	new weaponEntity = EntRefToEntIndex(weaponRef);
 
 	if (IsValidEdict(weaponEntity))
-	{	
-		decl String:weaponName[35]; 
+	{
+		decl String:weaponName[35];
 		GetEntityClassname(weaponEntity, weaponName, sizeof(weaponName));
-		
-		decl String:clipSize; 
+
+		decl String:clipSize;
 		decl String:maxAmmoCount;
 		new ammoType = GetEntData(weaponEntity, ammoTypeOffset);
-		
+
 		// TODO: Not sure how to avoid this hack considering the game thinks the
 		// cz is a weapon_p250 and both the m4a4 and m4a1 are weapon_m4a1.
 		if (ammoType == 4 && StrEqual(weaponName, "weapon_m4a1"))
@@ -1786,7 +1822,7 @@ DoClipRefillAmmo(weaponRef, any:client)
 			clipSize = GetWeaponAmmoCount(weaponName, true);
 			maxAmmoCount = GetWeaponAmmoCount(weaponName, false);
 		}
-		
+
 		SetEntData(client, ammoOffset, maxAmmoCount, true);
 		SetEntData(weaponEntity, g_iWeapons_Clip1Offset, clipSize, 4, true);
 	}
@@ -1797,13 +1833,13 @@ DoResRefillAmmo(weaponRef, any:client)
 	new weaponEntity = EntRefToEntIndex(weaponRef);
 
 	if (IsValidEdict(weaponEntity))
-	{	
+	{
 		decl String:weaponName[35];
 		GetEntityClassname(weaponEntity, weaponName, sizeof(weaponName));
-		
+
 		decl String:maxAmmoCount;
 		new ammoType = GetEntData(weaponEntity, ammoTypeOffset);
-		
+
 		// TODO: Not sure how to avoid this hack considering the game thinks the
 		// cz is a weapon_p250 and both the m4a4 and m4a1 are weapon_m4a1.
 		if (ammoType == 4 && StrEqual(weaponName, "weapon_m4a1"))
@@ -1814,7 +1850,7 @@ DoResRefillAmmo(weaponRef, any:client)
 		{
 			maxAmmoCount = GetWeaponAmmoCount(weaponName, false);
 		}
-		
+
 		SetEntData(client, ammoOffset + (ammoType * 4), maxAmmoCount, true);
 	}
 }
@@ -1824,14 +1860,14 @@ DoFullRefillAmmo(weaponRef, any:client)
 	new weaponEntity = EntRefToEntIndex(weaponRef);
 
 	if (IsValidEdict(weaponEntity))
-	{	
-		decl String:weaponName[35]; 
+	{
+		decl String:weaponName[35];
 		GetEntityClassname(weaponEntity, weaponName, sizeof(weaponName));
-		
-		decl String:clipSize; 
+
+		decl String:clipSize;
 		decl String:maxAmmoCount;
 		new ammoType = GetEntData(weaponEntity, ammoTypeOffset);
-		
+
 		// TODO: Not sure how to avoid this hack considering the game thinks the
 		// The m4a4 and m4a1 are weapon_m4a1.
 		if (ammoType == 4 && StrEqual(weaponName, "weapon_m4a1"))
@@ -1844,7 +1880,7 @@ DoFullRefillAmmo(weaponRef, any:client)
 			clipSize = GetWeaponAmmoCount(weaponName, true);
 			maxAmmoCount = GetWeaponAmmoCount(weaponName, false);
 		}
-		
+
 		SetEntData(client, ammoOffset + (ammoType * 4), maxAmmoCount, true);
 		SetEntData(weaponEntity, g_iWeapons_Clip1Offset, clipSize, 4, true);
 	}
@@ -1908,15 +1944,15 @@ stock GetWeaponAmmoCount(String:weaponName[], bool:currentClip)
 	else if (StrEqual(weaponName,  "weapon_hkp2000"))
 		return currentClip ? 13 : 52;
 	else if (StrEqual(weaponName,  "weapon_usp_silencer"))
-		return currentClip ? 12 : 42;
+		return currentClip ? 12 : 24;
 	else if (StrEqual(weaponName,  "weapon_p250"))
-		return currentClip ? 13 : 52;
+		return currentClip ? 13 : 26;
 	else if (StrEqual(weaponName,  "weapon_elite"))
 		return currentClip ? 30 : 120;
 	else if (StrEqual(weaponName,  "weapon_tec9"))
-		return currentClip ? 32 : 120;
+		return currentClip ? 24 : 120;
 	else if (StrEqual(weaponName,  "weapon_cz75a"))
-		return currentClip ? 8 : 16;
+		return currentClip ? 12 : 12;
 	return currentClip ? 30 : 90;
 }
 
@@ -1965,7 +2001,7 @@ public Menu_Options(Handle:menu, MenuAction:action, param1, param2)
 	{
 		decl String:info[24];
 		GetMenuItem(menu, param2, info, sizeof(info));
-		
+
 		if (StrEqual(info, "New"))
 		{
 			if (weaponsGivenThisRound[param1])
@@ -2130,13 +2166,15 @@ GiveSavedWeapons(client, bool:primary, bool:secondary)
 			if (StrEqual(primaryWeapon[client], "random"))
 			{
 				// Select random menu item (excluding "Random" option)
-				new random = GetRandomInt(0, GetArraySize(primaryWeaponsAvailable) - 2);
+				new random = GetRandomInt(0, GetArraySize(primaryWeaponsAvailable) - 1);
 				decl String:randomWeapon[24];
 				GetArrayString(primaryWeaponsAvailable, random, randomWeapon, sizeof(randomWeapon));
 				GivePlayerItem(client, randomWeapon);
 			}
 			else
+			{
 				GivePlayerItem(client, primaryWeapon[client]);
+			}
 		}
 		if (secondary)
 		{
@@ -2145,7 +2183,7 @@ GiveSavedWeapons(client, bool:primary, bool:secondary)
 				if (StrEqual(secondaryWeapon[client], "random"))
 				{
 					// Select random menu item (excluding "Random" option)
-					new random = GetRandomInt(0, GetArraySize(secondaryWeaponsAvailable) - 2);
+					new random = GetRandomInt(0, GetArraySize(secondaryWeaponsAvailable) - 1);
 					decl String:randomWeapon[24];
 					GetArrayString(secondaryWeaponsAvailable, random, randomWeapon, sizeof(randomWeapon));
 					GivePlayerItem(client, randomWeapon);
@@ -2195,7 +2233,7 @@ RemoveClientWeapons(client)
 				RemovePlayerItem(client, entityIndex);
 				AcceptEntityInput(entityIndex, "Kill");
 			}
-		}   
+		}
 	}
 }
 
@@ -2205,7 +2243,7 @@ public Action:RemoveGroundWeapons(Handle:timer)
 	{
 		new maxEntities = GetMaxEntities();
 		decl String:class[24];
-		
+
 		for (new i = MaxClients + 1; i < maxEntities; i++)
 		{
 			if (IsValidEdict(i) && (GetEntDataEnt2(i, ownerOffset) == -1))
@@ -2230,7 +2268,7 @@ SetBuyZones(const String:status[])
 {
 	new maxEntities = GetMaxEntities();
 	decl String:class[24];
-	
+
 	for (new i = MaxClients + 1; i < maxEntities; i++)
 	{
 		if (IsValidEdict(i))
@@ -2246,7 +2284,7 @@ SetObjectives(const String:status[])
 {
 	new maxEntities = GetMaxEntities();
 	decl String:class[24];
-	
+
 	for (new i = MaxClients + 1; i < maxEntities; i++)
 	{
 		if (IsValidEdict(i))
@@ -2285,7 +2323,7 @@ bool:StripC4(client)
 					ClientCommand(client, "slot2");
 				else
 					ClientCommand(client, "slot3");
-				
+
 			}
 			RemovePlayerItem(client, c4Index);
 			AcceptEntityInput(c4Index, "Kill");
@@ -2299,7 +2337,7 @@ RemoveHostages()
 {
 	new maxEntities = GetMaxEntities();
 	decl String:class[24];
-	
+
 	for (new i = MaxClients + 1; i < maxEntities; i++)
 	{
 		if (IsValidEdict(i))
@@ -2316,11 +2354,11 @@ EnableSpawnProtection(client)
 	new Teams:clientTeam = Teams:GetClientTeam(client);
 	// Disable damage
 	SetEntProp(client, Prop_Data, "m_takedamage", 0, 1);
-	// Set player colour
+	// Set player color
 	if (clientTeam == TeamT)
-		SetPlayerColour(client, tColour);
+		SetPlayerColor(client, tColor);
 	else if (clientTeam == TeamCT)
-		SetPlayerColour(client, ctColour);
+		SetPlayerColor(client, ctColor);
 	// Create timer to remove spawn protection
 	CreateTimer(spawnProtectionTime, DisableSpawnProtection, client);
 }
@@ -2331,16 +2369,16 @@ public Action:DisableSpawnProtection(Handle:Timer, any:client)
 	{
 		// Enable damage
 		SetEntProp(client, Prop_Data, "m_takedamage", 2, 1);
-		// Set player colour
-		SetPlayerColour(client, defaultColour);
+		// Set player color
+		SetPlayerColor(client, defaultColor);
 	}
 }
 
-SetPlayerColour(client, const colour[4])
+SetPlayerColor(client, const color[4])
 {
-	new RenderMode:mode = (colour[3] == 255) ? RENDER_NORMAL : RENDER_TRANSCOLOR;
+	new RenderMode:mode = (color[3] == 255) ? RENDER_NORMAL : RENDER_TRANSCOLOR;
 	SetEntityRenderMode(client, mode);
-	SetEntityRenderColor(client, colour[0], colour[1], colour[2], colour[3]);
+	SetEntityRenderColor(client, color[0], color[1], color[2], color[3]);
 }
 
 public Action:Command_RespawnAll(client, args)
@@ -2379,7 +2417,7 @@ public Menu_SpawnEditor(Handle:menu, MenuAction:action, param1, param2)
 	{
 		decl String:info[24];
 		GetMenuItem(menu, param2, info, sizeof(info));
-		
+
 		if (StrEqual(info, "Edit"))
 		{
 			inEditMode = !inEditMode;
@@ -2486,7 +2524,7 @@ public Action:RenderSpawnPoints(Handle:timer)
 {
 	if (!inEditMode)
 		return Plugin_Stop;
-	
+
 	for (new i = 0; i < spawnPointCount; i++)
 	{
 		decl Float:spawnPosition[3];
@@ -2504,13 +2542,13 @@ GetNearestSpawn(client)
 		CPrintToChat(client, "[\x04DM\x01] %t", "Spawn Editor No Spawn");
 		return -1;
 	}
-	
+
 	decl Float:clientPosition[3];
 	GetClientAbsOrigin(client, clientPosition);
-	
+
 	new nearestPoint = 0;
 	new Float:nearestPointDistance = GetVectorDistance(spawnPositions[0], clientPosition, true);
-	
+
 	for (new i = 1; i < spawnPointCount; i++)
 	{
 		new Float:distance = GetVectorDistance(spawnPositions[i], clientPosition, true);
@@ -2543,7 +2581,7 @@ InsertSpawn(client)
 		CPrintToChat(client, "[\x04DM\x01] %t", "Spawn Editor Spawn Not Added");
 		return;
 	}
-	
+
 	if (spawnPointCount == 0)
 		AddSpawn(client);
 	else
@@ -2582,7 +2620,7 @@ public Action:UpdateSpawnPointStatus(Handle:timer)
 		// Retrieve player positions.
 		decl Float:playerPositions[MaxClients][3];
 		new numberOfAlivePlayers = 0;
-	
+
 		for (new i = 1; i <= MaxClients; i++)
 		{
 			if (IsClientInGame(i) && (Teams:GetClientTeam(i) > TeamSpectator) && IsPlayerAlive(i))
@@ -2591,7 +2629,7 @@ public Action:UpdateSpawnPointStatus(Handle:timer)
 				numberOfAlivePlayers++;
 			}
 		}
-	
+
 		// Check each spawn point for occupation by proximity to alive players
 		for (new i = 0; i < spawnPointCount; i++)
 		{
@@ -2613,15 +2651,15 @@ public Action:UpdateSpawnPointStatus(Handle:timer)
 MovePlayer(client)
 {
 	numberOfPlayerSpawns++; // Stats
-	
+
 	new Teams:clientTeam = Teams:GetClientTeam(client);
-	
+
 	new spawnPoint;
 	new bool:spawnPointFound = false;
-	
+
 	decl Float:enemyEyePositions[MaxClients][3];
 	new numberOfEnemies = 0;
-	
+
 	// Retrieve enemy positions if required by LoS/distance spawning (at eye level for LoS checking).
 	if (lineOfSightSpawning || (spawnDistanceFromEnemies > 0.0))
 	{
@@ -2638,30 +2676,30 @@ MovePlayer(client)
 			}
 		}
 	}
-	
+
 	if (lineOfSightSpawning)
 	{
 		losSearchAttempts++; // Stats
-		
+
 		// Try to find a suitable spawn point with a clear line of sight.
 		for (new i = 0; i < lineOfSightAttempts; i++)
 		{
 			spawnPoint = GetRandomInt(0, spawnPointCount - 1);
-			
+
 			if (spawnPointOccupied[spawnPoint])
 				continue;
-			
+
 			if (spawnDistanceFromEnemies > 0.0)
 			{
 				if (!IsPointSuitableDistance(spawnPoint, enemyEyePositions, numberOfEnemies))
 					continue;
 			}
-			
+
 			decl Float:spawnPointEyePosition[3];
 			AddVectors(spawnPositions[spawnPoint], eyeOffset, spawnPointEyePosition);
-			
+
 			new bool:hasClearLineOfSight = true;
-			
+
 			for (new j = 0; j < numberOfEnemies; j++)
 			{
 				new Handle:trace = TR_TraceRayFilterEx(spawnPointEyePosition, enemyEyePositions[j], MASK_PLAYERSOLID_BRUSHONLY, RayType_EndPoint, TraceEntityFilterPlayer);
@@ -2685,21 +2723,21 @@ MovePlayer(client)
 		else
 			losSearchFailures++;
 	}
-	
+
 	// First fallback. Find a random unccupied spawn point at a suitable distance.
 	if (!spawnPointFound && (spawnDistanceFromEnemies > 0.0))
 	{
 		distanceSearchAttempts++; // Stats
-		
+
 		for (new i = 0; i < 50; i++)
 		{
 			spawnPoint = GetRandomInt(0, spawnPointCount - 1);
 			if (spawnPointOccupied[spawnPoint])
 				continue;
-			
+
 			if (!IsPointSuitableDistance(spawnPoint, enemyEyePositions, numberOfEnemies))
 				continue;
-			
+
 			spawnPointFound = true;
 			break;
 		}
@@ -2709,7 +2747,7 @@ MovePlayer(client)
 		else
 			distanceSearchFailures++;
 	}
-	
+
 	// Final fallback. Find a random unoccupied spawn point.
 	if (!spawnPointFound)
 	{
@@ -2723,14 +2761,14 @@ MovePlayer(client)
 			}
 		}
 	}
-	
+
 	if (spawnPointFound)
 	{
 		TeleportEntity(client, spawnPositions[spawnPoint], spawnAngles[spawnPoint], NULL_VECTOR);
 		spawnPointOccupied[spawnPoint] = true;
 		playerMoved[client] = true;
 	}
-	
+
 	if (!spawnPointFound) spawnPointSearchFailures++; // Stats
 }
 
@@ -2808,11 +2846,11 @@ public Action:Event_Sound(clients[64], &numClients, String:sample[PLATFORM_MAX_P
 				client = entity;
 			else
 				client = GetEntDataEnt2(entity, ownerOffset);
-	
+
 			// Block ammo pickup sounds.
 			if (StrEqual(sample, "items/ammopickup.wav"))
 				return Plugin_Stop;
-	
+
 			// Block all sounds originating from players not yet moved.
 			if ((client > 0) && (client <= MaxClients) && !playerMoved[client])
 				return Plugin_Stop;
@@ -2865,7 +2903,7 @@ BuildDisplayWeaponMenu(client, bool:primary)
 			secondaryMenus[client] = INVALID_HANDLE;
 		}
 	}
-	
+
 	new Handle:menu;
 	if (primary)
 	{
@@ -2877,26 +2915,26 @@ BuildDisplayWeaponMenu(client, bool:primary)
 		menu = CreateMenu(Menu_Secondary);
 		SetMenuTitle(menu, "Secondary Weapon:");
 	}
-	
+
 	new Handle:weapons = (primary) ? primaryWeaponsAvailable : secondaryWeaponsAvailable;
-	
+
 	decl String:currentWeapon[24];
 	currentWeapon = (primary) ? primaryWeapon[client] : secondaryWeapon[client];
-	
+
 	for (new i = 0; i < GetArraySize(weapons); i++)
 	{
 		decl String:weapon[24];
 		GetArrayString(weapons, i, weapon, sizeof(weapon));
-		
+
 		decl String:weaponMenuName[24];
 		GetTrieString(weaponMenuNames, weapon, weaponMenuName, sizeof(weaponMenuName));
-		
+
 		new weaponCount;
 		GetTrieValue(weaponCounts, weapon, weaponCount);
-		
+
 		new weaponLimit;
 		GetTrieValue(weaponLimits, weapon, weaponLimit);
-		
+
 		// If the client already has the weapon, then the limit does not apply.
 		if (StrEqual(currentWeapon, weapon))
 		{
@@ -2954,13 +2992,13 @@ public Action:Event_TextMsg(UserMsg:msg_id, Handle:bf, const players[], playersN
 			PbReadString(bf, "params", text, sizeof(text), 0);
 		else
 			BfReadString(bf, text, sizeof(text));
-		
+
 		if (StrContains(text, "#SFUI_Notice_Killed_Teammate") != -1)
 			return Plugin_Handled;
-		
+
 		if (StrContains(text, "#Cstrike_TitlesTXT_Game_teammate_attack") != -1)
 			return Plugin_Handled;
-		
+
 		if (StrContains(text, "#Hint_try_not_to_injure_teammates") != -1)
 			return Plugin_Handled;
 	}
@@ -2976,7 +3014,7 @@ public Action:Event_HintText(UserMsg:msg_id, Handle:bf, const players[], players
 			PbReadString(bf, "text", text, sizeof(text));
 		else
 			BfReadString(bf, text, sizeof(text));
-	
+
 		if (StrContains(text, "#SFUI_Notice_Hint_careful_around_teammates") != -1)
 			return Plugin_Handled;
 	}
@@ -2993,7 +3031,7 @@ public Action:Event_RadioText(UserMsg:msg_id, Handle:bf, const players[], player
 		"#SFUI_TitlesTXT_Molotov_in_the_hole",
 		"#SFUI_TitlesTXT_Incendiary_in_the_hole"
 	};
-	
+
 	if (!displayGrenadeMessages)
 	{
 		decl String:text[64];
@@ -3016,7 +3054,7 @@ public Action:Event_RadioText(UserMsg:msg_id, Handle:bf, const players[], player
 			BfReadString(bf, text, sizeof(text));
 			BfReadString(bf, text, sizeof(text));
 	}
-		
+
 		for (new i = 0; i < sizeof(grenadeTriggers); i++)
 		{
 			if (StrEqual(text, grenadeTriggers[i]))

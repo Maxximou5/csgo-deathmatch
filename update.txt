@@ -4,23 +4,21 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.0.3"
-			"Previous"	"2.0.2c"
+			"Latest"	"2.0.4"
+			"Previous"	"2.0.3"
 		}
-		
-		"Notes"	"Changes in 2.0.3:"
-		"Notes" "Changed the way ammo replenish works (thanks to int64 Shrandy)"
-		"Notes" "Added new cvars:"
-		"Notes" " - dm_replenish_ammo & dm_replenish_clip"
-		"Notes" " - dm_display_panel & dm_display_panel_damage"
-		"Notes" "Added new display panel for damage info"
-		"Notes" "Added Multi-Lanugage support"
-		"Notes" "Added csgocolors (need csgocolors.inc for compiling)"
-		"Notes" "Fixed blood splatter issue when turning hsonly off & on"
-		"Notes" "Fixed bots not having or not equiping guns"
-		"Notes" "Fixed timer message (client index 0)"
+
+		"Notes"	"Changes in 2.0.4:"
+		"Notes" "Fixed: Random weapons not parsing from the deathmatch.ini"
+		"Notes" "Fixed: Error: Line 1051, deathmatch.sp::Event_Say()"
+		"Notes" "Fixed: Error: Line 1730, deathmatch.sp::RefillWeapons()"
+		"Notes" "Fixed: Display panel not being shown despite being set yes in deathmatch.ini file."
+		"Notes" "Fixed: Spawn location glitches on maps."
+		"Notes" "Added: New spawn locations for new maps."
+		"Notes" "Added: Armor (chest) & Armor (full)"
+		"Notes" "Added: dm_replenish_grenade_kill (Give players their grenade back on successful grenade kill.)"
 	}
-	
+
 	"Files"
 	{
 

@@ -1,3 +1,13 @@
+v2.0.4:
+- Fixed: Random weapons not parsing from the deathmatch.ini
+- Fixed: Error: Line 1051, deathmatch.sp::Event_Say()
+- Fixed: Error: Line 1730, deathmatch.sp::RefillWeapons()
+- Fixed: Display panel not being shown despite being set yes in deathmatch.ini file.
+- Fixed: Spawn location glitches on maps.
+- Added: New spawn locations for new maps.
+- Added: Armor (chest) & Armor (full)
+- Added: dm_replenish_grenade_kill (Give players their grenade back on successful grenade kill.)
+
 v2.0.3:
 - Changed the way ammo replenish works (thanks to int64 Shrandy)
 - Added new cvars:
