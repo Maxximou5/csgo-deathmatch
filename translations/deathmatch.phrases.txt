@@ -2,42 +2,42 @@
 {
 	"Guns Menu"
 	{
-		"en"	"Type {GREEN}guns {DEFAULT}to open the weapons menu."
-		"es"	"Escriba {GREEN}guns {DEFAULT}para abrir el menú de armas."
-		"fr"	"Tapez {Green}guns {DEFAULT}pour ouvrir le menu des armes."
-		"pl"	"Napisz {GREEN}guns {DEFAULT}aby otworzyć menu broni."
+		"en"	"Type {green}guns {default}to open the weapons menu."
+		"es"	"Escriba {green}guns {default}para abrir el menú de armas."
+		"fr"	"Tapez {green}guns {default}pour ouvrir le menu des armes."
+		"pl"	"Napisz {green}guns {default}aby otworzyć menu broni."
 	}
 
 	"Guns Disabled"
 	{
-		"en"	"The guns menu has been {RED}disabled{DEFAULT}."
-		"es"	"El menú de armas se ha {RED}desactivado{DEFAULT}."
-		"fr"	"Le menu des armes a été {RED}désactivé{DEFAULT}."
-		"pl"	"Menu broni zostało {RED}wyłączone{DEFAULT}."
+		"en"	"The guns menu has been {red}disabled{default}."
+		"es"	"El menú de armas se ha {red}desactivado{default}."
+		"fr"	"Le menu des armes a été {red}désactivé{default}."
+		"pl"	"Menu broni zostało {red}wyłączone{default}."
 	}
 
 	"Guns New Spawn"
 	{
-		"en"	"You will be given {GREEN}new {DEFAULT}weapons on next spawn."
-		"es"	"Se le dará {GREEN}nuevas {DEFAULT}armas en el próximo desove."
-		"fr"	"Vous recevrez de {GREEN}nouvelles {DEFAULT}armes sur le prochain spawn."
-		"pl"	"Zostaną dodane {GREEN}nowe {DEFAULT}bronie po respawnie."
+		"en"	"You will be given {green}new {default}weapons on next spawn."
+		"es"	"Se le dará {green}nuevas {default}armas en el próximo desove."
+		"fr"	"Vous recevrez de {green}nouvelles {default}armes sur le prochain spawn."
+		"pl"	"Zostaną dodane {green}nowe {default}bronie po respawnie."
 	}
 
 	"Guns Same Spawn"
 	{
-		"en"	"You will be given{GREEN} same {DEFAULT}weapons on next spawn."
-		"es"	"Se le dará {GREEN}mismas {DEFAULT}armas en el próximo desove."
-		"fr"	"Vous recevrez mêmes {DEFAULT}armes sur le prochain spawn."
-		"pl"	"Zostaną dodane {GREEN} te same {DEFAULT}bronie po respawnie."
+		"en"	"You will be given{green} same {default}weapons on next spawn."
+		"es"	"Se le dará {green}mismas {default}armas en el próximo desove."
+		"fr"	"Vous recevrez {green}mêmes {default}armes sur le prochain spawn."
+		"pl"	"Zostaną dodane {green}te same {default}bronie po respawnie."
 	}
 
 	"Guns Random Spawn"
 	{
-		"en"	"You will be given{GREEN} random {DEFAULT}weapons on next spawn."
-		"es"	"Se le dará armas {GREEN}al azar {DEFAULT}en el próximo desove."
-		"fr"	"Vous recevrez armes {GREEN}aléatoires {DEFAULT}sur le prochain spawn."
-		"pl"	"Zostaną dodane {GREEN} losowe {DEFAULT}bronie po respawnie."
+		"en"	"You will be given{green} random {default}weapons on next spawn."
+		"es"	"Se le dará armas {green}al azar {default}en el próximo desove."
+		"fr"	"Vous recevrez armes {green}aléatoires {default}sur le prochain spawn."
+		"pl"	"Zostaną dodane {green}losowe {default}bronie po respawnie."
 	}
 
 	"Panel Health Remaining"
@@ -74,26 +74,26 @@
 
 	"HP Knife Kill"
 	{
-		"en"	"for killing an enemy ({GREEN}knife{DEFAULT})."
-		"es"	"por matar a un enemigo ({GREEN}cuchillo{DEFAULT})."
-		"fr"	"pour avoir frag ({GREEN}couteau{DEFAULT})."
-		"pl"	"za zabicie przeciwnika ({GREEN}nożem{DEFAULT})."
+		"en"	"for killing an enemy ({green}knife{default})."
+		"es"	"por matar a un enemigo ({green}cuchillo{default})."
+		"fr"	"pour avoir frag ({green}couteau{default})."
+		"pl"	"za zabicie przeciwnika ({green}nożem{default})."
 	}
 
 	"HP Headshot Kill"
 	{
-		"en"	"for killing an enemy ({GREEN}headshot{DEFAULT})."
-		"es"	"por matar a un enemigo ({GREEN}disparo a la cabeza{DEFAULT})."
-		"fr"	"pour avoir frag ({GREEN}à la tête{DEFAULT})."
-		"pl"	"za zabicie przeciwnika ({GREEN}headshotem{DEFAULT})."
+		"en"	"for killing an enemy ({green}headshot{default})."
+		"es"	"por matar a un enemigo ({green}disparo a la cabeza{default})."
+		"fr"	"pour avoir frag ({green}à la tête{default})."
+		"pl"	"za zabicie przeciwnika ({green}headshotem{default})."
 	}
 
 	"HP Nade Kill"
 	{
-		"en"	"for killing an enemy ({GREEN}grenade{DEFAULT})."
-		"es"	"por matar a un enemigo ({GREEN}granada{DEFAULT})."
-		"fr"	"pour avoir frag ({GREEN}grenade{DEFAULT})."
-		"pl"	"za zabicie przeciwnika ({GREEN}granatem{DEFAULT})."
+		"en"	"for killing an enemy ({green}grenade{default})."
+		"es"	"por matar a un enemigo ({green}granada{default})."
+		"fr"	"pour avoir frag ({green}grenade{default})."
+		"pl"	"za zabicie przeciwnika ({green}granatem{default})."
 	}
 
 	"HP Kill"
@@ -106,18 +106,18 @@
 
 	"Spawn Editor Enabled"
 	{
-		"en"	"Edit mode {GREEN}enabled{DEFAULT}."
-		"es"	"El modo de edición {GREEN}activado{DEFAULT}."
-		"fr"	"Modifier le mode {GREEN}activé{DEFAULT}."
-		"pl"	"Tryb edycji {GREEN}włączony{DEFAULT}."
+		"en"	"Edit mode {green}enabled{default}."
+		"es"	"El modo de edición {green}activado{default}."
+		"fr"	"Modifier le mode {green}activé{default}."
+		"pl"	"Tryb edycji {green}włączony{default}."
 	}
 
 	"Spawn Editor Disabled"
 	{
-		"en"	"Edit mode {RED}disabled{DEFAULT}."
-		"es"	"El modo de edición {RED}deshabilitado{DEFAULT}."
-		"fr"	"Modifier le mode {RED}désactivé{DEFAULT}."
-		"pl"	"Tryb edycji {RED}wyłączony{DEFAULT}."
+		"en"	"Edit mode {red}disabled{default}."
+		"es"	"El modo de edición {red}deshabilitado{default}."
+		"fr"	"Modifier le mode {red}désactivé{default}."
+		"pl"	"Tryb edycji {red}wyłączony{default}."
 	}
 
 	"Spawn Editor Teleported"

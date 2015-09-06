@@ -4,23 +4,25 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.0.4"
-			"Previous"	"2.0.3"
+			"Latest"	"2.0.4a"
+			"Previous"	"2.0.4"
 		}
 
-		"Notes"	"Changes in 2.0.4:"
-		"Notes" "Fixed: Random weapons not parsing from the deathmatch.ini"
-		"Notes" "Fixed: Error: Line 1051, deathmatch.sp::Event_Say()"
-		"Notes" "Fixed: Error: Line 1730, deathmatch.sp::RefillWeapons()"
-		"Notes" "Fixed: Display panel not being shown despite being set yes in deathmatch.ini file."
-		"Notes" "Fixed: Spawn location glitches on maps."
-		"Notes" "Added: New spawn locations for new maps."
-		"Notes" "Added: Armor (chest) & Armor (full)"
-		"Notes" "Added: dm_replenish_grenade_kill (Give players their grenade back on successful grenade kill.)"
+		"Notes"	"Changes in 2.0.4a:"
+		"Notes" "Fixed: Translation file, incorrect color syntax due to new include."
+		"Notes" "Added: Polish translation thanks to szyma94"
 	}
 
 	"Files"
 	{
+
+		"Patch"
+		{
+			"Plugin"	"Path_SM/plugins/deathmatch.smx"
+			"Plugin"	"Path_SM/translations/deathmatch.phrases.txt"
+
+			"Source"	"Path_SM/scripting/deathmatch.sp"
+		}
 
 		"Plugin"	"Path_SM/plugins/deathmatch.smx"
 		"Plugin"	"Path_SM/configs/deathmatch/deathmatch.ini"

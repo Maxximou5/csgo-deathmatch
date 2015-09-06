@@ -25,6 +25,7 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
  - English Supported
  - Spanish Supported
  - French Supported
+ - Polish Supported
 
 ### Features to Add
 

@@ -1,3 +1,7 @@
+v2.0.4a:
+- Fixed: Translation file, incorrect color syntax due to new include.
+- Added: Polish translation thanks to szyma94
+
 v2.0.4:
 - Fixed: Random weapons not parsing from the deathmatch.ini
 - Fixed: Error: Line 1051, deathmatch.sp::Event_Say()
