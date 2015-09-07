@@ -1,3 +1,6 @@
+v2.0.4b:
+- Fixed: Armor not spawning on player.
+
 v2.0.4a:
 - Fixed: Translation file, incorrect color syntax due to new include.
 - Added: Polish translation thanks to szyma94

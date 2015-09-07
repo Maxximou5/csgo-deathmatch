@@ -4,13 +4,14 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.0.4a"
-			"Previous"	"2.0.4"
+			"Latest"	"2.0.4b"
+			"Previous"	"2.0.4a"
 		}
 
-		"Notes"	"Changes in 2.0.4a:"
-		"Notes" "Fixed: Translation file, incorrect color syntax due to new include."
-		"Notes" "Added: Polish translation thanks to szyma94"
+		"Notes"	"Changes in 2.0.4b:"
+		"Notes" "Fixed: Armor not spawning on player."
+		"Notes" "Fixed: Correct version number.""
+		"Notes" "Fixed: Welcome message timer works again."
 	}
 
 	"Files"

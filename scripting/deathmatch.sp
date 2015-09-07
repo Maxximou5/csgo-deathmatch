@@ -8,7 +8,7 @@
 #undef REQUIRE_PLUGIN
 #include <updater>
 
-#define PLUGIN_VERSION 	"2.0.4"
+#define PLUGIN_VERSION 	"2.0.4b"
 #define PLUGIN_NAME		"Deathmatch"
 #define UPDATE_URL 		"http://www.maxximou5.com/sourcemod/deathmatch/update.txt"
 
@@ -500,16 +500,13 @@ public OnMapStart()
 	}
 }
 
-public OnClientPutInServer(client)
+public OnClientPostAdminCheck(client)
 {
 	if (enabled)
 	{
 		if (welcomemsg)
 		{
-			if (GetConVarBool(cvar_dm_welcomemsg))
-			{
-				CreateTimer(10.0, Timer_WelcomeMsg, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-			}
+			CreateTimer(10.0, Timer_WelcomeMsg, GetClientUserId(client));
 		}
 		ResetClientSettings(client);
 	}
@@ -519,8 +516,8 @@ public Action:Timer_WelcomeMsg(Handle:timer, any:client)
 {
 	if (IsClientInGame(client) && !IsFakeClient(client))
 	{
-		PrintHintText(client, "This server is running <font color='#FF0000'>Deathmatch</font> \n<font color='#00FF00'>Version</font> 2.0.4");
-		//CPrintToChat(client, "[\x04WELCOME\x01] This server is running \x04Deathmatch \x01v2.0.4");
+		PrintHintText(client, "This server is running:\n <font color='#FF0000'>Deathmatch</font> Version <font color='#00FF00'>%s</font>", PLUGIN_VERSION);
+		//CPrintToChat(client, "[\x04WELCOME\x01] This server is running \x04Deathmatch \x01v2.0.4b");
 	}
 	return Plugin_Stop;
 }
@@ -766,13 +763,16 @@ LoadConfig()
 	if (!KvJumpToKey(keyValues, "Misc"))
 		SetFailState("The configuration file is corrupt (\"Misc\" section could not be found).");
 
-	KvGetString(keyValues, "armor (chest)", value, sizeof(value), "0");
+	KvGetString(keyValues, "armor (chest)", value, sizeof(value), "no");
+	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_armor, value);
 
-	KvGetString(keyValues, "armor (full)", value, sizeof(value), "1");
+	KvGetString(keyValues, "armor (full)", value, sizeof(value), "yes");
+	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_armor_full, value);
 
-	KvGetString(keyValues, "zeus", value, sizeof(value), "0");
+	KvGetString(keyValues, "zeus", value, sizeof(value), "no");
+	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_zeus, value);
 
 	KvGoBack(keyValues);
