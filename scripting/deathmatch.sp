@@ -8,7 +8,7 @@
 #undef REQUIRE_PLUGIN
 #include <updater>
 
-#define PLUGIN_VERSION 	"2.0.4b"
+#define PLUGIN_VERSION 	"2.0.4c"
 #define PLUGIN_NAME		"Deathmatch"
 #define UPDATE_URL 		"http://www.maxximou5.com/sourcemod/deathmatch/update.txt"
 
@@ -223,7 +223,8 @@ public OnPluginStart()
 	LoadTranslations("deathmatch.phrases");
 	LoadTranslations("common.phrases");
 	// Create spawns directory if necessary.
-	decl String:spawnsPath[] = "addons/sourcemod/configs/deathmatch/spawns";
+	char spawnsPath[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, spawnsPath, sizeof(spawnsPath), "configs/deathmatch/spawns");
 	if (!DirExists(spawnsPath))
 		CreateDirectory(spawnsPath, 711);
 	// Find offsets
@@ -517,7 +518,7 @@ public Action:Timer_WelcomeMsg(Handle:timer, any:client)
 	if (IsClientInGame(client) && !IsFakeClient(client))
 	{
 		PrintHintText(client, "This server is running:\n <font color='#FF0000'>Deathmatch</font> Version <font color='#00FF00'>%s</font>", PLUGIN_VERSION);
-		//CPrintToChat(client, "[\x04WELCOME\x01] This server is running \x04Deathmatch \x01v2.0.4b");
+		//CPrintToChat(client, "[\x04WELCOME\x01] This server is running \x04Deathmatch \x01v%s, PLUGIN_VERSION");
 	}
 	return Plugin_Stop;
 }
@@ -593,7 +594,8 @@ public Event_CvarChange(Handle:cvar, const String:oldValue[], const String:newVa
 LoadConfig()
 {
 	new Handle:keyValues = CreateKeyValues("Deathmatch Config");
-	decl String:path[] = "addons/sourcemod/configs/deathmatch/deathmatch.ini";
+	char path[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, path, sizeof(path), "configs/deathmatch/deathmatch.ini");
 
 	if (!FileToKeyValues(keyValues, path))
 		SetFailState("The configuration file could not be read.");
@@ -1015,8 +1017,8 @@ LoadMapConfig()
 	decl String:map[64];
 	GetCurrentMap(map, sizeof(map));
 
-	decl String:path[PLATFORM_MAX_PATH];
-	Format(path, sizeof(path), "addons/sourcemod/configs/deathmatch/spawns/%s.txt", map);
+	char path[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, path, sizeof(path), "configs/deathmatch/spawns/%s.txt", map);
 
 	spawnPointCount = 0;
 
@@ -1047,8 +1049,8 @@ bool:WriteMapConfig()
 	decl String:map[64];
 	GetCurrentMap(map, sizeof(map));
 
-	decl String:path[PLATFORM_MAX_PATH];
-	Format(path, sizeof(path), "addons/sourcemod/configs/deathmatch/spawns/%s.txt", map);
+	char path[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, path, sizeof(path), "configs/deathmatch/spawns/%s.txt", map);
 
 	// Open file
 	new Handle:file = OpenFile(path, "w");

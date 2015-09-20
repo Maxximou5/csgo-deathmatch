@@ -1,3 +1,7 @@
+v2.0.4c:
+- Added: BuildPaths, you can now utilize different SM paths.
+- Added: Brazilian translation. Credit: Rbt
+
 v2.0.4b:
 - Fixed: Armor not spawning on player.
 
