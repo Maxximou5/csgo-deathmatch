@@ -4,13 +4,12 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.0.4c"
-			"Previous"	"2.0.4b"
+			"Latest"	"2.0.4d"
+			"Previous"	"2.0.4c"
 		}
 
-		"Notes"	"Changes in 2.0.4c:"
-		"Notes" "Added: BuildPaths, you can now utilize different SM paths."
-		"Notes" "Added: Brazilian translation. Credit: Rbt"
+		"Notes"	"Changes in 2.0.4d:"
+		"Notes" "Fixed: Chest armor not working if full armor wasn't selected, thanks to sk1ll."
 	}
 
 	"Files"

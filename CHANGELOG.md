@@ -1,3 +1,6 @@
+v2.0.4d:
+- Fixed: Chest armor not working if full armor wasn't selected, thanks to sk1ll.
+
 v2.0.4c:
 - Added: BuildPaths, you can now utilize different SM paths.
 - Added: Brazilian translation. Credit: Rbt

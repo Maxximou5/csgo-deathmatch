@@ -1,4 +1,4 @@
-### [CS:GO] Deathmatch (v2.0.4a, 2015-09-06)
+### [CS:GO] Deathmatch (v2.0.4d, 2015-09-06)
 <a href="http://www.maxximou5.com/"><img src="http://maxximou5.com/sourcemod/assests/img/deathmatch_csgo.png" alt="csgo deathmatch plugin" width="600" /></a>
 ===============
 
@@ -76,7 +76,8 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - dm_hp_nade - (Default) 30 - HP per nade kill.
 - dm_hp_messages - (Default) 1 - Display HP messages.
 - dm_nade_messages - (Default) 1 - Display grenade messages.
-- dm_armour - (Default) 1 - Give players armor.
+- dm_armor - (Default) 0 - Give players chest armor.
+- dm_armor_full - (Default) 1 - Give players full armor.
 - dm_zeus - (Default) 0 - Give players a taser.
 - dm_nades_incendiary - (Default) 0 - Number of incendiary grenades to give each player.
 - dm_nades_molotov - (Default) 0 - Number of molotov grenades to give each player.

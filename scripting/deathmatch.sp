@@ -8,7 +8,7 @@
 #undef REQUIRE_PLUGIN
 #include <updater>
 
-#define PLUGIN_VERSION 	"2.0.4c"
+#define PLUGIN_VERSION 	"2.0.4d"
 #define PLUGIN_NAME		"Deathmatch"
 #define UPDATE_URL 		"http://www.maxximou5.com/sourcemod/deathmatch/update.txt"
 
@@ -1239,12 +1239,12 @@ public Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 				SetEntData(client, armorOffset, 100);
 				SetEntData(client, helmetOffset, 0);
 			}
-			if (armorFull)
+			else if (armorFull)
 			{
 				SetEntData(client, armorOffset, 100);
 				SetEntData(client, helmetOffset, 1);
 			}
-			else
+			else if (!armorFull || !armorChest)
 			{
 				SetEntData(client, armorOffset, 0);
 				SetEntData(client, helmetOffset, 0);
