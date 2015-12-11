@@ -4,25 +4,19 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.0.4d"
-			"Previous"	"2.0.4c"
+			"Latest"	"2.0.5"
+			"Previous"	"2.0.4d"
 		}
 
-		"Notes"	"Changes in 2.0.4d:"
-		"Notes" "Fixed: Chest armor not working if full armor wasn't selected, thanks to sk1ll."
+		"Notes"	"Changes in 2.0.5:"
+		"Notes"	"Added: New R8 weapon."
+		"Notes"	"Added: Hide radar for all players."
+		"Notes" "Fixed: Incorrect ammo for shared weapon names."
+		"Notes"	"Fixed: Welcome message not working."
 	}
 
 	"Files"
 	{
-
-		"Patch"
-		{
-			"Plugin"	"Path_SM/plugins/deathmatch.smx"
-			"Plugin"	"Path_SM/translations/deathmatch.phrases.txt"
-
-			"Source"	"Path_SM/scripting/deathmatch.sp"
-		}
-
 		"Plugin"	"Path_SM/plugins/deathmatch.smx"
 		"Plugin"	"Path_SM/configs/deathmatch/deathmatch.ini"
 		"Plugin"	"Path_SM/translations/deathmatch.phrases.txt"

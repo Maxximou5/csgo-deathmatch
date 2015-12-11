@@ -1,3 +1,9 @@
+v2.0.5:
+- Added: New R8 weapon.
+- Added: Hide radar for all players.
+- Fixed: Incorrect ammo for shared weapon names.
+- Fixed: Welcome message not working.
+
 v2.0.4d:
 - Fixed: Chest armor not working if full armor wasn't selected, thanks to sk1ll.
 

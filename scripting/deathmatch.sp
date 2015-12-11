@@ -8,7 +8,7 @@
 #undef REQUIRE_PLUGIN
 #include <updater>
 
-#define PLUGIN_VERSION 	"2.0.4d"
+#define PLUGIN_VERSION 	"2.0.5"
 #define PLUGIN_NAME		"Deathmatch"
 #define UPDATE_URL 		"http://www.maxximou5.com/sourcemod/deathmatch/update.txt"
 
@@ -79,6 +79,7 @@ new backup_ammo_grenade_limit_total;
 new Handle:cvar_dm_enabled;
 new Handle:cvar_dm_welcomemsg;
 new Handle:cvar_dm_free_for_all;
+new Handle:cvar_dm_hide_radar;
 new Handle:cvar_dm_display_panel;
 new Handle:cvar_dm_display_panel_damage;
 new Handle:cvar_dm_headshot_only;
@@ -121,6 +122,7 @@ new Handle:cvar_dm_nades_smoke;
 new bool:enabled = false;
 new bool:welcomemsg;
 new bool:ffa;
+new bool:hideradar;
 new bool:displayPanel;
 new bool:displayPanelDamage;
 new bool:hsOnly;
@@ -194,6 +196,7 @@ new lastEditorSpawnPoint[MAXPLAYERS + 1] = { -1, ... };
 new String:primaryWeapon[MAXPLAYERS + 1][24];
 new String:secondaryWeapon[MAXPLAYERS + 1][24];
 new infoMessageCount[MAXPLAYERS + 1] = { 3, ... };
+new bool:WelcomeMsgd[MAXPLAYERS + 1] = { false, ... };
 new bool:firstWeaponSelection[MAXPLAYERS + 1] = { true, ... };
 new bool:weaponsGivenThisRound[MAXPLAYERS + 1] = { false, ... };
 new bool:newWeaponsSelected[MAXPLAYERS + 1] = { false, ... };
@@ -282,6 +285,7 @@ public OnPluginStart()
 	cvar_dm_enabled = CreateConVar("dm_enabled", "1", "Enable Deathmatch.");
 	cvar_dm_welcomemsg = CreateConVar("dm_welcomemsg", "1", "Display a message saying that your server is running Deathmatch.");
 	cvar_dm_free_for_all = CreateConVar("dm_free_for_all", "0", "Free for all mode.");
+	cvar_dm_hide_radar = CreateConVar("dm_hide_radar", "0", "Hides the radar from players.");
 	cvar_dm_display_panel = CreateConVar("dm_display_panel", "0", "Display a panel showing health of the victim.");
 	cvar_dm_display_panel_damage = CreateConVar("dm_display_panel_damage", "0", "Display a panel showing damage done to a player.");
 	cvar_dm_headshot_only = CreateConVar("dm_headshot_only", "0", "Headshot only mode.");
@@ -334,6 +338,7 @@ public OnPluginStart()
 	HookConVarChange(cvar_dm_enabled, Event_CvarChange);
 	HookConVarChange(cvar_dm_welcomemsg, Event_CvarChange);
 	HookConVarChange(cvar_dm_free_for_all, Event_CvarChange);
+	HookConVarChange(cvar_dm_hide_radar, Event_CvarChange);
 	HookConVarChange(cvar_dm_display_panel, Event_CvarChange);
 	HookConVarChange(cvar_dm_display_panel_damage, Event_CvarChange);
 	HookConVarChange(cvar_dm_headshot_only, Event_CvarChange);
@@ -505,22 +510,17 @@ public OnClientPostAdminCheck(client)
 {
 	if (enabled)
 	{
-		if (welcomemsg)
-		{
-			CreateTimer(10.0, Timer_WelcomeMsg, GetClientUserId(client));
-		}
 		ResetClientSettings(client);
 	}
 }
 
 public Action:Timer_WelcomeMsg(Handle:timer, any:client)
 {
-	if (IsClientInGame(client) && !IsFakeClient(client))
+	if (IsClientValid(client) && !IsFakeClient(client))
 	{
-		PrintHintText(client, "This server is running:\n <font color='#FF0000'>Deathmatch</font> Version <font color='#00FF00'>%s</font>", PLUGIN_VERSION);
-		//CPrintToChat(client, "[\x04WELCOME\x01] This server is running \x04Deathmatch \x01v%s, PLUGIN_VERSION");
+		PrintHintText(client, "This server is running:\n <font color='#00FF00'>Deathmatch</font> v%s", PLUGIN_VERSION);
+		CPrintToChat(client, "[\x04DM\x01] This server is running \x04Deathmatch \x01v%s", PLUGIN_VERSION);
 	}
-	return Plugin_Stop;
 }
 
 public OnClientDisconnect(client)
@@ -617,6 +617,10 @@ LoadConfig()
 	KvGetString(keyValues, "dm_free_for_all", value, sizeof(value), "no");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_free_for_all, value);
+
+	KvGetString(keyValues, "dm_hide_radar", value, sizeof(value), "no");
+	value = (StrEqual(value, "yes")) ? "1" : "0";
+	SetConVarString(cvar_dm_hide_radar, value);
 
 	KvGetString(keyValues, "dm_display_panel", value, sizeof(value), "no");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
@@ -811,6 +815,7 @@ UpdateState()
 	enabled = GetConVarBool(cvar_dm_enabled);
 	welcomemsg = GetConVarBool(cvar_dm_welcomemsg);
 	ffa = GetConVarBool(cvar_dm_free_for_all);
+	hideradar = GetConVarBool(cvar_dm_hide_radar);
 	displayPanel = GetConVarBool(cvar_dm_display_panel);
 	displayPanelDamage = GetConVarBool(cvar_dm_display_panel_damage);
 	hsOnly = GetConVarBool(cvar_dm_headshot_only);
@@ -1128,6 +1133,7 @@ BuildWeaponMenuNames()
 	SetTrieString(weaponMenuNames, "weapon_usp_silencer", "USP-S");
 	SetTrieString(weaponMenuNames, "weapon_fiveseven", "Five-SeveN");
 	SetTrieString(weaponMenuNames, "weapon_deagle", "Desert Eagle");
+	SetTrieString(weaponMenuNames, "weapon_revolver", "R8");
 	SetTrieString(weaponMenuNames, "weapon_elite", "Dual Berettas");
 	SetTrieString(weaponMenuNames, "weapon_tec9", "Tec-9");
 	SetTrieString(weaponMenuNames, "weapon_hkp2000", "P2000");
@@ -1202,8 +1208,13 @@ public Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 
 		if (Teams:GetClientTeam(client) > TeamSpectator)
 		{
+			if (welcomemsg && WelcomeMsgd[client] == false)
+			{
+				CreateTimer(2.0, Timer_WelcomeMsg, client);
+				WelcomeMsgd[client] = true;
+			}
 			// Hide radar.
-			if (ffa)
+			if (ffa || hideradar)
 			{
 				CreateTimer(0.0, RemoveRadar, client);
 			}
@@ -1807,22 +1818,20 @@ DoClipRefillAmmo(weaponRef, any:client)
 	if (IsValidEdict(weaponEntity))
 	{
 		decl String:weaponName[35];
-		GetEntityClassname(weaponEntity, weaponName, sizeof(weaponName));
-
 		decl String:clipSize;
 		decl String:maxAmmoCount;
-		new ammoType = GetEntData(weaponEntity, ammoTypeOffset);
 
-		// TODO: Not sure how to avoid this hack considering the game thinks the
-		// cz is a weapon_p250 and both the m4a4 and m4a1 are weapon_m4a1.
-		if (ammoType == 4 && StrEqual(weaponName, "weapon_m4a1"))
-		{
-			clipSize = 20;
-		}
-		else
+		if (GetEntityClassname(weaponEntity, weaponName, sizeof(weaponName)))
 		{
 			clipSize = GetWeaponAmmoCount(weaponName, true);
 			maxAmmoCount = GetWeaponAmmoCount(weaponName, false);
+			switch (GetEntProp(weaponRef, Prop_Send, "m_iItemDefinitionIndex"))
+			{
+				case 60: clipSize = 20;
+				case 61: clipSize = 12;
+				case 63: clipSize = 12;
+				case 64: clipSize = 8;
+			}
 		}
 
 		SetEntData(client, ammoOffset, maxAmmoCount, true);
@@ -1837,20 +1846,19 @@ DoResRefillAmmo(weaponRef, any:client)
 	if (IsValidEdict(weaponEntity))
 	{
 		decl String:weaponName[35];
-		GetEntityClassname(weaponEntity, weaponName, sizeof(weaponName));
-
 		decl String:maxAmmoCount;
 		new ammoType = GetEntData(weaponEntity, ammoTypeOffset);
 
-		// TODO: Not sure how to avoid this hack considering the game thinks the
-		// cz is a weapon_p250 and both the m4a4 and m4a1 are weapon_m4a1.
-		if (ammoType == 4 && StrEqual(weaponName, "weapon_m4a1"))
-		{
-			maxAmmoCount = 40;
-		}
-		else
+		if (GetEntityClassname(weaponEntity, weaponName, sizeof(weaponName)))
 		{
 			maxAmmoCount = GetWeaponAmmoCount(weaponName, false);
+			switch (GetEntProp(weaponRef, Prop_Send, "m_iItemDefinitionIndex"))
+			{
+				case 60: maxAmmoCount = 40;
+				case 61: maxAmmoCount = 24;
+				case 63: maxAmmoCount = 12;
+				case 64: maxAmmoCount = 8;
+			}
 		}
 
 		SetEntData(client, ammoOffset + (ammoType * 4), maxAmmoCount, true);
@@ -1864,23 +1872,21 @@ DoFullRefillAmmo(weaponRef, any:client)
 	if (IsValidEdict(weaponEntity))
 	{
 		decl String:weaponName[35];
-		GetEntityClassname(weaponEntity, weaponName, sizeof(weaponName));
-
 		decl String:clipSize;
 		decl String:maxAmmoCount;
 		new ammoType = GetEntData(weaponEntity, ammoTypeOffset);
 
-		// TODO: Not sure how to avoid this hack considering the game thinks the
-		// The m4a4 and m4a1 are weapon_m4a1.
-		if (ammoType == 4 && StrEqual(weaponName, "weapon_m4a1"))
-		{
-			clipSize = 20;
-			maxAmmoCount = 40;
-		}
-		else
+		if (GetEntityClassname(weaponEntity, weaponName, sizeof(weaponName)))
 		{
 			clipSize = GetWeaponAmmoCount(weaponName, true);
 			maxAmmoCount = GetWeaponAmmoCount(weaponName, false);
+			switch (GetEntProp(weaponRef, Prop_Send, "m_iItemDefinitionIndex"))
+			{
+				case 60: { clipSize = 20;maxAmmoCount = 40; }
+				case 61: { clipSize = 12;maxAmmoCount = 24; }
+				case 63: { clipSize = 12;maxAmmoCount = 12; }
+				case 64: { clipSize = 8;maxAmmoCount = 8; }
+			}
 		}
 
 		SetEntData(client, ammoOffset + (ammoType * 4), maxAmmoCount, true);
@@ -1943,6 +1949,8 @@ stock GetWeaponAmmoCount(String:weaponName[], bool:currentClip)
 		return currentClip ? 20 : 100;
 	else if (StrEqual(weaponName,  "weapon_deagle"))
 		return currentClip ? 7 : 35;
+	else if (StrEqual(weaponName,  "weapon_revolver"))
+		return currentClip ? 8 : 8;
 	else if (StrEqual(weaponName,  "weapon_hkp2000"))
 		return currentClip ? 13 : 52;
 	else if (StrEqual(weaponName,  "weapon_usp_silencer"))
@@ -2182,6 +2190,12 @@ GiveSavedWeapons(client, bool:primary, bool:secondary)
 		{
 			if (!StrEqual(secondaryWeapon[client], "none"))
 			{
+				new entityIndex = GetPlayerWeaponSlot(client, _:SlotKnife);
+				if (entityIndex != -1)
+				{
+					RemovePlayerItem(client, entityIndex);
+					AcceptEntityInput(entityIndex, "Kill");
+				}
 				if (StrEqual(secondaryWeapon[client], "random"))
 				{
 					// Select random menu item (excluding "Random" option)
@@ -2194,6 +2208,7 @@ GiveSavedWeapons(client, bool:primary, bool:secondary)
 				{
 					GivePlayerItem(client, secondaryWeapon[client]);
 				}
+				GivePlayerItem(client, "weapon_knife");
 			}
 			if (zeus)
 				GivePlayerItem(client, "weapon_taser");

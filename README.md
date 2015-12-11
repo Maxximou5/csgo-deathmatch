@@ -1,4 +1,4 @@
-### [CS:GO] Deathmatch (v2.0.4d, 2015-09-23)
+### [CS:GO] Deathmatch (v2.0.5, 2015-12-11)
 <a href="http://www.maxximou5.com/"><img src="http://maxximou5.com/sourcemod/assests/img/deathmatch_csgo.png" alt="csgo deathmatch plugin" width="600" /></a>
 ===============
 
@@ -17,6 +17,7 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - Spawn Editor and Menu
 - Replenish Ammo & Clip
 - Replenish Grenades
+- Hide Radar for Players
 - Kill Reward (HP/Ammo/Grenades)
 - Line of Sight Spawning
 - 3rd Party Knife Plugin Support
@@ -47,6 +48,7 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - dm_enabled - (Default) 1 - Enable deathmatch.
 - dm_welcomemsg (Default) 1 - Display a message saying that your server is running Deathmatch.
 - dm_free_for_all - (Default) 0 - Free for all mode.
+- dm_hide_radar - (Default) 0 - Hides the radar from players.
 - dm_display_panel - (Default) 0 - Display a panel showing health of the victim.
 - dm_display_panel_damage - (Default) 0 - Display a panel showing damage done to a player.
 - dm_headshot_only - (Default) 0 - Headshot Only mode.
@@ -90,7 +92,7 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 
 This plugin is tested on the following Sourcemod & Metamod Versions.
 
-- <a href="http://www.sourcemod.net/snapshots.php">Sourcemod 1.6.3+</a>
+- <a href="http://www.sourcemod.net/snapshots.php">Sourcemod 1.7.3+</a>
 - <a href="http://www.sourcemm.net/snapshots">Metamod 1.10.4+</a>
 
 ### Requirements
