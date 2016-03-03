@@ -176,6 +176,7 @@ new Handle:secondaryWeaponsAvailable;
 new Handle:weaponMenuNames;
 new Handle:weaponLimits;
 new Handle:weaponCounts;
+StringMap weaponSkipMap;
 // Grenade/Misc options
 new bool:armorChest;
 new bool:armorFull;
@@ -240,6 +241,7 @@ public OnPluginStart()
 	// Create arrays to store available weapons loaded by config
 	primaryWeaponsAvailable = CreateArray(24);
 	secondaryWeaponsAvailable = CreateArray(10);
+	weaponSkipMap = new StringMap();
 	// Create trie to store menu names for weapons
 	BuildWeaponMenuNames();
 	// Create trie to store weapon limits and counts
@@ -803,6 +805,25 @@ LoadConfig()
 
 	KvGetString(keyValues, "smoke", value, sizeof(value), "0");
 	SetConVarString(cvar_dm_nades_smoke, value);
+
+	if (KvJumpToKey(keyValues, "TeamData"))
+	{
+		do {
+			KvGetSectionName(keyValues, key, sizeof(key));
+			KvGetString(keyValues, NULL_STRING, value, sizeof(value), "");
+			int team = 0;
+			if (StrEqual(value, "CT", false))
+			{
+				team = CS_TEAM_CT;
+			}
+			else if (StrEqual(value, "T", false))
+			{
+				team = CS_TEAM_T;
+			}
+			weaponSkipMap.SetValue(value, team);
+		} while (KvGotoNextKey(keyValues, false));
+		KvGoBack(keyValues);
+	}
 
 	CloseHandle(keyValues);
 }
@@ -3089,4 +3110,22 @@ RemoveRagdoll(client)
 		if (ragdoll != -1)
 			AcceptEntityInput(ragdoll, "Kill");
 	}
+}
+
+public int GetWeaponTeam(const char[] weapon)
+{
+	int team = 0;
+	weaponSkipMap.GetValue(weapon, team);
+	return team;
+}
+
+public void GiveSkinnedWeapon(int client, const char[] weapon)
+{
+    int playerTeam = GetEntProp(client, Prop_Data, "m_iTeamNum");
+    int weaponTeam = GetWeaponTeam(weapon);
+    if (weaponTeam > 0) {
+        SetEntProp(client, Prop_Data, "m_iTeamNum", weaponTeam);
+    }
+    GivePlayerItem(client, weapon);
+    SetEntProp(client, Prop_Data, "m_iTeamNum", playerTeam);
 }
