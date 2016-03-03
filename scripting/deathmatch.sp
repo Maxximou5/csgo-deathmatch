@@ -2200,11 +2200,11 @@ GiveSavedWeapons(client, bool:primary, bool:secondary)
 				new random = GetRandomInt(0, GetArraySize(primaryWeaponsAvailable) - 1);
 				decl String:randomWeapon[24];
 				GetArrayString(primaryWeaponsAvailable, random, randomWeapon, sizeof(randomWeapon));
-				GivePlayerItem(client, randomWeapon);
+				GiveSkinnedWeapon(client, randomWeapon);
 			}
 			else
 			{
-				GivePlayerItem(client, primaryWeapon[client]);
+				GiveSkinnedWeapon(client, primaryWeapon[client]);
 			}
 		}
 		if (secondary)
@@ -2223,11 +2223,11 @@ GiveSavedWeapons(client, bool:primary, bool:secondary)
 					new random = GetRandomInt(0, GetArraySize(secondaryWeaponsAvailable) - 1);
 					decl String:randomWeapon[24];
 					GetArrayString(secondaryWeaponsAvailable, random, randomWeapon, sizeof(randomWeapon));
-					GivePlayerItem(client, randomWeapon);
+					GiveSkinnedWeapon(client, randomWeapon);
 				}
 				else
 				{
-					GivePlayerItem(client, secondaryWeapon[client]);
+					GiveSkinnedWeapon(client, secondaryWeapon[client]);
 				}
 				GivePlayerItem(client, "weapon_knife");
 			}
