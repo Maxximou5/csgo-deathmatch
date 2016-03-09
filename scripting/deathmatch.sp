@@ -806,8 +806,9 @@ LoadConfig()
 	KvGetString(keyValues, "smoke", value, sizeof(value), "0");
 	SetConVarString(cvar_dm_nades_smoke, value);
 
-	if (KvJumpToKey(keyValues, "TeamData"))
-	{
+	KvGoBack(keyValues);
+
+	if (KvJumpToKey(keyValues, "TeamData") && KvGotoFirstSubKey(keyValues, false)) {
 		do {
 			KvGetSectionName(keyValues, key, sizeof(key));
 			KvGetString(keyValues, NULL_STRING, value, sizeof(value), "");
@@ -820,7 +821,7 @@ LoadConfig()
 			{
 				team = CS_TEAM_T;
 			}
-			weaponSkipMap.SetValue(value, team);
+			weaponSkipMap.SetValue(key, team);
 		} while (KvGotoNextKey(keyValues, false));
 		KvGoBack(keyValues);
 	}
