@@ -4,15 +4,13 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.0.5"
-			"Previous"	"2.0.4d"
+			"Latest"	"2.1.0"
+			"Previous"	"2.0.5"
 		}
 
-		"Notes"	"Changes in 2.0.5:"
-		"Notes"	"Added: New R8 weapon."
-		"Notes"	"Added: Hide radar for all players."
-		"Notes" "Fixed: Incorrect ammo for shared weapon names."
-		"Notes"	"Fixed: Welcome message not working."
+		"Notes"	"Changes in 2.1.0:"
+		"Notes"	"Added: A LOT."
+		"Notes"	"Fixed: A LOT."
 	}
 
 	"Files"

@@ -1,4 +1,4 @@
-### [CS:GO] Deathmatch (v2.0.5, 2015-12-11)
+### [CS:GO] Deathmatch (v2.1.0, 2016-03-12)
 <a href="http://www.maxximou5.com/"><img src="http://maxximou5.com/sourcemod/assests/img/deathmatch_csgo.png" alt="csgo deathmatch plugin" width="600" /></a>
 ===============
 
@@ -70,14 +70,27 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - dm_replenish_grenade - (Default) 0 - Unlimited player grenades.
 - dm_replenish_hegrenade - (Default) 0 - Unlimited hegrenades.
 - dm_replenish_grenade_kill (Default) 0 - Give players their grenade back on successful kill.
-- dm_hp_start - (Default) 100 - Spawn HP.
-- dm_hp_max - (Default) 100 - Maximum HP.
-- dm_hp_kill - (Default) 5 - HP per kill.
-- dm_hp_hs - (Default) 10 - HP per headshot kill.
-- dm_hp_knife - (Default) 50 - HP per knife kill.
-- dm_hp_nade - (Default) 30 - HP per nade kill.
-- dm_hp_messages - (Default) 1 - Display HP messages.
 - dm_nade_messages - (Default) 1 - Display grenade messages.
+- dm_hp_start - (Default) 100 - Spawn Health Points (HP).
+- dm_hp_max - (Default) 100 - Maximum Health Points (HP).
+- dm_hp_kill - (Default) 5 - Health Points (HP) per kill.
+- dm_hp_hs - (Default) 10 - Health Points (HP) per headshot kill.
+- dm_hp_knife - (Default) 50 - Health Points (HP) per knife kill.
+- dm_hp_nade - (Default) 30 - Health Points (HP) per nade kill.
+- dm_hp_messages - (Default) 1 - Display Health Points (HP) messages.
+- dm_hp_start - (Default) 100 - Spawn Health Points (HP).
+- dm_hp_max - (Default) 100 - Maximum Health Points (HP).
+- dm_hp_kill - (Default) 5 - Health Points (HP) per kill.
+- dm_hp_hs - (Default) 10 - Health Points (HP) per headshot kill.
+- dm_hp_knife - (Default) 50 - Health Points (HP) per knife kill.
+- dm_hp_nade - (Default) 30 - Health Points (HP) per nade kill.
+- dm_hp_messages - (Default) 1 - Display Health Points (HP) messages.
+- dm_ap_max - (Default) 100 - Maximum Armor Points (AP).
+- dm_ap_kill - (Default) 5 - Armor Points (AP) per kill.
+- dm_ap_hs - (Default) 10 - Armor Points (AP) per headshot kill.
+- dm_ap_knife - (Default) 50 - Armor Points (AP) per knife kill.
+- dm_ap_nade - (Default) 30 - Armor Points (AP) per nade kill.
+- dm_ap_messages - (Default) 1 - Display Armor Points (AP) messages.
 - dm_armor - (Default) 0 - Give players chest armor.
 - dm_armor_full - (Default) 1 - Give players full armor.
 - dm_zeus - (Default) 0 - Give players a taser.
@@ -92,8 +105,8 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 
 This plugin is tested on the following Sourcemod & Metamod Versions.
 
-- <a href="http://www.sourcemod.net/snapshots.php">Sourcemod 1.7.3+</a>
-- <a href="http://www.sourcemm.net/snapshots">Metamod 1.10.4+</a>
+- <a href="http://sourcemod.net/downloads.php">Sourcemod 1.7 - build 5301+ & 1.8 - build 5868+</a>
+- <a href="http://www.sourcemm.net/snapshots">Metamod 1.10.7-git951+ & 1.11.0-git998</a>
 
 ### Requirements
 
@@ -132,6 +145,7 @@ A thank you to those who helped:
 - <a href="https://forums.alliedmods.net/member.php?u=187003">Snip3rUK</a> (<a href="https://forums.alliedmods.net/showthread.php?t=189577">Original Plugin</a>)
 - <a href="https://forums.alliedmods.net/member.php?u=26021">Dr!fter</a> (General Code Support)
 - <a href="http://steamcommunity.com/id/DoomHammer69/">DoomHammer</a> (Debugging and Beta Testing)
+- <a href="https://forums.alliedmods.net/member.php?u=245683">splewis</a> (General Code Support)
 
 ### Donate
 
