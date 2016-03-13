@@ -13,7 +13,7 @@
 #define PLUGIN_AUTHOR           "Maxximou5"
 #define PLUGIN_DESCRIPTION      "Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc)."
 #define PLUGIN_URL              "https://github.com/Maxximou5/csgo-deathmatch/"
-#define UPDATE_URL              "http://www.maxximou5.com/sourcemod/csgosteamtrade/update.txt"
+#define UPDATE_URL              "http://www.maxximou5.com/sourcemod/deathmatch/update.txt"
 
 public Plugin myinfo =
 {
@@ -233,7 +233,7 @@ int distanceSearchSuccesses = 0;
 int distanceSearchFailures = 0;
 int spawnPointSearchFailures = 0;
 
-/* Strings for HS Only */
+/* HS Only Variables */
 char g_sGrenade[32];
 char g_sWeapon[32];
 int g_iHealth;
@@ -254,7 +254,7 @@ public void OnPluginStart()
 	if (!DirExists(spawnsPath))
 		CreateDirectory(spawnsPath, 711);
 
-	/* Find offsets */
+	/* Find Offsets */
 	ownerOffset = FindSendPropInfo("CBaseCombatWeapon", "m_hOwnerEntity");
 	armorOffset = FindSendPropInfo("CCSPlayer", "m_ArmorValue");
 	helmetOffset = FindSendPropInfo("CCSPlayer", "m_bHasHelmet");
@@ -274,11 +274,11 @@ public void OnPluginStart()
 	weaponLimits = CreateTrie();
 	weaponCounts = CreateTrie();
 
-	/* Create menus */
+	/* Create Menus */
 	optionsMenu1 = BuildOptionsMenu(true);
 	optionsMenu2 = BuildOptionsMenu(false);
 
-	/* Retrieve native console variables */
+	/* Retrieve Native Console Variables */
 	mp_ct_default_primary = FindConVar("mp_ct_default_primary");
 	mp_t_default_primary = FindConVar("mp_t_default_primary");
 	mp_ct_default_secondary = FindConVar("mp_ct_default_secondary");
@@ -297,7 +297,7 @@ public void OnPluginStart()
 	ammo_grenade_limit_flashbang = FindConVar("ammo_grenade_limit_flashbang");
 	ammo_grenade_limit_total = FindConVar("ammo_grenade_limit_total");
 
-	/* Retrieve native console variable values */
+	/* Retrieve Native Console Variable Values */
 	backup_mp_startmoney = GetConVarInt(mp_startmoney);
 	backup_mp_playercashawards = GetConVarInt(mp_playercashawards);
 	backup_mp_teamcashawards = GetConVarInt(mp_teamcashawards);
@@ -312,7 +312,7 @@ public void OnPluginStart()
 	backup_ammo_grenade_limit_flashbang = GetConVarInt(ammo_grenade_limit_flashbang);
 	backup_ammo_grenade_limit_total = GetConVarInt(ammo_grenade_limit_total);
 
-	/* Create console variables */
+	/* Create Console Variables */
 	CreateConVar("dm_m5_version", PLUGIN_VERSION, "Deathmatch Version", FCVAR_SPONLY | FCVAR_REPLICATED | FCVAR_NOTIFY | FCVAR_DONTRECORD);
 	cvar_dm_enabled = CreateConVar("dm_enabled", "1", "Enable Deathmatch.");
 	cvar_dm_welcomemsg = CreateConVar("dm_welcomemsg", "1", "Display a message saying that your server is running Deathmatch.");
@@ -364,7 +364,7 @@ public void OnPluginStart()
 	cvar_dm_nades_smoke = CreateConVar("dm_nades_smoke", "0", "Number of smoke grenades to give each player.");
 	LoadConfig();
 
-	/* Admin commands */
+	/* Admin Commands */
 	RegAdminCmd("dm_spawn_menu", Command_SpawnMenu, ADMFLAG_CHANGEMAP, "Opens the spawn point menu.");
 	RegAdminCmd("dm_respawn_all", Command_RespawnAll, ADMFLAG_CHANGEMAP, "Respawns all players.");
 	RegAdminCmd("dm_stats", Command_Stats, ADMFLAG_CHANGEMAP, "Displays spawn statistics.");
@@ -2762,9 +2762,7 @@ void DeleteSpawn(int spawnIndex)
 	spawnPointCount--;
 }
 
-/**
- * Updates the occupation status of all spawn points.
- */
+/* Updates the occupation status of all spawn points. */
 public Action UpdateSpawnPointStatus(Handle timer)
 {
 	if (enabled && (spawnPointCount > 0))
