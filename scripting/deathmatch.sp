@@ -2031,7 +2031,7 @@ void DoFullRefillAmmo(int weaponRef, any client)
 	}
 }
 
-stock void GetWeaponAmmoCount(char[] weaponName, bool currentClip)
+stock int GetWeaponAmmoCount(char[] weaponName, bool currentClip)
 {
 	if (StrEqual(weaponName,  "weapon_ak47"))
 		return currentClip ? 30 : 90;
@@ -2687,7 +2687,7 @@ public Action RenderSpawnPoints(Handle timer)
 	return Plugin_Continue;
 }
 
-void GetNearestSpawn(int client)
+int GetNearestSpawn(int client)
 {
 	if (spawnPointCount == 0)
 	{
@@ -2768,7 +2768,7 @@ public Action UpdateSpawnPointStatus(Handle timer)
 	if (enabled && (spawnPointCount > 0))
 	{
 		/* Retrieve player positions. */
-		float[][] playerPositions = new float[MaxClients][3];
+		float playerPositions[MAXPLAYERS+1][3];
 		int numberOfAlivePlayers = 0;
 
 		for (int i = 1; i <= MaxClients; i++)
@@ -2807,7 +2807,7 @@ void MovePlayer(int client)
 	int spawnPoint;
 	bool spawnPointFound = false;
 
-	float[][] enemyEyePositions = new float [MaxClients][3];
+	float enemyEyePositions[MAXPLAYERS+1][3];
 	int numberOfEnemies = 0;
 
 	/* Retrieve enemy positions if required by LoS/distance spawning (at eye level for LoS checking). */
