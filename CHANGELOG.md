@@ -1,3 +1,18 @@
+v2.1.0:
+- NEW: Converted plugin to new syntax!
+- Added: Weapon skins for team based weapons. (Thanks to splewis!)
+- Added: Armor (AP) per kill.
+- Added: Zeus replenish on kill w/ or w/o knife.
+- Added: Fast weapon equip (dm_fast_equip).
+- Fixed: Annoying and incorrect spawn sounds.
+- Fixed: NULL Ent in GiveNamedItem!
+- Fixed: Attempted to create unknown entity type random!
+
+Work to be done:
+- Add: Team based spawn points.
+- Add: Knife or weapon only mode.
+- Fix: LoS spawning.
+
 v2.0.5:
 - Added: New R8 weapon.
 - Added: Hide radar for all players.

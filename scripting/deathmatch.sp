@@ -177,6 +177,7 @@ float spawnPointOffset[3] = { 0.0, 0.0, 20.0 };
 
 /* Offsets */
 int ownerOffset;
+int healthOffset;
 int armorOffset;
 int helmetOffset;
 int ammoTypeOffset;
@@ -236,8 +237,6 @@ int spawnPointSearchFailures = 0;
 /* HS Only Variables */
 char g_sGrenade[32];
 char g_sWeapon[32];
-int g_iHealth;
-int g_iArmor;
 
 /* Static Offsets */
 static int g_iWeapons_Clip1Offset;
@@ -256,6 +255,7 @@ public void OnPluginStart()
 
 	/* Find Offsets */
 	ownerOffset = FindSendPropInfo("CBaseCombatWeapon", "m_hOwnerEntity");
+	healthOffset = FindSendPropInfo("CCSPlayerResource", "m_iHealth");
 	armorOffset = FindSendPropInfo("CCSPlayer", "m_ArmorValue");
 	helmetOffset = FindSendPropInfo("CCSPlayer", "m_bHasHelmet");
 	ammoTypeOffset = FindSendPropInfo("CBaseCombatWeapon", "m_iPrimaryAmmoType");
@@ -468,16 +468,16 @@ public void OnPluginStart()
 		}
 	}
 
-	g_iHealth = FindSendPropInfo("CCSPlayer", "m_iHealth");
+	healthOffset = FindSendPropInfo("CCSPlayer", "m_iHealth");
 
-	if (g_iHealth == -1)
+	if (healthOffset == -1)
 	{
 		SetFailState("[DM] Error - Unable to get offset for CSSPlayer::m_iHealth");
 	}
 
-	g_iArmor = FindSendPropInfo("CCSPlayer", "m_ArmorValue");
+	armorOffset = FindSendPropInfo("CCSPlayer", "m_ArmorValue");
 
-	if (g_iArmor == -1)
+	if (armorOffset == -1)
 	{
 		SetFailState("[DM] Error - Unable to get offset for CSSPlayer::m_ArmorValue");
 	}
@@ -1184,7 +1184,7 @@ public Action Event_Say(int client, const char[] command, int argc)
 {
 	static char menuTriggers[][] = { "gun", "!gun", "/gun", "guns", "!guns", "/guns", "menu", "!menu", "/menu", "weapon", "!weapon", "/weapon", "weapons", "!weapons", "/weapons" };
 
-	if (enabled && IsClientValid(client) && (GetClientTeam(client) > CS_TEAM_SPECTATOR))
+	if (enabled && IsClientValid(client) && (GetClientTeam(client) != CS_TEAM_SPECTATOR))
 	{
 		/* Retrieve and clean up text. */
 		char text[24];
@@ -1314,7 +1314,7 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 	{
 		int client = GetClientOfUserId(event.GetInt("userid"));
 
-		if (GetClientTeam(client) > CS_TEAM_SPECTATOR)
+		if (GetClientTeam(client) != CS_TEAM_SPECTATOR)
 		{
 			if (welcomemsg && WelcomeMsgd[client] == false)
 			{
@@ -1335,7 +1335,7 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 			/* Display the panel for attacker information. */
 			if (displayPanel)
 			{
-				CreateTimer(1.0, PanelDisplay, GetEventInt(event, "userid"), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+				CreateTimer(1.0, PanelDisplay, event.GetInt("userid"), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 			}
 			/* Teleport player to custom spawn point. */
 			if (spawnPointCount > 0)
@@ -1467,16 +1467,16 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
 					SetEntProp(attackerIndex, Prop_Send, "m_iHealth", newHP, 1);
 				}
 
-				if (displayHPMessages)
+				if (displayHPMessages && !displayAPMessages)
 				{
 					if (knifed)
-						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%iHP\x01 %t", HPPerKnifeKill, "HP Knife Kill");
+						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 %t", HPPerKnifeKill, "HP Knife Kill");
 					else if (headshot)
-						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%iHP\x01 %t", HPPerHeadshotKill, "HP Headshot Kill");
+						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 %t", HPPerHeadshotKill, "HP Headshot Kill");
 					else if (nades)
-						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%iHP\x01 %t", HPPerNadeKill, "HP Nade Kill");
+						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 %t", HPPerNadeKill, "HP Nade Kill");
 					else
-						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%iHP\x01 %t", HPPerKill, "HP Kill");
+						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 %t", HPPerKill, "HP Kill");
 				}
 			}
 
@@ -1499,20 +1499,32 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
 					int newAP = attackerAP + addAP;
 					if (newAP > maxAP)
 						newAP = maxAP;
-					SetEntProp(attackerIndex, Prop_Send, "m_iArmor", newAP, 1);
+					SetEntProp(attackerIndex, Prop_Send, "m_ArmorValue", newAP, 1);
 				}
 
-				if (displayAPMessages)
+				if (displayAPMessages && !displayHPMessages)
 				{
 					if (knifed)
-						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%iAP\x01 %t", APPerKnifeKill, "AP Knife Kill");
+						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i AP\x01 %t", APPerKnifeKill, "AP Knife Kill");
 					else if (headshot)
-						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%iAP\x01 %t", APPerHeadshotKill, "AP Headshot Kill");
+						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i AP\x01 %t", APPerHeadshotKill, "AP Headshot Kill");
 					else if (nades)
-						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%iAP\x01 %t", APPerNadeKill, "AP Nade Kill");
+						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i AP\x01 %t", APPerNadeKill, "AP Nade Kill");
 					else
-						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%iAP\x01 %t", APPerKill, "AP Kill");
+						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i AP\x01 %t", APPerKill, "AP Kill");
 				}
+			}
+
+			if (displayHPMessages && displayAPMessages)
+			{
+				if (knifed)
+					CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 & \x04+%i AP\x01 %t", HPPerKnifeKill, APPerKnifeKill, "HP Knife Kill", "AP Knife Kill");
+				else if (headshot)
+					CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 & \x04+%i AP\x01 %t", HPPerHeadshotKill, APPerHeadshotKill, "HP Headshot Kill", "AP Headshot Kill");
+				else if (nades)
+					CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 & \x04+%i AP\x01 %t", HPPerNadeKill, APPerNadeKill, "HP Nade Kill", "AP Nade Kill");
+				else
+					CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 & \x04+%i AP\x01 %t", HPPerKill, APPerKill, "HP Kill", "AP Kill");
 			}
 
 			if (replenishGrenadeKill)
@@ -1536,9 +1548,9 @@ public Action EventPlayerHurt(Event event, const char[] name, bool dontBroadcast
 {
 	if (displayPanel)
 	{
-		int victim = GetClientOfUserId(GetEventInt(event, "userid"));
-		int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
-		int health = GetEventInt(event, "health");
+		int victim = GetClientOfUserId(event.GetInt("userid"));
+		int attacker = GetClientOfUserId(event.GetInt("attacker"));
+		int health = event.GetInt("health");
 
 		if (attacker != victim && victim != 0)
 		{
@@ -1546,7 +1558,7 @@ public Action EventPlayerHurt(Event event, const char[] name, bool dontBroadcast
 			{
 				if (displayPanelDamage)
 				{
-					PrintHintText(attacker, "%t <font color='#FF0000'>%i</font> %t <font color='#00FF00'>%N</font>\n %t <font color='#00FF00'>%i</font>", "Panel Damage Giver", GetEventInt(event, "dmg_health"), "Panel Damage Taker", victim, "Panel Health Remaining", health);
+					PrintHintText(attacker, "%t <font color='#FF0000'>%i</font> %t <font color='#00FF00'>%N</font>\n %t <font color='#00FF00'>%i</font>", "Panel Damage Giver", event.GetInt("dmg_health"), "Panel Damage Taker", victim, "Panel Health Remaining", health);
 				}
 				else
 				{
@@ -1562,12 +1574,12 @@ public Action EventPlayerHurt(Event event, const char[] name, bool dontBroadcast
 
 	if (hsOnly)
 	{
-		int victim = GetClientOfUserId(GetEventInt(event, "userid"));
-		int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
-		int dhealth = GetEventInt(event, "dmg_health");
-		int darmor = GetEventInt(event, "dmg_iArmor");
-		int health = GetEventInt(event, "health");
-		int armor = GetEventInt(event, "armor");
+		int victim = GetClientOfUserId(event.GetInt("userid"));
+		int attacker = GetClientOfUserId(event.GetInt("attacker"));
+		int dhealth = event.GetInt("dmg_health");
+		int darmor = event.GetInt("dmg_iArmor");
+		int health = event.GetInt("health");
+		int armor = event.GetInt("armor");
 		char weapon[32];
 		char grenade[16];
 		GetEventString(event, "weapon", weapon, sizeof(weapon));
@@ -1581,11 +1593,11 @@ public Action EventPlayerHurt(Event event, const char[] name, bool dontBroadcast
 				{
 					if (dhealth > 0)
 					{
-						SetEntData(victim, g_iHealth, (health + dhealth), 4, true);
+						SetEntData(victim, healthOffset, (health + dhealth), 4, true);
 					}
 					if (darmor > 0)
 					{
-						SetEntData(victim, g_iArmor, (armor + darmor), 4, true);
+						SetEntData(victim, armorOffset, (armor + darmor), 4, true);
 					}
 				}
 			}
@@ -1599,11 +1611,11 @@ public Action EventPlayerHurt(Event event, const char[] name, bool dontBroadcast
 				{
 					if (dhealth > 0)
 					{
-						SetEntData(victim, g_iHealth, (health + dhealth), 4, true);
+						SetEntData(victim, healthOffset, (health + dhealth), 4, true);
 					}
 					if (darmor > 0)
 					{
-						SetEntData(victim, g_iArmor, (armor + darmor), 4, true);
+						SetEntData(victim, armorOffset, (armor + darmor), 4, true);
 					}
 				}
 			}
@@ -1617,11 +1629,11 @@ public Action EventPlayerHurt(Event event, const char[] name, bool dontBroadcast
 				{
 					if (dhealth > 0)
 					{
-						SetEntData(victim, g_iHealth, (health + dhealth), 4, true);
+						SetEntData(victim, healthOffset, (health + dhealth), 4, true);
 					}
 					if (darmor > 0)
 					{
-						SetEntData(victim, g_iArmor, (armor + darmor), 4, true);
+						SetEntData(victim, armorOffset, (armor + darmor), 4, true);
 					}
 				}
 			}
@@ -1633,11 +1645,11 @@ public Action EventPlayerHurt(Event event, const char[] name, bool dontBroadcast
 			{
 				if (dhealth > 0)
 				{
-					SetEntData(victim, g_iHealth, (health + dhealth), 4, true);
+					SetEntData(victim, healthOffset, (health + dhealth), 4, true);
 				}
 				if (darmor > 0)
 				{
-					SetEntData(victim, g_iArmor, (armor + darmor), 4, true);
+					SetEntData(victim, armorOffset, (armor + darmor), 4, true);
 				}
 			}
 		}
@@ -2113,7 +2125,7 @@ public void Event_BombPickup(Event event, const char[] name, bool dontBroadcast)
 
 public Action Respawn(Handle timer, any client)
 {
-	if (!roundEnded && IsClientInGame(client) && (GetClientTeam(client) > CS_TEAM_SPECTATOR) && !IsPlayerAlive(client))
+	if (!roundEnded && IsClientInGame(client) && (GetClientTeam(client) != CS_TEAM_SPECTATOR) && !IsPlayerAlive(client))
 	{
 		/* We set this here rather than in Event_PlayerSpawn to catch the spawn sounds which occur before Event_PlayerSpawn is called (even with EventHookMode_Pre). */
 		playerMoved[client] = false;
@@ -2312,7 +2324,7 @@ void GiveSavedWeapons(int client, bool primary, bool secondary)
 			if (StrEqual(primaryWeapon[client], "random"))
 			{
 				/* Select random menu item (excluding "Random" option) */
-				int random = GetRandomInt(0, GetArraySize(primaryWeaponsAvailable) - 1);
+				int random = GetRandomInt(0, GetArraySize(primaryWeaponsAvailable) - 2);
 				char randomWeapon[24];
 				GetArrayString(primaryWeaponsAvailable, random, randomWeapon, sizeof(randomWeapon));
 				GiveSkinnedWeapon(client, randomWeapon);
@@ -2335,7 +2347,7 @@ void GiveSavedWeapons(int client, bool primary, bool secondary)
 				if (StrEqual(secondaryWeapon[client], "random"))
 				{
 					/* Select random menu item (excluding "Random" option) */
-					int random = GetRandomInt(0, GetArraySize(secondaryWeaponsAvailable) - 1);
+					int random = GetRandomInt(0, GetArraySize(secondaryWeaponsAvailable) - 2);
 					char randomWeapon[24];
 					GetArrayString(secondaryWeaponsAvailable, random, randomWeapon, sizeof(randomWeapon));
 					GiveSkinnedWeapon(client, randomWeapon);
@@ -2518,7 +2530,7 @@ void EnableSpawnProtection(int client)
 
 public Action DisableSpawnProtection(Handle timer, any client)
 {
-	if (IsClientInGame(client) && (GetClientTeam(client) > CS_TEAM_SPECTATOR) && IsPlayerAlive(client))
+	if (IsClientInGame(client) && (GetClientTeam(client) != CS_TEAM_SPECTATOR) && IsPlayerAlive(client))
 	{
 		/* Enable damage */
 		SetEntProp(client, Prop_Data, "m_takedamage", 2, 1);
@@ -2773,7 +2785,7 @@ public Action UpdateSpawnPointStatus(Handle timer)
 
 		for (int i = 1; i <= MaxClients; i++)
 		{
-			if (IsClientInGame(i) && (GetClientTeam(i) > CS_TEAM_SPECTATOR) && IsPlayerAlive(i))
+			if (IsClientInGame(i) && (GetClientTeam(i) != CS_TEAM_SPECTATOR) && IsPlayerAlive(i))
 			{
 				GetClientAbsOrigin(i, playerPositions[numberOfAlivePlayers]);
 				numberOfAlivePlayers++;
@@ -2815,7 +2827,7 @@ void MovePlayer(int client)
 	{
 		for (int i = 1; i <= MaxClients; i++)
 		{
-			if (IsClientInGame(i) && (GetClientTeam(i) > CS_TEAM_SPECTATOR) && IsPlayerAlive(i))
+			if (IsClientInGame(i) && (GetClientTeam(i) != CS_TEAM_SPECTATOR) && IsPlayerAlive(i))
 			{
 				bool enemy = (ffa || (GetClientTeam(i) != clientTeam));
 				if (enemy)
@@ -2879,7 +2891,7 @@ void MovePlayer(int client)
 	{
 		distanceSearchAttempts++; /* Stats */
 
-		for (int i = 0; i < 50; i++)
+		for (int i = 0; i < 100; i++)
 		{
 			spawnPoint = GetRandomInt(0, spawnPointCount - 1);
 			if (spawnPointOccupied[spawnPoint])
@@ -2998,7 +3010,7 @@ public Action Event_Sound(int clients[64], int &numClients, char sample[PLATFORM
 				client = GetEntDataEnt2(entity, ownerOffset);
 
 			/* Block ammo pickup sounds. */
-			if (StrEqual(sample, "items/ammopickup.wav"))
+			if (StrContains(sample, "pickup"))
 				return Plugin_Stop;
 
 			/* Block all sounds originating from players not yet moved. */
@@ -3012,11 +3024,7 @@ public Action Event_Sound(int clients[64], int &numClients, char sample[PLATFORM
 		}
 		if (hsOnly)
 		{
-			if (StrEqual(sample, "physics/flesh/flesh_squishy_impact_hard1.wav"))
-			if (StrEqual(sample, "physics/flesh/flesh_squishy_impact_hard2.wav"))
-			if (StrEqual(sample, "physics/flesh/flesh_squishy_impact_hard3.wav"))
-			if (StrEqual(sample, "physics/flesh/flesh_squishy_impact_hard4.wav"))
-			if (StrEqual(sample, "physics/flesh/flesh_bloody_break.wav"))
+			if (StrContains(sample, "physics/flesh"))
 			return Plugin_Stop;
 		}
 	}
@@ -3233,11 +3241,25 @@ public int GetWeaponTeam(const char[] weapon)
 
 public void GiveSkinnedWeapon(int client, const char[] weapon)
 {
-    int playerTeam = GetEntProp(client, Prop_Data, "m_iTeamNum");
-    int weaponTeam = GetWeaponTeam(weapon);
-    if (weaponTeam > 0) {
-        SetEntProp(client, Prop_Data, "m_iTeamNum", weaponTeam);
-    }
-    GivePlayerItem(client, weapon);
-    SetEntProp(client, Prop_Data, "m_iTeamNum", playerTeam);
+	int playerTeam = GetEntProp(client, Prop_Data, "m_iTeamNum");
+	int weaponTeam = GetWeaponTeam(weapon);
+	if (weaponTeam > 0) {
+		SetEntProp(client, Prop_Data, "m_iTeamNum", weaponTeam);
+	}
+	if (StrEqual(weapon, "weapon_hkp2000"))
+	{
+		int index = CreateEntityByName("weapon_hkp2000");
+		float PlayerLocation[3];
+		GetClientAbsOrigin(client, PlayerLocation);
+		
+		if(index != -1) {
+			TeleportEntity(index, PlayerLocation, NULL_VECTOR, NULL_VECTOR);
+			DispatchSpawn(index);
+		}
+	}
+	else
+		GivePlayerItem(client, weapon);
+	
+	SetEntProp(client, Prop_Data, "m_iTeamNum", playerTeam)
 }
+
