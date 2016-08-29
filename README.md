@@ -85,7 +85,7 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - dm_ap_hs - (Default) 10 - Armor Points (AP) per headshot kill.
 - dm_ap_knife - (Default) 50 - Armor Points (AP) per knife kill.
 - dm_ap_nade - (Default) 30 - Armor Points (AP) per nade kill.
-- dm_ap_messages - (Default) 1 - messaDisplay AP messages.
+- dm_ap_messages - (Default) 1 - Display AP messages.
 - dm_nade_messages - (Default) 1 - Display grenade messages.
 - dm_armor - (Default) 0 - Give players chest armor.
 - dm_armor_full - (Default) 1 - Give players full armor.
