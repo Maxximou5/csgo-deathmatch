@@ -4,15 +4,22 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.0.5"
-			"Previous"	"2.0.4d"
+			"Latest"	"2.0.6"
+			"Previous"	"2.0.5"
 		}
 
-		"Notes"	"Changes in 2.0.5:"
-		"Notes"	"Added: New R8 weapon."
-		"Notes"	"Added: Hide radar for all players."
-		"Notes" "Fixed: Incorrect ammo for shared weapon names."
-		"Notes"	"Fixed: Welcome message not working."
+		"Notes"	"Changes in 2.0.6:"
+		"Notes" "Updated: Plugin name changed to correctly match the game it was designed for."
+		"Notes"	"Updated: Overhaul on syntax, now using 1.8+ syntax!"
+		"Notes" "Updated: Spawns for de_nuke & de_cache."
+		"Notes" "Updated: Translation file."
+		"Notes" "Added: Compatibility for Valve's Deathmatch (game_type 1 & game_mode 2) or Custom (game_type 3 & game_mode 0)."
+		"Notes"	"Added: Armor addition, players now can gain armor."
+		"Notes"	"Added: Enable or disable sounds (bodyshots & headshots)."
+		"Notes" "Fixed: Weapon skins for all but (usp-s & hkp2000)."
+		"Notes"	"Fixed: Welcome message creating an invalid index."
+		"Notes"	"Fixed: Damage Panel creating an invalid index."
+		"Notes" "Fixed: Spawn system not correctly judging LoS."
 	}
 
 	"Files"

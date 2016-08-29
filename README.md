@@ -1,5 +1,5 @@
-### [CS:GO] Deathmatch (v2.0.5, 2015-12-11)
-<a href="http://www.maxximou5.com/"><img src="http://maxximou5.com/sourcemod/assests/img/deathmatch_csgo.png" alt="csgo deathmatch plugin" width="600" /></a>
+### [CS:GO] Deathmatch (v2.0.6, 2016-08-29)
+<a href="https://www.maxximou5.com/"><img src="https://maxximou5.com/sourcemod/assests/img/deathmatch_csgo.png" alt="csgo deathmatch plugin" width="600" /></a>
 ===============
 
 Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc).
@@ -10,24 +10,24 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - Free For All (FFA)
 - Display Panel for Damage
 - Different Game Modes:
- - Headshot Only Mode
- - Pistol Only Mode
- - Random Weapons Mode
+	- Headshot Only Mode
+	- Pistol Only Mode
+	- Random Weapons Mode
 - Objective Removal (C4/Hostage)
 - Spawn Editor and Menu
 - Replenish Ammo & Clip
 - Replenish Grenades
 - Hide Radar for Players
-- Kill Reward (HP/Ammo/Grenades)
+- Kill Reward (HP/AP/Ammo/Grenades)
 - Line of Sight Spawning
 - 3rd Party Knife Plugin Support
 - Auto-Update Support
 - Multi-Lanugage Support
- - English Supported
- - Spanish Supported
- - French Supported
- - Polish Supported
- - Brazilian Supported
+	- English Supported
+	- Spanish Supported
+	- French Supported
+	- Polish Supported
+	- Brazilian Supported
 
 ### Features to Add
 
@@ -45,12 +45,15 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 
 ### ConVars
 
-- dm_enabled - (Default) 1 - Enable deathmatch.
+- dm_enabled - (Default) 1 - Enable Deathmatch.
+- dm_enable_valve_deathmatch - (Default) 0 - Enable compatibility for Valve's Deathmatch (game_type 1 & game_mode 2) or Custom (game_type 3 & game_mode 0).
 - dm_welcomemsg (Default) 1 - Display a message saying that your server is running Deathmatch.
 - dm_free_for_all - (Default) 0 - Free for all mode.
 - dm_hide_radar - (Default) 0 - Hides the radar from players.
 - dm_display_panel - (Default) 0 - Display a panel showing health of the victim.
 - dm_display_panel_damage - (Default) 0 - Display a panel showing damage done to a player.
+- dm_sounds_bodyshots - (Default) 1 - Enable the sounds of bodyshots.
+- dm_sounds_headshots - (Default) 1 - Enable the sounds of headshots.
 - dm_headshot_only - (Default) 0 - Headshot Only mode.
 - dm_headshot_only_allow_world - (Default) 0 - Enable world damage during headshot only mode.
 - dm_headshot_only_allow_knife - (Default) 0 - Enable knife damage during headshot only mode.
@@ -77,6 +80,12 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - dm_hp_knife - (Default) 50 - HP per knife kill.
 - dm_hp_nade - (Default) 30 - HP per nade kill.
 - dm_hp_messages - (Default) 1 - Display HP messages.
+- dm_ap_max - (Default) 100 - Maximum Armor Points (AP).
+- dm_ap_kill - (Default) 5 - Armor Points (AP) per kill.
+- dm_ap_hs - (Default) 10 - Armor Points (AP) per headshot kill.
+- dm_ap_knife - (Default) 50 - Armor Points (AP) per knife kill.
+- dm_ap_nade - (Default) 30 - Armor Points (AP) per nade kill.
+- dm_ap_messages - (Default) 1 - messaDisplay AP messages.
 - dm_nade_messages - (Default) 1 - Display grenade messages.
 - dm_armor - (Default) 0 - Give players chest armor.
 - dm_armor_full - (Default) 1 - Give players full armor.
@@ -92,7 +101,7 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 
 This plugin is tested on the following Sourcemod & Metamod Versions.
 
-- <a href="http://www.sourcemod.net/snapshots.php">Sourcemod 1.7.3+</a>
+- <a href="http://www.sourcemod.net/snapshots.php">Sourcemod 1.8.0+</a>
 - <a href="http://www.sourcemm.net/snapshots">Metamod 1.10.4+</a>
 
 ### Requirements
@@ -132,6 +141,10 @@ A thank you to those who helped:
 - <a href="https://forums.alliedmods.net/member.php?u=187003">Snip3rUK</a> (<a href="https://forums.alliedmods.net/showthread.php?t=189577">Original Plugin</a>)
 - <a href="https://forums.alliedmods.net/member.php?u=26021">Dr!fter</a> (General Code Support)
 - <a href="http://steamcommunity.com/id/DoomHammer69/">DoomHammer</a> (Debugging and Beta Testing)
+- <a href="http://steamcommunity.com/id/int64shrandy/">int64 Shrandy</a> (Fixing the ammo clip and reserve refill)
+- <a href="https://forums.alliedmods.net/member.php?u=255924">szyma94</a> (Polish translation)
+- <a href="https://forums.alliedmods.net/member.php?u=260574">Rbt</a> (Brazilian translation)
+- <a href="https://forums.alliedmods.net/member.php?u=245683">splewis</a> (Weapon skins implementation)
 
 ### Donate
 

@@ -117,6 +117,42 @@
 		"pl"	"za zabicie przeciwnika."
 	}
 
+	"AP Knife Kill"
+	{
+		"br"	"Por matar um inimigo com a ({green}faca{default})."
+		"en"	"for killing an enemy ({green}knife{default})."
+		"es"	"por matar a un enemigo ({green}cuchillo{default})."
+		"fr"	"pour avoir frag ({green}couteau{default})."
+		"pl"	"za zabicie przeciwnika ({green}nożem{default})."
+	}
+
+	"AP Headshot Kill"
+	{
+		"br"	"Por matar um inimigo de ({green}headshot{default})."
+		"en"	"for killing an enemy ({green}headshot{default})."
+		"es"	"por matar a un enemigo ({green}disparo a la cabeza{default})."
+		"fr"	"pour avoir frag ({green}à la tête{default})."
+		"pl"	"za zabicie przeciwnika ({green}headshotem{default})."
+	}
+
+	"AP Nade Kill"
+	{
+		"br"	"Por matar um inimigo na ({green}granada{default})."
+		"en"	"for killing an enemy ({green}grenade{default})."
+		"es"	"por matar a un enemigo ({green}granada{default})."
+		"fr"	"pour avoir frag ({green}grenade{default})."
+		"pl"	"za zabicie przeciwnika ({green}granatem{default})."
+	}
+
+	"AP Kill"
+	{
+		"br"	"Por matar um inimigo."
+		"en"	"for killing an enemy."
+		"es"	"por matar a un enemigo."
+		"fr"	"pour avoir frag."
+		"pl"	"za zabicie przeciwnika."
+	}
+
 	"Spawn Editor Enabled"
 	{
 		"br"	"Edit mode {green}ativado{default}."
