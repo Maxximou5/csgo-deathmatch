@@ -11,7 +11,7 @@ v2.0.6:
 	- dm_ap_hs - (Default) 10 - Armor Points (AP) per headshot kill.
 	- dm_ap_knife - (Default) 50 - Armor Points (AP) per knife kill.
 	- dm_ap_nade - (Default) 30 - Armor Points (AP) per nade kill.
-	- dm_ap_messages - (Default) 1 - messaDisplay AP messages.
+	- dm_ap_messages - (Default) 1 - Display AP messages.
 - Added: Enable or disable sounds (bodyshots & headshots).
 	- dm_sounds_bodyshots - (Default) 1 - Enable the sounds of bodyshots.
 	- dm_sounds_headshots - (Default) 1 - Enable the sounds of headshots.
