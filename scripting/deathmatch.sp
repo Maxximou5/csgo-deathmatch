@@ -8,7 +8,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION          "2.0.6"
+#define PLUGIN_VERSION          "2.0.7"
 #define PLUGIN_NAME             "[CS:GO] Deathmatch"
 #define PLUGIN_AUTHOR           "Maxximou5"
 #define PLUGIN_DESCRIPTION      "Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc)."
@@ -86,9 +86,11 @@ ConVar cvar_dm_los_spawning;
 ConVar cvar_dm_los_attempts;
 ConVar cvar_dm_spawn_distance;
 ConVar cvar_dm_spawn_time;
+ConVar cvar_dm_no_knife_damage;
 ConVar cvar_dm_remove_weapons;
 ConVar cvar_dm_replenish_ammo;
 ConVar cvar_dm_replenish_clip;
+ConVar cvar_dm_replenish_reserve;
 ConVar cvar_dm_replenish_grenade;
 ConVar cvar_dm_replenish_hegrenade;
 ConVar cvar_dm_replenish_grenade_kill;
@@ -134,9 +136,11 @@ bool hsOnly_AllowNade;
 bool removeObjectives;
 
 /* Weapon Variables */
+bool noKnifeDamage;
 bool removeWeapons;
 bool replenishAmmo;
 bool replenishClip;
+bool replenishReserve;
 bool replenishGrenade;
 bool replenishHEGrenade;
 bool replenishGrenadeKill;
@@ -298,7 +302,7 @@ public void OnPluginStart()
 	cvar_dm_free_for_all = CreateConVar("dm_free_for_all", "0", "Free for all mode.");
 	cvar_dm_hide_radar = CreateConVar("dm_hide_radar", "0", "Hides the radar from players.");
 	cvar_dm_display_panel = CreateConVar("dm_display_panel", "0", "Display a panel showing health of the victim.");
-	cvar_dm_display_panel_damage = CreateConVar("dm_display_panel_damage", "0", "Display a panel showing damage done to a player.");
+	cvar_dm_display_panel_damage = CreateConVar("dm_display_panel_damage", "0", "Display a panel showing damage done to a player. Requires dm_display_panel set to 1.");
 	cvar_dm_sounds_bodyshots = CreateConVar("dm_sounds_bodyshots", "1", "Enable the sounds of bodyshots.");
 	cvar_dm_sounds_headshots = CreateConVar("dm_sounds_headshots", "1", "Enable the sounds of headshots.");
 	cvar_dm_headshot_only = CreateConVar("dm_headshot_only", "0", "Headshot only mode.");
@@ -309,14 +313,16 @@ public void OnPluginStart()
 	cvar_dm_remove_objectives = CreateConVar("dm_remove_objectives", "1", "Remove objectives (disables bomb sites, and removes c4 and hostages).");
 	cvar_dm_respawning = CreateConVar("dm_respawning", "1", "Enable respawning.");
 	cvar_dm_respawn_time = CreateConVar("dm_respawn_time", "2.0", "Respawn time.");
-	cvar_dm_gun_menu_mode = CreateConVar("dm_gun_menu_mode", "1", "Gun menu mode. 1) Enabled. 2) Pistol Only. 3) Random weapons every round. 4) Disabled.");
+	cvar_dm_gun_menu_mode = CreateConVar("dm_gun_menu_mode", "1", "Gun menu mode. 1) Enabled. 2) Primary weapons only. 3) Secondary weapons only. 4) Random weapons only. 5) Disabled.");
 	cvar_dm_los_spawning = CreateConVar("dm_los_spawning", "1", "Enable line of sight spawning. If enabled, players will be spawned at a point where they cannot see enemies, and enemies cannot see them.");
 	cvar_dm_los_attempts = CreateConVar("dm_los_attempts", "10", "Maximum number of attempts to find a suitable line of sight spawn point.");
 	cvar_dm_spawn_distance = CreateConVar("dm_spawn_distance", "0.0", "Minimum distance from enemies at which a player can spawn.");
 	cvar_dm_spawn_time = CreateConVar("dm_spawn_time", "1.0", "Spawn protection time.");
+	cvar_dm_no_knife_damage = CreateConVar("dm_no_knife_damage", "0", "Knives do NO damage to players.");
 	cvar_dm_remove_weapons = CreateConVar("dm_remove_weapons", "1", "Remove ground weapons.");
-	cvar_dm_replenish_ammo = CreateConVar("dm_replenish_ammo", "1", "Replenish ammo reserve.");
-	cvar_dm_replenish_clip = CreateConVar("dm_replenish_clip", "1", "Replenish ammo clip.");
+	cvar_dm_replenish_ammo = CreateConVar("dm_replenish_ammo", "1", "Replenish ammo on reload.");
+	cvar_dm_replenish_clip = CreateConVar("dm_replenish_clip", "0", "Replenish ammo clip on kill.");
+	cvar_dm_replenish_reserve = CreateConVar("dm_replenish_reserve", "0", "Replenish ammo reserve on kill.");
 	cvar_dm_replenish_grenade = CreateConVar("dm_replenish_grenade", "0", "Unlimited player grenades.");
 	cvar_dm_replenish_hegrenade = CreateConVar("dm_replenish_hegrenade", "0", "Unlimited hegrenades.");
 	cvar_dm_replenish_grenade_kill = CreateConVar("dm_replenish_grenade_kill", "0", "Give players their grenade back on successful kill.");
@@ -343,6 +349,8 @@ public void OnPluginStart()
 	cvar_dm_nades_flashbang = CreateConVar("dm_nades_flashbang", "0", "Number of flashbang grenades to give each player.");
 	cvar_dm_nades_he = CreateConVar("dm_nades_he", "0", "Number of HE grenades to give each player.");
 	cvar_dm_nades_smoke = CreateConVar("dm_nades_smoke", "0", "Number of smoke grenades to give each player.");
+
+	/* Load DM Config */
 	LoadConfig();
 
 	/* Admin Commands */
@@ -379,9 +387,11 @@ public void OnPluginStart()
 	HookConVarChange(cvar_dm_los_attempts, Event_CvarChange);
 	HookConVarChange(cvar_dm_spawn_distance, Event_CvarChange);
 	HookConVarChange(cvar_dm_spawn_time, Event_CvarChange);
+	HookConVarChange(cvar_dm_no_knife_damage, Event_CvarChange);
 	HookConVarChange(cvar_dm_remove_weapons, Event_CvarChange);
 	HookConVarChange(cvar_dm_replenish_ammo, Event_CvarChange);
 	HookConVarChange(cvar_dm_replenish_clip, Event_CvarChange);
+	HookConVarChange(cvar_dm_replenish_reserve, Event_CvarChange);
 	HookConVarChange(cvar_dm_replenish_grenade, Event_CvarChange);
 	HookConVarChange(cvar_dm_replenish_hegrenade, Event_CvarChange);
 	HookConVarChange(cvar_dm_replenish_grenade_kill, Event_CvarChange);
@@ -420,10 +430,11 @@ public void OnPluginStart()
 
 	/* Hook Events */
 	HookEvent("player_team", Event_PlayerTeam);
-	HookEvent("player_hurt", EventPlayerHurt, EventHookMode_Pre);
+	HookEvent("player_hurt", Event_PlayerHurt, EventHookMode_Pre);
 	HookEvent("round_prestart", Event_RoundPrestart, EventHookMode_PostNoCopy);
 	HookEvent("round_start", Event_RoundStart, EventHookMode_PostNoCopy);
 	HookEvent("round_end", Event_RoundEnd, EventHookMode_PostNoCopy);
+	HookEvent("weapon_reload", Event_WeaponReload, EventHookMode_Post);
 	HookEvent("hegrenade_detonate", Event_HegrenadeDetonate, EventHookMode_Post);
 	HookEvent("smokegrenade_detonate", Event_SmokegrenadeDetonate, EventHookMode_Post);
 	HookEvent("flashbang_detonate", Event_FlashbangDetonate, EventHookMode_Post);
@@ -439,37 +450,48 @@ public void OnPluginStart()
 
 	/* Create Global Timers */
 	CreateTimer(0.5, UpdateSpawnPointStatus, INVALID_HANDLE, TIMER_REPEAT);
-	CreateTimer(10.0, RemoveGroundWeapons, INVALID_HANDLE, TIMER_REPEAT);
+	CreateTimer(1.0, RemoveGroundWeapons, INVALID_HANDLE, TIMER_REPEAT);
 
 	/* Find Offsets */
 	g_iWeapons_Clip1Offset = FindSendPropInfo("CBaseCombatWeapon", "m_iClip1");
 
-	for (int i = 1; i <= MaxClients; i++)
+	if (g_iWeapons_Clip1Offset == -1)
 	{
-		if (IsValidClient(i))
-		{
-			SDKHook(i, SDKHook_OnTakeDamage, OnTakeDamage);
-		}
+		SetFailState("[DM] Error - Unable to get offset for CBaseCombatWeapon::m_iClip1");
 	}
 
 	healthOffset = FindSendPropInfo("CCSPlayer", "m_iHealth");
 
 	if (healthOffset == -1)
 	{
-		SetFailState("[DM] Error - Unable to get offset for CSSPlayer::m_iHealth");
+		SetFailState("[DM] Error - Unable to get offset for CCSPlayer::m_iHealth");
 	}
 
 	armorOffset = FindSendPropInfo("CCSPlayer", "m_ArmorValue");
 
 	if (armorOffset == -1)
 	{
-		SetFailState("[DM] Error - Unable to get offset for CSSPlayer::m_ArmorValue");
+		SetFailState("[DM] Error - Unable to get offset for CCSPlayer::m_ArmorValue");
 	}
 
+	/* SDK Hooks For Clients */
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientInGame(i))
+		{
+			OnClientPutInServer(i);
+		}
+	}
+
+	/* Updater */
 	if (LibraryExists("updater"))
 	{
 		Updater_AddPlugin(UPDATE_URL);
 	}
+
+	/* Update and retrieve */
+	RetrieveVariables();
+	UpdateState();
 }
 
 public void OnLibraryAdded(const char[] name)
@@ -493,7 +515,7 @@ public void OnPluginEnd()
 	}
 	SetBuyZones("Enable");
 	SetObjectives("Enable");
-	/* Cancel menus */
+	/* Cancel Menus */
 	CancelMenu(optionsMenu1);
 	CancelMenu(optionsMenu2);
 	for (int i = 1; i <= MaxClients; i++)
@@ -550,6 +572,12 @@ public void OnMapStart()
 	}
 }
 
+public void OnClientPutInServer(int client)
+{
+	SDKHook(client, SDKHook_TraceAttack, OnTraceAttack);
+	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
+}
+
 public void OnClientPostAdminCheck(int client)
 {
 	if (enabled)
@@ -561,6 +589,8 @@ public void OnClientPostAdminCheck(int client)
 public void OnClientDisconnect(int client)
 {
 	RemoveRagdoll(client);
+	SDKUnhook(client, SDKHook_TraceAttack, OnTraceAttack);
+	SDKUnhook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 }
 
 
@@ -583,9 +613,9 @@ void ResetClientSettings(int client)
 
 void SetClientGunModeSettings(int client)
 {
-	if (gunMenuMode != 3)
+	if (gunMenuMode != 4)
 	{
-		if(gunMenuMode == 1 && !IsFakeClient(client))
+		if(gunMenuMode <= 3 && !IsFakeClient(client))
 		{
 			if (StrEqual(primaryWeapon[client], "") || StrEqual(secondaryWeapon[client], ""))
 			{
@@ -604,13 +634,20 @@ void SetClientGunModeSettings(int client)
 		}
 		else if (gunMenuMode == 2 && IsFakeClient(client))
 		{
+			primaryWeapon[client] = "random";
+			secondaryWeapon[client] = "none";
+			firstWeaponSelection[client] = false;
+			rememberChoice[client] = true;
+		}
+		else if (gunMenuMode == 3 && IsFakeClient(client))
+		{
 			primaryWeapon[client] = "none";
 			secondaryWeapon[client] = "random";
 			firstWeaponSelection[client] = false;
 			rememberChoice[client] = true;
 		}
 	}
-	else if (gunMenuMode == 3)
+	else if (gunMenuMode == 4)
 	{
 		primaryWeapon[client] = "random";
 		secondaryWeapon[client] = "random";
@@ -643,7 +680,7 @@ void LoadConfig()
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_enabled, value);
 
-	KvGetString(keyValues, "dm_enable_valve_deathmatch", value, sizeof(value), "yes");
+	KvGetString(keyValues, "dm_enable_valve_deathmatch", value, sizeof(value), "no");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_valvedm, value);
 
@@ -722,6 +759,10 @@ void LoadConfig()
 	KvGetString(keyValues, "dm_spawn_protection_time", value, sizeof(value), "1.0");
 	SetConVarString(cvar_dm_spawn_time, value);
 
+	KvGetString(keyValues, "dm_no_knife_damage", value, sizeof(value), "no");
+	value = (StrEqual(value, "yes")) ? "1" : "0";
+	SetConVarString(cvar_dm_no_knife_damage, value);
+
 	KvGetString(keyValues, "dm_remove_weapons", value, sizeof(value), "yes");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_remove_weapons, value);
@@ -730,9 +771,13 @@ void LoadConfig()
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_replenish_ammo, value);
 
-	KvGetString(keyValues, "dm_replenish_clip", value, sizeof(value), "yes");
+	KvGetString(keyValues, "dm_replenish_clip", value, sizeof(value), "no");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_replenish_clip, value);
+
+	KvGetString(keyValues, "dm_replenish_reserve", value, sizeof(value), "no");
+	value = (StrEqual(value, "yes")) ? "1" : "0";
+	SetConVarString(cvar_dm_replenish_reserve, value);
 
 	KvGetString(keyValues, "dm_replenish_grenade", value, sizeof(value), "no");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
@@ -955,9 +1000,11 @@ void UpdateState()
 	lineOfSightAttempts = GetConVarInt(cvar_dm_los_attempts);
 	spawnDistanceFromEnemies = GetConVarFloat(cvar_dm_spawn_distance);
 	spawnProtectionTime = GetConVarFloat(cvar_dm_spawn_time);
+	noKnifeDamage = GetConVarBool(cvar_dm_no_knife_damage);
 	removeWeapons = GetConVarBool(cvar_dm_remove_weapons);
 	replenishAmmo = GetConVarBool(cvar_dm_replenish_ammo);
 	replenishClip = GetConVarBool(cvar_dm_replenish_clip);
+	replenishReserve = GetConVarBool(cvar_dm_replenish_reserve);
 	replenishGrenade = GetConVarBool(cvar_dm_replenish_grenade);
 	replenishHEGrenade = GetConVarBool(cvar_dm_replenish_hegrenade);
 	replenishGrenadeKill = GetConVarBool(cvar_dm_replenish_grenade_kill);
@@ -987,7 +1034,7 @@ void UpdateState()
 
 	if (respawnTime < 0.0) respawnTime = 0.0;
 	if (gunMenuMode < 1) gunMenuMode = 1;
-	if (gunMenuMode > 4) gunMenuMode = 4;
+	if (gunMenuMode > 5) gunMenuMode = 5;
 	if (lineOfSightAttempts < 0) lineOfSightAttempts = 0;
 	if (spawnDistanceFromEnemies < 0.0) spawnDistanceFromEnemies = 0.0;
 	if (spawnProtectionTime < 0.0) spawnProtectionTime = 0.0;
@@ -1050,7 +1097,7 @@ void UpdateState()
 	{
 		if (gunMenuMode != old_gunMenuMode)
 		{
-			if (gunMenuMode == 4)
+			if (gunMenuMode == 5)
 			{
 				for (int i = 1; i <= MaxClients; i++)
 					CancelClientMenu(i);
@@ -1222,7 +1269,7 @@ public Action Event_Say(int client, const char[] command, int argc)
 		{
 			if (StrEqual(text, menuTriggers[i], false))
 			{
-				if (gunMenuMode == 1 || gunMenuMode == 2)
+				if (gunMenuMode == 1 || gunMenuMode == 2 || gunMenuMode == 3)
 					DisplayOptionsMenu(client);
 				else
 					CPrintToChat(client, "[\x04DM\x01] %t", "Guns Disabled");
@@ -1341,28 +1388,30 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 		int client = GetClientOfUserId(event.GetInt("userid"));
 		if (GetClientTeam(client) != CS_TEAM_SPECTATOR)
 		{
-			if (welcomemsg && infoMessageCount[client] > 0)
+			if (!IsFakeClient(client))
 			{
-				PrintHintText(client, "This server is running:\n <font color='#00FF00'>Deathmatch</font> v%s", PLUGIN_VERSION);
-				CPrintToChat(client, "[\x04DM\x01] This server is running \x04Deathmatch \x01v%s", PLUGIN_VERSION);
+				if (welcomemsg && infoMessageCount[client] > 0)
+				{
+					PrintHintText(client, "This server is running:\n <font color='#00FF00'>Deathmatch</font> v%s", PLUGIN_VERSION);
+					CPrintToChat(client, "[\x04DM\x01] This server is running \x04Deathmatch \x01v%s", PLUGIN_VERSION);
+				}
+				/* Hide radar. */
+				if (ffa || hideradar)
+				{
+					CreateTimer(0.0, RemoveRadar, GetClientSerial(client));
+				}
+				/* Display help message. */
+				if ((gunMenuMode <= 3) && infoMessageCount[client] > 0)
+				{
+					CPrintToChat(client, "[\x04DM\x01] %t", "Guns Menu");
+					infoMessageCount[client]--;
+				}
+				/* Display the panel for attacker information. */
+				if (displayPanel)
+				{
+					damageDisplay[client] = CreateTimer(1.0, PanelDisplay, GetClientSerial(client), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+				}
 			}
-			/* Hide radar. */
-			if (ffa || hideradar)
-			{
-				CreateTimer(0.0, RemoveRadar, GetClientSerial(client));
-			}
-			/* Display help message. */
-			if ((gunMenuMode == 1 || gunMenuMode == 2) && infoMessageCount[client] > 0)
-			{
-				CPrintToChat(client, "[\x04DM\x01] %t", "Guns Menu");
-				infoMessageCount[client]--;
-			}
-			/* Display the panel for attacker information. */
-			if (displayPanel)
-			{
-				damageDisplay[client] = CreateTimer(1.0, PanelDisplay, GetClientSerial(client), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-			}
-
 			/* Teleport player to custom spawn point. */
 			if (spawnPointCount > 0)
 			{
@@ -1406,12 +1455,17 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 			/* Give the remembered weapon choice. */
 			else if (rememberChoice[client])
 			{
-				if (gunMenuMode == 1 || gunMenuMode == 3)
+				if (gunMenuMode == 1 || gunMenuMode == 4)
 				{
 					GiveSavedWeapons(client, true, true);
 				}
-				/* Give only pistols if remembered. */
+				/* Give only primary weapons if remembered. */
 				else if (gunMenuMode == 2)
+				{
+					GiveSavedWeapons(client, true, false)
+				}
+				/* Give only secondary weapons if remembered. */
+				else if (gunMenuMode == 3)
 				{
 					GiveSavedWeapons(client, false, true);
 				}
@@ -1420,12 +1474,7 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 			else if (IsValidClient(client) && !IsFakeClient(client))
 			{
 				/* All weapons menu. */
-				if (gunMenuMode == 1)
-				{
-					DisplayOptionsMenu(client);
-				}
-				/* Pistol only weapons menu. */
-				else if (gunMenuMode == 2)
+				if (gunMenuMode <= 3)
 				{
 					DisplayOptionsMenu(client);
 				}
@@ -1435,10 +1484,6 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 			{
 				StripC4(client);
 			}
-		}
-		if (hsOnly)
-		{
-			SDKHook(client, SDKHook_TraceAttack, OnTraceAttack);
 		}
 	}
 }
@@ -1459,7 +1504,7 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
 		bool validAttacker = (attackerIndex != 0) && IsPlayerAlive(attackerIndex);
 
 		/* Reward the attacker with ammo. */
-		if (validAttacker)
+		if (validAttacker && (replenishClip || replenishReserve))
 		{
 			GiveAmmo(INVALID_HANDLE, attackerIndex);
 		}
@@ -1566,14 +1611,13 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
 		}
 
 		if (respawning)
+		{
 			CreateTimer(respawnTime, Respawn, GetClientSerial(client));
-
-		if (damageDisplay[client] != null)
-			KillDamageDisplay(client);
+		}
 	}
 }
 
-public Action EventPlayerHurt(Event event, const char[] name, bool dontBroadcast)
+public Action Event_PlayerHurt(Event event, const char[] name, bool dontBroadcast)
 {
 	if (displayPanel)
 	{
@@ -1684,6 +1728,16 @@ public Action EventPlayerHurt(Event event, const char[] name, bool dontBroadcast
 		}
 	}
 	return Plugin_Continue;
+}
+
+public Action Event_WeaponReload(Event event, const char[] name, bool dontBroadcast)
+{
+	int client = GetClientOfUserId(event.GetInt("userid"));
+
+	if (replenishAmmo)
+	{
+		GiveAmmo(INVALID_HANDLE, client);
+	}
 }
 
 public Action Event_HegrenadeDetonate(Event event, const char[] name, bool dontBroadcast)
@@ -1830,7 +1884,7 @@ public Action OnTraceAttack(int victim, int &attacker, int &inflictor, float &da
 		{
 			return Plugin_Continue;
 		}
-		else if (hsOnly_AllowKnife && StrEqual(weapon, "weapon_knife"))
+		else if (hsOnly_AllowKnife && (StrContains(g_sWeapon, "weapon_knife") || StrContains(g_sWeapon, "weapon_bayonet")))
 		{
 			return Plugin_Continue;
 		}
@@ -1846,6 +1900,14 @@ public Action OnTraceAttack(int victim, int &attacker, int &inflictor, float &da
 		{
 			return Plugin_Handled;
 		}
+	}
+
+	if (noKnifeDamage)
+	{
+		char weapon[32];
+		GetClientWeapon(attacker, weapon, sizeof(weapon));
+		if (StrContains(g_sWeapon, "weapon_knife") || StrContains(g_sWeapon, "weapon_bayonet"))
+			return Plugin_Handled;
 	}
 	return Plugin_Continue;
 }
@@ -1882,7 +1944,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 				{
 					if (hsOnly_AllowKnife)
 					{
-						if (StrEqual(g_sWeapon, "weapon_knife"))
+						if (StrContains(g_sWeapon, "weapon_knife") || StrContains(g_sWeapon, "weapon_bayonet"))
 						{
 							return Plugin_Continue;
 						}
@@ -1908,10 +1970,19 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 			return Plugin_Handled;
 		}
 	}
-	else
+
+	if (noKnifeDamage)
 	{
-		return Plugin_Continue;
+		if (IsValidClient(attacker))
+		{
+			GetClientWeapon(attacker, g_sWeapon, sizeof(g_sWeapon));
+			if (StrContains(g_sWeapon, "weapon_knife") || StrContains(g_sWeapon, "weapon_bayonet"))
+			{
+				return Plugin_Handled;
+			}
+		}
 	}
+	return Plugin_Continue;
 }
 
 public Action PanelDisplay(Handle timer, any serial)
@@ -1922,23 +1993,17 @@ public Action PanelDisplay(Handle timer, any serial)
 		int aim = GetClientAimTarget(client, true);
 		if (0 < aim)
 		{
-			PrintHintText(client, "%t %i", GetClientHealth(aim), "Panel Health Remaining");
+			PrintHintText(client, "%t %i", "Panel Health Remaining", GetClientHealth(aim));
 			return Plugin_Continue;
 		}
 	}
 	return Plugin_Stop;
 }
 
-void KillDamageDisplay(int client)
-{
-    KillTimer(damageDisplay[client]);
-    damageDisplay[client] = null;
-}
-
 public Action RemoveRadar(Handle timer, any serial)
 {
 	int client = GetClientFromSerial(serial);
-	if (IsValidClient(client) && !IsFakeClient(client) && IsPlayerAlive(client))
+	if (IsValidClient(client) && IsPlayerAlive(client))
 	{
 		SetEntProp(client, Prop_Send, "m_iHideHUD", HIDEHUD_RADAR);
 	}
@@ -1946,7 +2011,7 @@ public Action RemoveRadar(Handle timer, any serial)
 
 public Action GiveAmmo(Handle timer, any client)
 {
-	if (enabled && (replenishAmmo || replenishClip))
+	if (enabled && (replenishAmmo || replenishReserve || replenishClip))
 	{
 		if (IsValidClient(client) && !IsFakeClient(client) && IsPlayerAlive(client))
 		{
@@ -1963,7 +2028,7 @@ public Action RefillWeapons(Handle timer, any client)
 
 	if(IsValidClient(client) && !IsFakeClient(client) && IsPlayerAlive(client))
 	{
-		if (replenishAmmo && replenishClip)
+		if (replenishAmmo || (replenishClip && replenishReserve))
 		{
 			weaponEntity = GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
 			if (weaponEntity != -1)
@@ -1972,16 +2037,6 @@ public Action RefillWeapons(Handle timer, any client)
 			weaponEntity = GetPlayerWeaponSlot(client, CS_SLOT_SECONDARY);
 			if (weaponEntity != -1)
 				DoFullRefillAmmo(EntIndexToEntRef(weaponEntity), client);
-		}
-		else if (replenishAmmo)
-		{
-			weaponEntity = GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
-			if (weaponEntity != -1)
-				DoResRefillAmmo(EntIndexToEntRef(weaponEntity), client);
-
-			weaponEntity = GetPlayerWeaponSlot(client, CS_SLOT_SECONDARY);
-			if (weaponEntity != -1)
-				DoResRefillAmmo(EntIndexToEntRef(weaponEntity), client);
 		}
 		else if (replenishClip)
 		{
@@ -1992,6 +2047,16 @@ public Action RefillWeapons(Handle timer, any client)
 			weaponEntity = GetPlayerWeaponSlot(client, CS_SLOT_SECONDARY);
 			if (weaponEntity != -1)
 				DoClipRefillAmmo(EntIndexToEntRef(weaponEntity), client);
+		}
+		else if (replenishReserve)
+		{
+			weaponEntity = GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
+			if (weaponEntity != -1)
+				DoResRefillAmmo(EntIndexToEntRef(weaponEntity), client);
+
+			weaponEntity = GetPlayerWeaponSlot(client, CS_SLOT_SECONDARY);
+			if (weaponEntity != -1)
+				DoResRefillAmmo(EntIndexToEntRef(weaponEntity), client);
 		}
 	}
 }
@@ -2201,11 +2266,11 @@ public int MenuHandler(Menu menu, MenuAction action, int param1, int param2)
 		{
 			if (weaponsGivenThisRound[param1])
 				newWeaponsSelected[param1] = true;
-			if (gunMenuMode == 1)
+			if (gunMenuMode == 1 || gunMenuMode == 2)
 			{
 				BuildDisplayWeaponMenu(param1, true);
 			}
-			else if (gunMenuMode == 2)
+			else if (gunMenuMode == 3)
 			{
 				BuildDisplayWeaponMenu(param1, false);
 			}
@@ -2218,11 +2283,15 @@ public int MenuHandler(Menu menu, MenuAction action, int param1, int param2)
 				newWeaponsSelected[param1] = true;
 				CPrintToChat(param1, "[\x04DM\x01] %t", "Guns Same Spawn");
 			}
-			if (gunMenuMode == 1 || gunMenuMode == 3)
+			if (gunMenuMode == 1 || gunMenuMode == 4)
 			{
 				GiveSavedWeapons(param1, true, true);
 			}
 			else if (gunMenuMode == 2)
+			{
+				GiveSavedWeapons(param1, true, false);
+			}
+			else if (gunMenuMode == 3)
 			{
 				GiveSavedWeapons(param1, false, true);
 			}
@@ -2234,11 +2303,15 @@ public int MenuHandler(Menu menu, MenuAction action, int param1, int param2)
 			{
 				CPrintToChat(param1, "[\x04DM\x01] %t", "Guns Same Spawn");
 			}
-			if (gunMenuMode == 1 || gunMenuMode == 3)
+			if (gunMenuMode == 1 || gunMenuMode == 4)
 			{
 				GiveSavedWeapons(param1, true, true);
 			}
 			else if (gunMenuMode == 2)
+			{
+				GiveSavedWeapons(param1, true, false);
+			}
+			else if (gunMenuMode == 3)
 			{
 				GiveSavedWeapons(param1, false, true);
 			}
@@ -2251,13 +2324,19 @@ public int MenuHandler(Menu menu, MenuAction action, int param1, int param2)
 				newWeaponsSelected[param1] = true;
 				CPrintToChat(param1, "[\x04DM\x01] %t", "Guns Random Spawn");
 			}
-			if (gunMenuMode == 1 || gunMenuMode == 3)
+			if (gunMenuMode == 1 || gunMenuMode == 4)
 			{
 				primaryWeapon[param1] = "random";
 				secondaryWeapon[param1] = "random";
 				GiveSavedWeapons(param1, true, true);
 			}
 			else if (gunMenuMode == 2)
+			{
+				primaryWeapon[param1] = "random";
+				secondaryWeapon[param1] = "none";
+				GiveSavedWeapons(param1, true, false);
+			}
+			else if (gunMenuMode == 3)
 			{
 				primaryWeapon[param1] = "none";
 				secondaryWeapon[param1] = "random";
@@ -2271,17 +2350,24 @@ public int MenuHandler(Menu menu, MenuAction action, int param1, int param2)
 			{
 				CPrintToChat(param1, "[\x04DM\x01] %t", "Guns Random Spawn");
 			}
-			if (gunMenuMode == 1 || gunMenuMode == 3)
+			if (gunMenuMode == 1 || gunMenuMode == 4)
 			{
 				primaryWeapon[param1] = "random";
 				secondaryWeapon[param1] = "random";
+				GiveSavedWeapons(param1, true, true);
 			}
 			else if (gunMenuMode == 2)
 			{
+				primaryWeapon[param1] = "random";
+				secondaryWeapon[param1] = "none";
+				GiveSavedWeapons(param1, true, false);
+			}
+			else if (gunMenuMode == 3)
+			{
 				primaryWeapon[param1] = "none";
 				secondaryWeapon[param1] = "random";
+				GiveSavedWeapons(param1, false, true);
 			}
-			GiveSavedWeapons(param1, true, true);
 			rememberChoice[param1] = true;
 		}
 	}
@@ -2297,7 +2383,18 @@ public int MenuPrimary(Menu menu, MenuAction action, int param1, int param2)
 		DecrementWeaponCount(primaryWeapon[param1]);
 		primaryWeapon[param1] = info;
 		GiveSavedWeapons(param1, true, false);
-		BuildDisplayWeaponMenu(param1, false);
+		if (gunMenuMode != 2) {
+			BuildDisplayWeaponMenu(param1, false);
+		} else {
+			DecrementWeaponCount(secondaryWeapon[param1]);
+			secondaryWeapon[param1] = "none";
+			GiveSavedWeapons(param1, false, true);
+			if (!IsPlayerAlive(param1))
+				newWeaponsSelected[param1] = true;
+			if (newWeaponsSelected[param1])
+				CPrintToChat(param1, "[\x04DM\x01] %t", "Guns New Spawn");
+			firstWeaponSelection[param1] = false;
+		}
 	}
 	else if (action == MenuAction_Cancel)
 	{
@@ -2306,7 +2403,9 @@ public int MenuPrimary(Menu menu, MenuAction action, int param1, int param2)
 			DecrementWeaponCount(primaryWeapon[param1]);
 			primaryWeapon[param1] = "none";
 			GiveSavedWeapons(param1, true, false);
-			BuildDisplayWeaponMenu(param1, false);
+			if (gunMenuMode != 2) {
+				BuildDisplayWeaponMenu(param1, false);
+			}
 		}
 	}
 }
@@ -2339,7 +2438,7 @@ public int MenuSecondary(Menu menu, MenuAction action, int param1, int param2)
 				if (!IsPlayerAlive(param1))
 					newWeaponsSelected[param1] = true;
 				if (newWeaponsSelected[param1])
-					CPrintToChat(param1, "[\x04DM\x01] %t", "Guns Random Spawn");
+					CPrintToChat(param1, "[\x04DM\x01] %t", "Guns New Spawn");
 				firstWeaponSelection[param1] = false;
 			}
 		}
@@ -2348,7 +2447,7 @@ public int MenuSecondary(Menu menu, MenuAction action, int param1, int param2)
 
 public Action Command_Guns(int client, int args)
 {
-	if (enabled && gunMenuMode != 3 && gunMenuMode != 4)
+	if (enabled && (gunMenuMode <= 3))
 		DisplayOptionsMenu(client);
 	return Plugin_Handled;
 }
@@ -3293,21 +3392,7 @@ public void GiveSkinnedWeapon(int client, const char[] weapon)
 		SetEntProp(client, Prop_Data, "m_iTeamNum", weaponTeam);
 	}
 
-	if (StrEqual(weapon, "weapon_hkp2000"))
-	{
-		int index = CreateEntityByName("weapon_hkp2000");
-		float PlayerLocation[3];
-		GetClientAbsOrigin(client, PlayerLocation);
-
-		if(index != -1) {
-			TeleportEntity(index, PlayerLocation, NULL_VECTOR, NULL_VECTOR);
-			DispatchSpawn(index);
-			GiveAmmo(INVALID_HANDLE, client)
-		}
-	}
-	else
-		GivePlayerItem(client, weapon);
-
+	GivePlayerItem(client, weapon);
 	SetEntProp(client, Prop_Data, "m_iTeamNum", playerTeam)
 }
 

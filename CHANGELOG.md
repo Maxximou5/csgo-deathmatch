@@ -1,10 +1,26 @@
+v2.0.7:
+- Updated: Improved ammo replenish system
+	- dm_replenish_ammo - (Default) 1 - Replenish ammo on reload.
+	- dm_replenish_clip - (Default) 0 - Replenish ammo clip on kill.
+	- dm_replenish_reserve - (Default) 0 - Replenish ammo reserve on kill.
+- Updated: SDKHook performance and usage (thanks to Bacardi)
+- Added: Support for late load, safely load the plugin at anytime.
+- Added: Primary only gun mode
+	- dm_gun_menu_mode - (Default) 1 - 1) Enabled. 2) Primary weapons only. 3) Secondary weapons only. 4) Random weapons only. 5) Disabled.
+- Added: No knife damage
+	- dm_no_knife_damage - (Default) 0 - Knives do NO damage to players.
+- Fixed: Wrong language phrase for secondary weapons when not selected.
+- Fixed: Native "SetConVarInt" reported: Invalid convar handle 0 (error 4)
+- Fixed: Native "PrintHintText" reported: Language phrase "^" not found
+- Fixed: P2000 sounding like a deagle. P2000 must now be equipped in player's loadout.
+
 v2.0.6:
 - Updated: Plugin name changed to correctly match the game it was designed for.
 - Updated: Overhaul on syntax, now using 1.8+ syntax!
 - Updated: Spawns for de_nuke & de_cache.
 - Updated: Translation file.
 - Added: Compatibility for Valve's Deathmatch (game_type 1 & game_mode 2) or Custom (game_type 3 & game_mode 0).
-	- dm_enable_valve_deathmatch - (Default) 0 - Enable compatibility for Valve's Deathmatch (game_type 1 & game_mode 2) or Custom (game_type 3 & game_mode 0).
+	- dm_valve_deathmatch - (Default) 0 - Enable compatibility for Valve's Deathmatch (game_type 1 & game_mode 2) or Custom (game_type 3 & game_mode 0).
 - Added: Armor addition, players now can gain armor.
 	- dm_ap_max - (Default) 100 - Maximum Armor Points (AP).
 	- dm_ap_kill - (Default) 5 - Armor Points (AP) per kill.

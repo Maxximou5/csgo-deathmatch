@@ -4,22 +4,20 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.0.6"
-			"Previous"	"2.0.5"
+			"Latest"	"2.0.7"
+			"Previous"	"2.0.6"
 		}
 
-		"Notes"	"Changes in 2.0.6:"
-		"Notes" "Updated: Plugin name changed to correctly match the game it was designed for."
-		"Notes"	"Updated: Overhaul on syntax, now using 1.8+ syntax!"
-		"Notes" "Updated: Spawns for de_nuke & de_cache."
-		"Notes" "Updated: Translation file."
-		"Notes" "Added: Compatibility for Valve's Deathmatch (game_type 1 & game_mode 2) or Custom (game_type 3 & game_mode 0)."
-		"Notes"	"Added: Armor addition, players now can gain armor."
-		"Notes"	"Added: Enable or disable sounds (bodyshots & headshots)."
-		"Notes" "Fixed: Weapon skins for all but (usp-s & hkp2000)."
-		"Notes"	"Fixed: Welcome message creating an invalid index."
-		"Notes"	"Fixed: Damage Panel creating an invalid index."
-		"Notes" "Fixed: Spawn system not correctly judging LoS."
+		"Notes"	"Changes in 2.0.7:"
+		"Notes" "Updated: Improved ammo replenish system"
+		"Notes" "Updated: SDKHook performance and usage (thanks to Bacardi)"
+		"Notes" "Added: Support for late load, safely load the plugin at anytime."
+		"Notes" "Added: Primary only gun mode"
+		"Notes" "Added: No knife damage"
+		"Notes" "Fixed: Wrong language phrase for secondary weapons when not selected."
+		"Notes" "Fixed: Native SetConVarInt reported: Invalid convar handle 0 (error 4)"
+		"Notes" "Fixed: Native PrintHintText reported: Language phrase ^ not found"
+		"Notes" "Fixed: P2000 sounding like a deagle. P2000 must now be equipped in player's loadout."
 	}
 
 	"Files"

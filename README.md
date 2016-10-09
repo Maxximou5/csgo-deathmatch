@@ -1,4 +1,4 @@
-### [CS:GO] Deathmatch (v2.0.6, 2016-08-29)
+### [CS:GO] Deathmatch (v2.0.7, 2016-10-08)
 <a href="https://www.maxximou5.com/"><img src="https://maxximou5.com/sourcemod/assests/img/deathmatch_csgo.png" alt="csgo deathmatch plugin" width="600" /></a>
 ===============
 
@@ -10,9 +10,11 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - Free For All (FFA)
 - Display Panel for Damage
 - Different Game Modes:
-	- Headshot Only Mode
-	- Pistol Only Mode
-	- Random Weapons Mode
+	- Headshot Only
+	- Primary Weapons Only
+	- Secondary Weapons Only
+	- Random Weapons Only
+- No Knife Damage (Guns Only)
 - Objective Removal (C4/Hostage)
 - Spawn Editor and Menu
 - Replenish Ammo & Clip
@@ -32,7 +34,6 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 ### Features to Add
 
 - Integrated Stats (ELO)
-- No Knife Damage (Guns Only)
 - Team Selective Spawns
 
 ### Commands
@@ -46,7 +47,7 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 ### ConVars
 
 - dm_enabled - (Default) 1 - Enable Deathmatch.
-- dm_enable_valve_deathmatch - (Default) 0 - Enable compatibility for Valve's Deathmatch (game_type 1 & game_mode 2) or Custom (game_type 3 & game_mode 0).
+- dm_valve_deathmatch - (Default) 0 - Enable compatibility for Valve's Deathmatch (game_type 1 & game_mode 2) or Custom (game_type 3 & game_mode 0).
 - dm_welcomemsg (Default) 1 - Display a message saying that your server is running Deathmatch.
 - dm_free_for_all - (Default) 0 - Free for all mode.
 - dm_hide_radar - (Default) 0 - Hides the radar from players.
@@ -62,14 +63,16 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - dm_remove_objectives - (Default) 1 - Disables bomb sites, and removes c4 and hostages.
 - dm_respawning - (Default) 1 - Enable respawning.
 - dm_respawn_time - (Default) 2.0 - Respawn time.
-- dm_gun_menu_mode - (Default) 1 - 1) Enabled. 2) Pistol only mode. 3) Random weapons every round. 4) Disabled.
+- dm_gun_menu_mode - (Default) 1 - 1) Enabled. 2) Primary weapons only. 3) Secondary weapons only. 4) Random weapons only. 5) Disabled.
 - dm_los_spawning - (Default) 1 - Enable line of sight spawning.
 - dm_los_attempts - (Default) 10 - Maximum attempts to find a suitable line of sight spawn point.
 - dm_spawn_distance - (Default) 0 - Minimum distance from enemies at which a player can spawn.
 - dm_sp_time - (Default) 1.0 - Spawn protection time.
+- dm_no_knife_damage - (Default) 0 - Knives do NO damage to players.
 - dm_remove_weapons - (Default) 1 - Remove ground weapons.
-- dm_replenish_ammo - (Default) 1 - Replenish ammo reserve.
-- dm_replenish_clip - (Default) 1 - Replenish ammo clip.
+- dm_replenish_ammo - (Default) 1 - Replenish ammo on reload.
+- dm_replenish_clip - (Default) 0 - Replenish ammo clip on kill.
+- dm_replenish_reserve - (Default) 0 - Replenish ammo reserve on kill.
 - dm_replenish_grenade - (Default) 0 - Unlimited player grenades.
 - dm_replenish_hegrenade - (Default) 0 - Unlimited hegrenades.
 - dm_replenish_grenade_kill (Default) 0 - Give players their grenade back on successful kill.
