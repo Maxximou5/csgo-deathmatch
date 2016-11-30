@@ -7,6 +7,7 @@
 		"es"	"Escriba {green}guns{default} para abrir el menú de armas."
 		"fr"	"Tapez {green}guns{default} pour ouvrir le menu des armes."
 		"pl"	"Napisz {green}guns{default} aby otworzyć menu broni."
+		"ru"	"Напечатайте {green}guns{default} что бы открыть меню оружия."
 	}
 
 	"Guns Disabled"
@@ -16,6 +17,7 @@
 		"es"	"El menú de armas se ha {red}desactivado{default}."
 		"fr"	"Le menu des armes a été {red}désactivé{default}."
 		"pl"	"Menu broni zostało {red}wyłączone{default}."
+		"ru"	"Меню оружия было {red}отключено{default}."
 	}
 
 	"Guns New Spawn"
@@ -25,6 +27,7 @@
 		"es"	"Se le dará {green}nuevas{default} armas en el próximo desove."
 		"fr"	"Vous recevrez de {green}nouvelles{default} armes sur le prochain spawn."
 		"pl"	"Zostaną dodane {green}nowe{default} bronie po respawnie."
+		"ru"	"Вы получите {green}новое{default} оружие в следующем возрождении."
 	}
 
 	"Guns Same Spawn"
@@ -34,6 +37,7 @@
 		"es"	"Se le dará {green}mismas{default} armas en el próximo desove."
 		"fr"	"Vous recevrez {green}mêmes{default} armes sur le prochain spawn."
 		"pl"	"Zostaną dodane {green}te same{default} bronie po respawnie."
+		"ru"	"Вы получите {green}аналогичное{default} оружие в следующем возрождении."
 	}
 
 	"Guns Random Spawn"
@@ -43,6 +47,7 @@
 		"es"	"Se le dará armas {green}al azar{default} en el próximo desove."
 		"fr"	"Vous recevrez armes {green}aléatoires{default} sur le prochain spawn."
 		"pl"	"Zostaną dodane {green}losowe{default} bronie po respawnie."
+		"ru"	"Вы получите {green}случайное{default} оружие в следующем возрождении."
 	}
 
 	"Panel Health Remaining"
@@ -52,6 +57,7 @@
 		"es"	"Salud restante:"
 		"fr"	"Restant Santé:"
 		"pl"	"Pozostałe zdrowie:"
+		"ru"	"Оставшееся здоровье:"
 	}
 
 	"Panel Damage Giver"
@@ -61,6 +67,7 @@
 		"es"	"Lo hiciste"
 		"fr"	"Vous avez"
 		"pl"	"Zadałeś"
+		"ru"	"Вы совершили"
 	}
 
 	"Panel Damage Taker"
@@ -70,6 +77,7 @@
 		"es"	"daño a"
 		"fr"	"dommages à"
 		"pl"	"obrażeń graczowi"
+		"ru"	"урон по"
 	}
 
 	"Panel Kill Confirmed"
@@ -79,6 +87,7 @@
 		"es"	"Usted lo mató."
 		"fr"	"Vous l'avez tué."
 		"pl"	"Zabiłeś go."
+		"ru"	"Вы убили его."
 	}
 
 	"HP Knife Kill"
@@ -88,6 +97,7 @@
 		"es"	"por matar a un enemigo ({green}cuchillo{default})."
 		"fr"	"pour avoir frag ({green}couteau{default})."
 		"pl"	"za zabicie przeciwnika ({green}nożem{default})."
+		"ru"	"за убийство противника ({green}ножом{default})."
 	}
 
 	"HP Headshot Kill"
@@ -97,6 +107,7 @@
 		"es"	"por matar a un enemigo ({green}disparo a la cabeza{default})."
 		"fr"	"pour avoir frag ({green}à la tête{default})."
 		"pl"	"za zabicie przeciwnika ({green}headshotem{default})."
+		"ru"	"за убийство противника ({green}в голову{default})."
 	}
 
 	"HP Nade Kill"
@@ -106,6 +117,7 @@
 		"es"	"por matar a un enemigo ({green}granada{default})."
 		"fr"	"pour avoir frag ({green}grenade{default})."
 		"pl"	"za zabicie przeciwnika ({green}granatem{default})."
+		"ru"	"за убийство противника ({green}гранатой{default})."
 	}
 
 	"HP Kill"
@@ -115,6 +127,7 @@
 		"es"	"por matar a un enemigo."
 		"fr"	"pour avoir frag."
 		"pl"	"za zabicie przeciwnika."
+		"ru"	"за убийство противника."
 	}
 
 	"AP Knife Kill"
@@ -124,6 +137,7 @@
 		"es"	"por matar a un enemigo ({green}cuchillo{default})."
 		"fr"	"pour avoir frag ({green}couteau{default})."
 		"pl"	"za zabicie przeciwnika ({green}nożem{default})."
+		"ru"	"за убийство противника ({green}ножом{default})."
 	}
 
 	"AP Headshot Kill"
@@ -133,6 +147,7 @@
 		"es"	"por matar a un enemigo ({green}disparo a la cabeza{default})."
 		"fr"	"pour avoir frag ({green}à la tête{default})."
 		"pl"	"za zabicie przeciwnika ({green}headshotem{default})."
+		"ru"	"за убийство противника ({green}в голову{default})."
 	}
 
 	"AP Nade Kill"
@@ -142,6 +157,7 @@
 		"es"	"por matar a un enemigo ({green}granada{default})."
 		"fr"	"pour avoir frag ({green}grenade{default})."
 		"pl"	"za zabicie przeciwnika ({green}granatem{default})."
+		"ru"	"за убийство противника ({green}гранатой{default})."
 	}
 
 	"AP Kill"
@@ -151,6 +167,7 @@
 		"es"	"por matar a un enemigo."
 		"fr"	"pour avoir frag."
 		"pl"	"za zabicie przeciwnika."
+		"ru"	"за убийство противника."
 	}
 
 	"Spawn Editor Enabled"
@@ -160,6 +177,7 @@
 		"es"	"El modo de edición {green}activado{default}."
 		"fr"	"Modifier le mode {green}activé{default}."
 		"pl"	"Tryb edycji {green}włączony{default}."
+		"ru"	"Режим редактирования {green}включен{default}."
 	}
 
 	"Spawn Editor Disabled"
@@ -169,6 +187,7 @@
 		"es"	"El modo de edición {red}deshabilitado{default}."
 		"fr"	"Modifier le mode {red}désactivé{default}."
 		"pl"	"Tryb edycji {red}wyłączony{default}."
+		"ru"	"Режим редактирования {red}отключен{default}."
 	}
 
 	"Spawn Editor Teleported"
@@ -178,6 +197,7 @@
 		"es"	"Teletransportado a desovar puntos"
 		"fr"	"Téléporté pour frayer le point"
 		"pl"	"Przeteleportowany do punktu respawnu"
+		"ru"	"Телепортирован к точке возрождения"
 	}
 
 	"Spawn Editor No Spawn"
@@ -187,6 +207,7 @@
 		"es"	"No hay puntos de regeneración."
 		"fr"	"Il n'y a pas de points de spawn."
 		"pl"	"Brak punktów respawnu."
+		"ru"	"Точек возрождения здесь нет."
 	}
 
 	"Spawn Editor Deleted Spawn"
@@ -196,6 +217,7 @@
 		"es"	"Punto de desovar eliminados"
 		"fr"	"Point de spawn supprimé"
 		"pl"	"Usunięto punkt respawnu"
+		"ru"	"Точка возрождения удалена"
 	}
 
 	"Spawn Editor Deleted All"
@@ -205,6 +227,7 @@
 		"es"	"Se han eliminado todos los puntos de regeneración."
 		"fr"	"Tous les points spawn ont été supprimés."
 		"pl"	"Wszystkie punkty respawnu zostały usunięte."
+		"ru"	"Все точки возрождения были удалены."
 	}
 
 	"Spawn Editor Spawn Added"
@@ -214,6 +237,7 @@
 		"es"	"Punto de desovar añadido"
 		"fr"	"Point de spawn Ajouté"
 		"pl"	"Dodano punkt respawnu"
+		"ru"	"Точка возрождения добавлена"
 	}
 
 	"Spawn Editor Spawn Not Added"
@@ -223,6 +247,7 @@
 		"es"	"No se pudo añadir punto de desovar (límite máximo alcanzado)."
 		"fr"	"Impossible d'ajouter le point spawn (limite maximale atteinte)."
 		"pl"	"Nie można dodać punktu respawnu (maksymalny limit osiągnięty)."
+		"ru"	"Не удалось добавить точки возрождения (превышен их предел)."
 	}
 
 	"Spawn Editor Spawn Inserted"
@@ -232,6 +257,7 @@
 		"es"	"Punto de desovar Insertado en"
 		"fr"	"Point de spawn inséré à"
 		"pl"	"Ustawiono punkt respawnu na"
+		"ru"	"Вставить точку возрождения в"
 	}
 
 	"Spawn Editor Config Saved"
@@ -241,6 +267,7 @@
 		"es"	"La configuración se ha guardado."
 		"fr"	"Configuration a été enregistrée."
 		"pl"	"Konfiguracja została zapisana."
+		"ru"	"Конфигурация была сохранена."
 	}
 
 	"Spawn Editor Config Not Saved"
@@ -249,6 +276,7 @@
 		"en"	"Configuration could not be saved."
 		"es"	"La configuración no ha podido guardar."
 		"fr"	"Configuration n'a pas pu être sauvé."
-		"pl"	"Konfigurcja nie może zostać zapisana"
+		"pl"	"Konfigurcja nie może zostać zapisana."
+		"ru"	"Конфигурация не может быть сохранена."
 	}
 }
