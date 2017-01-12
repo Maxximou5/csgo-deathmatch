@@ -4,20 +4,14 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.0.7"
-			"Previous"	"2.0.6"
+			"Latest"	"2.0.7a"
+			"Previous"	"2.0.7"
 		}
 
-		"Notes"	"Changes in 2.0.7:"
-		"Notes" "Updated: Improved ammo replenish system"
-		"Notes" "Updated: SDKHook performance and usage (thanks to Bacardi)"
-		"Notes" "Added: Support for late load, safely load the plugin at anytime."
-		"Notes" "Added: Primary only gun mode"
-		"Notes" "Added: No knife damage"
-		"Notes" "Fixed: Wrong language phrase for secondary weapons when not selected."
-		"Notes" "Fixed: Native SetConVarInt reported: Invalid convar handle 0 (error 4)"
-		"Notes" "Fixed: Native PrintHintText reported: Language phrase ^ not found"
-		"Notes" "Fixed: P2000 sounding like a deagle. P2000 must now be equipped in player's loadout."
+		"Notes"	"Changes in 2.0.7a:"
+		"Notes" "Fixed: dm_headshot_only not working properly."
+		"Notes" "Fixed: Knife, grenade, and taser damage not being allowed when dm_no_knife_damage was enabled."
+		"Notes" "Fixed: dm_headshot_only_allow_knife not working when dm_no_knife_damage was enabled."
 	}
 
 	"Files"

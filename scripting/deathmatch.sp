@@ -8,7 +8,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION          "2.0.7"
+#define PLUGIN_VERSION          "2.0.7a"
 #define PLUGIN_NAME             "[CS:GO] Deathmatch"
 #define PLUGIN_AUTHOR           "Maxximou5"
 #define PLUGIN_DESCRIPTION      "Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc)."
@@ -243,10 +243,6 @@ int distanceSearchAttempts = 0;
 int distanceSearchSuccesses = 0;
 int distanceSearchFailures = 0;
 int spawnPointSearchFailures = 0;
-
-/* HS Only Variables */
-char g_sGrenade[32];
-char g_sWeapon[32];
 
 /* Static Offsets */
 static int g_iWeapons_Clip1Offset;
@@ -1873,6 +1869,16 @@ public Action Event_InfernoStartburn(Event event, const char[] name, bool dontBr
 
 public Action OnTraceAttack(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &ammotype, int hitbox, int hitgroup)
 {
+	if (noKnifeDamage)
+	{
+		char knife[32];
+		GetClientWeapon(attacker, knife, sizeof(knife));
+		if (StrEqual(knife, "weapon_knife") || StrEqual(knife, "weapon_bayonet"))
+		{
+			return Plugin_Handled;
+		}
+	}
+
 	if (hsOnly)
 	{
 		char weapon[32];
@@ -1884,11 +1890,11 @@ public Action OnTraceAttack(int victim, int &attacker, int &inflictor, float &da
 		{
 			return Plugin_Continue;
 		}
-		else if (hsOnly_AllowKnife && (StrContains(g_sWeapon, "weapon_knife") || StrContains(g_sWeapon, "weapon_bayonet")))
+		else if (hsOnly_AllowKnife && (StrEqual(weapon, "weapon_knife") || StrEqual(weapon, "weapon_bayonet")))
 		{
 			return Plugin_Continue;
 		}
-		else if (hsOnly_AllowNade && StrEqual(grenade, "hegrenade_projectile"))
+		else if (hsOnly_AllowNade && (StrEqual(grenade, "hegrenade_projectile") || StrEqual(grenade, "decoy_projectile") || StrEqual(grenade, "molotov_projectile")))
 		{
 			return Plugin_Continue;
 		}
@@ -1902,20 +1908,29 @@ public Action OnTraceAttack(int victim, int &attacker, int &inflictor, float &da
 		}
 	}
 
-	if (noKnifeDamage)
-	{
-		char weapon[32];
-		GetClientWeapon(attacker, weapon, sizeof(weapon));
-		if (StrContains(g_sWeapon, "weapon_knife") || StrContains(g_sWeapon, "weapon_bayonet"))
-			return Plugin_Handled;
-	}
 	return Plugin_Continue;
 }
 
 public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
 {
+	if (noKnifeDamage)
+	{
+		if (IsValidClient(attacker))
+		{
+			char knife[32];
+			GetClientWeapon(attacker, knife, sizeof(knife));
+			if (StrEqual(knife, "weapon_knife") || StrEqual(knife, "weapon_bayonet"))
+			{
+				return Plugin_Handled;
+			}
+		}
+	}
+
 	if (hsOnly)
 	{
+		char grenade[32];
+		char weapon[32];
+
 		if (IsValidClient(victim))
 		{
 			if (damagetype & DMG_FALL || attacker == 0)
@@ -1932,30 +1947,26 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 
 			if (IsValidClient(attacker))
 			{
-				GetEdictClassname(inflictor, g_sGrenade, sizeof(g_sGrenade));
-				GetClientWeapon(attacker, g_sWeapon, sizeof(g_sWeapon));
+				GetEdictClassname(inflictor, grenade, sizeof(grenade));
+				GetClientWeapon(attacker, weapon, sizeof(weapon));
 
 				if (damagetype & DMG_HEADSHOT)
 				{
-
 					return Plugin_Continue;
 				}
 				else
 				{
-					if (hsOnly_AllowKnife)
+					if (hsOnly_AllowKnife && (StrEqual(weapon, "weapon_knife") || StrEqual(weapon, "weapon_bayonet")))
 					{
-						if (StrContains(g_sWeapon, "weapon_knife") || StrContains(g_sWeapon, "weapon_bayonet"))
-						{
-							return Plugin_Continue;
-						}
+						return Plugin_Continue;
 					}
-
-					if (hsOnly_AllowNade)
+					else if (hsOnly_AllowNade && (StrEqual(grenade, "hegrenade_projectile") || StrEqual(grenade, "decoy_projectile") || StrEqual(grenade, "molotov_projectile")))
 					{
-						if (StrEqual(g_sGrenade, "hegrenade_projectile") || StrEqual(g_sGrenade, "decoy_projectile") || StrEqual(g_sGrenade, "molotov_projectile"))
-						{
-							return Plugin_Continue;
-						}
+						return Plugin_Continue;
+					}
+					else if (hsOnly_AllowTaser && StrEqual(weapon, "weapon_taser"))
+					{
+						return Plugin_Continue;
 					}
 					return Plugin_Handled;
 				}
@@ -1971,17 +1982,6 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 		}
 	}
 
-	if (noKnifeDamage)
-	{
-		if (IsValidClient(attacker))
-		{
-			GetClientWeapon(attacker, g_sWeapon, sizeof(g_sWeapon));
-			if (StrContains(g_sWeapon, "weapon_knife") || StrContains(g_sWeapon, "weapon_bayonet"))
-			{
-				return Plugin_Handled;
-			}
-		}
-	}
 	return Plugin_Continue;
 }
 

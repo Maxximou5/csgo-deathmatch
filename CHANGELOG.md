@@ -1,3 +1,8 @@
+v2.0.7a:
+- Fixed: dm_headshot_only not working properly.
+- Fixed: Knife, grenade, and taser damage not being allowed when dm_no_knife_damage was enabled.
+- Fixed: dm_headshot_only_allow_knife not working when dm_no_knife_damage was enabled.
+
 v2.0.7:
 - Updated: Improved ammo replenish system
 	- dm_replenish_ammo - (Default) 1 - Replenish ammo on reload.
