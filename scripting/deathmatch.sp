@@ -1590,6 +1590,10 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
 
 			if (displayHPMessages && displayAPMessages)
 			{
+				int attackerAP = GetClientArmor(attackerIndex);
+				int attackerHP = GetClientHealth(attackerIndex);
+				bool bchanged = true;
+
 				if (attackerAP < maxAP && attackerHP < maxHP)
 				{
 					if (knifed)
@@ -1600,6 +1604,32 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
 						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 & \x04+%i AP\x01 %t", HPPerNadeKill, APPerNadeKill, "HP Nade Kill", "AP Nade Kill");
 					else
 						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 & \x04+%i AP\x01 %t", HPPerKill, APPerKill, "HP Kill", "AP Kill");
+
+					bchanged = false;
+				}
+				else if (bchanged && attackerHP < maxHP)
+				{
+					if (knifed)
+						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 %t", HPPerKnifeKill, "HP Knife Kill");
+					else if (headshot)
+						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 %t", HPPerHeadshotKill, "HP Headshot Kill");
+					else if (nades)
+						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 %t", HPPerNadeKill, "HP Nade Kill");
+					else 
+						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 %t", HPPerKill, "HP Kill");
+
+					bchanged = false;
+				}
+				else if (bchanged && attackerAP < maxAP)
+				{
+					if (knifed)
+						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i AP\x01 %t", APPerKnifeKill, "AP Knife Kill");
+					else if (headshot)
+						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i AP\x01 %t", APPerHeadshotKill, "AP Headshot Kill");
+					else if (nades)
+						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i AP\x01 %t", APPerNadeKill, "AP Nade Kill");
+					else
+						CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i AP\x01 %t", APPerKill, "AP Kill");
 				}
 			}
 
