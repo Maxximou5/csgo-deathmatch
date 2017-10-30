@@ -134,6 +134,7 @@ bool hsOnly_AllowKnife;
 bool hsOnly_AllowTaser;
 bool hsOnly_AllowNade;
 bool removeObjectives;
+bool hsOnlyClient[MAXPLAYERS];
 
 /* Weapon Variables */
 bool noKnifeDamage;
@@ -570,6 +571,7 @@ public void OnMapStart()
 
 public void OnClientPutInServer(int client)
 {
+	hsOnlyClient[client] = false;
 	SDKHook(client, SDKHook_TraceAttack, OnTraceAttack);
 	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 }
@@ -584,6 +586,7 @@ public void OnClientPostAdminCheck(int client)
 
 public void OnClientDisconnect(int client)
 {
+	hsOnlyClient[client] = false;
 	RemoveRagdoll(client);
 	SDKUnhook(client, SDKHook_TraceAttack, OnTraceAttack);
 	SDKUnhook(client, SDKHook_OnTakeDamage, OnTakeDamage);
@@ -605,6 +608,7 @@ void ResetClientSettings(int client)
 	weaponsGivenThisRound[client] = false;
 	newWeaponsSelected[client] = false;
 	playerMoved[client] = false;
+	hsOnlyClient[client] = false;
 }
 
 void SetClientGunModeSettings(int client)
@@ -1252,6 +1256,7 @@ bool WriteMapConfig()
 public Action Event_Say(int client, const char[] command, int argc)
 {
 	static char menuTriggers[][] = { "gun", "!gun", "/gun", "guns", "!guns", "/guns", "menu", "!menu", "/menu", "weapon", "!weapon", "/weapon", "weapons", "!weapons", "/weapons" };
+	static char hsOnlyTriggers[][] = { "hs", "!hs", "/hs", "headshot", "!headshot", "/headshot" };
 
 	if (enabled && IsValidClient(client) && (GetClientTeam(client) != CS_TEAM_SPECTATOR))
 	{
@@ -1271,7 +1276,23 @@ public Action Event_Say(int client, const char[] command, int argc)
 					CPrintToChat(client, "[\x04DM\x01] %t", "Guns Disabled");
 				return Plugin_Handled;
 			}
+			if (StrEqual(text, hsOnlyTriggers[i], false))
+			{
+				if (hsOnlyClient[client] == true)
+				{
+					hsOnlyClient[client] = false;
+					CPrintToChat(client, "[\x04DM\x01] %t", "HS Only Client Disabled");
+				}					
+				else
+				{
+					hsOnlyClient[client] = true;
+					CPrintToChat(client, "[\x04DM\x01] %t", "HS Only Client Enabled");
+				}
+				return Plugin_Handled;
+			}
 		}
+
+
 	}
 	return Plugin_Continue;
 }
@@ -1390,6 +1411,7 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 				{
 					PrintHintText(client, "This server is running:\n <font color='#00FF00'>Deathmatch</font> v%s", PLUGIN_VERSION);
 					CPrintToChat(client, "[\x04DM\x01] This server is running \x04Deathmatch \x01v%s", PLUGIN_VERSION);
+					CPrintToChat(client, "[\x04DM\x01] %t", "HS Hint");
 				}
 				/* Hide radar. */
 				if (ffa || hideradar)
@@ -1680,10 +1702,11 @@ public Action Event_PlayerHurt(Event event, const char[] name, bool dontBroadcas
 		}
 	}
 
-	if (hsOnly)
+	int attacker = GetClientOfUserId(event.GetInt("attacker"));
+	if (hsOnly || hsOnlyClient[attacker])
 	{
 		int victim = GetClientOfUserId(event.GetInt("userid"));
-		int attacker = GetClientOfUserId(event.GetInt("attacker"));
+		//int attacker = GetClientOfUserId(event.GetInt("attacker"));
 		int dhealth = event.GetInt("dmg_health");
 		int darmor = event.GetInt("dmg_iArmor");
 		int health = event.GetInt("health");
@@ -1918,7 +1941,7 @@ public Action OnTraceAttack(int victim, int &attacker, int &inflictor, float &da
 		}
 	}
 
-	if (hsOnly)
+	if (hsOnly || hsOnlyClient[attacker])
 	{
 		char weapon[32];
 		char grenade[32];
@@ -1965,7 +1988,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 		}
 	}
 
-	if (hsOnly)
+	if (hsOnly || hsOnlyClient[attacker])
 	{
 		char grenade[32];
 		char weapon[32];

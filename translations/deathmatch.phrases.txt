@@ -19,6 +19,34 @@
 		"pl"	"Menu broni zostało {red}wyłączone{default}."
 		"ru"	"Меню оружия было {red}отключено{default}."
 	}
+	"HS Hint"
+	{
+		"br"	"Type {green}hs{default} to enable personal HS only mode."
+		"en"	"Type {green}hs{default} to enable personal HS only mode."
+		"es"	"Type {green}hs{default} to enable personal HS only mode."
+		"fr"	"Type {green}hs{default} to enable personal HS only mode."
+		"pl"	"Type {green}hs{default} to enable personal HS only mode."
+		"ru"	"Type {green}hs{default} to enable personal HS only mode."
+	}
+	"HS Only Client Disabled"
+	{
+		"br"	"HS only mode has been {red}disabled{default}."
+		"en"	"HS only mode has been {red}disabled{default}."
+		"es"	"HS only mode has been {red}disabled{default}."
+		"fr"	"HS only mode has been {red}disabled{default}."
+		"pl"	"HS only mode has been {red}disabled{default}."
+		"ru"	"HS only mode has been {red}disabled{default}."
+	}
+	
+	"HS Only Client Enabled"
+	{
+		"br"	"HS only mode has been {green}enabled{default}."
+		"en"	"HS only mode has been {green}enabled{default}."
+		"es"	"HS only mode has been {green}enabled{default}."
+		"fr"	"HS only mode has been {green}enabled{default}."
+		"pl"	"HS only mode has been {green}enabled{default}."
+		"ru"	"HS only mode has been {green}enabled{default}."
+	}
 
 	"Guns New Spawn"
 	{
