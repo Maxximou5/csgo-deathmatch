@@ -1276,7 +1276,7 @@ public Action Event_Say(int client, const char[] command, int argc)
 					CPrintToChat(client, "[\x04DM\x01] %t", "Guns Disabled");
 				return Plugin_Handled;
 			}
-			if (StrEqual(text, hsOnlyTriggers[i], false))
+			if (StrEqual(text, hsOnlyTriggers[i], false) && !hsOnly)
 			{
 				if (hsOnlyClient[client] == true)
 				{
@@ -1411,7 +1411,8 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 				{
 					PrintHintText(client, "This server is running:\n <font color='#00FF00'>Deathmatch</font> v%s", PLUGIN_VERSION);
 					CPrintToChat(client, "[\x04DM\x01] This server is running \x04Deathmatch \x01v%s", PLUGIN_VERSION);
-					CPrintToChat(client, "[\x04DM\x01] %t", "HS Hint");
+					if(!hsOnly)
+						CPrintToChat(client, "[\x04DM\x01] %t", "HS Hint");
 				}
 				/* Hide radar. */
 				if (ffa || hideradar)
