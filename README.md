@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 ### [CS:GO] Deathmatch (v2.1.0, 2016-03-12)
 <a href="http://www.maxximou5.com/"><img src="http://maxximou5.com/sourcemod/assests/img/deathmatch_csgo.png" alt="csgo deathmatch plugin" width="600" /></a>
+=======
+### [CS:GO] Deathmatch (v2.0.7a, 2017-01-11)
+<a href="https://www.maxximou5.com/"><img src="https://maxximou5.com/sourcemod/assests/img/deathmatch_csgo.png" alt="csgo deathmatch plugin" width="600" /></a>
+>>>>>>> master
 ===============
 
 Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc).
@@ -10,29 +15,30 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - Free For All (FFA)
 - Display Panel for Damage
 - Different Game Modes:
- - Headshot Only Mode
- - Pistol Only Mode
- - Random Weapons Mode
+	- Headshot Only
+	- Primary Weapons Only
+	- Secondary Weapons Only
+	- Random Weapons Only
+- No Knife Damage (Guns Only)
 - Objective Removal (C4/Hostage)
 - Spawn Editor and Menu
 - Replenish Ammo & Clip
 - Replenish Grenades
 - Hide Radar for Players
-- Kill Reward (HP/Ammo/Grenades)
+- Kill Reward (HP/AP/Ammo/Grenades)
 - Line of Sight Spawning
 - 3rd Party Knife Plugin Support
 - Auto-Update Support
 - Multi-Lanugage Support
- - English Supported
- - Spanish Supported
- - French Supported
- - Polish Supported
- - Brazilian Supported
+	- English Supported
+	- Spanish Supported
+	- French Supported
+	- Polish Supported
+	- Brazilian Supported
 
 ### Features to Add
 
 - Integrated Stats (ELO)
-- No Knife Damage (Guns Only)
 - Team Selective Spawns
 
 ### Commands
@@ -45,12 +51,15 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 
 ### ConVars
 
-- dm_enabled - (Default) 1 - Enable deathmatch.
+- dm_enabled - (Default) 1 - Enable Deathmatch.
+- dm_valve_deathmatch - (Default) 0 - Enable compatibility for Valve's Deathmatch (game_type 1 & game_mode 2) or Custom (game_type 3 & game_mode 0).
 - dm_welcomemsg (Default) 1 - Display a message saying that your server is running Deathmatch.
 - dm_free_for_all - (Default) 0 - Free for all mode.
 - dm_hide_radar - (Default) 0 - Hides the radar from players.
 - dm_display_panel - (Default) 0 - Display a panel showing health of the victim.
 - dm_display_panel_damage - (Default) 0 - Display a panel showing damage done to a player.
+- dm_sounds_bodyshots - (Default) 1 - Enable the sounds of bodyshots.
+- dm_sounds_headshots - (Default) 1 - Enable the sounds of headshots.
 - dm_headshot_only - (Default) 0 - Headshot Only mode.
 - dm_headshot_only_allow_world - (Default) 0 - Enable world damage during headshot only mode.
 - dm_headshot_only_allow_knife - (Default) 0 - Enable knife damage during headshot only mode.
@@ -59,17 +68,35 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - dm_remove_objectives - (Default) 1 - Disables bomb sites, and removes c4 and hostages.
 - dm_respawning - (Default) 1 - Enable respawning.
 - dm_respawn_time - (Default) 2.0 - Respawn time.
-- dm_gun_menu_mode - (Default) 1 - 1) Enabled. 2) Pistol only mode. 3) Random weapons every round. 4) Disabled.
+- dm_gun_menu_mode - (Default) 1 - 1) Enabled. 2) Primary weapons only. 3) Secondary weapons only. 4) Random weapons only. 5) Disabled.
 - dm_los_spawning - (Default) 1 - Enable line of sight spawning.
 - dm_los_attempts - (Default) 10 - Maximum attempts to find a suitable line of sight spawn point.
 - dm_spawn_distance - (Default) 0 - Minimum distance from enemies at which a player can spawn.
 - dm_sp_time - (Default) 1.0 - Spawn protection time.
+- dm_no_knife_damage - (Default) 0 - Knives do NO damage to players.
 - dm_remove_weapons - (Default) 1 - Remove ground weapons.
-- dm_replenish_ammo - (Default) 1 - Replenish ammo reserve.
-- dm_replenish_clip - (Default) 1 - Replenish ammo clip.
+- dm_replenish_ammo - (Default) 1 - Replenish ammo on reload.
+- dm_replenish_clip - (Default) 0 - Replenish ammo clip on kill.
+- dm_replenish_reserve - (Default) 0 - Replenish ammo reserve on kill.
 - dm_replenish_grenade - (Default) 0 - Unlimited player grenades.
 - dm_replenish_hegrenade - (Default) 0 - Unlimited hegrenades.
 - dm_replenish_grenade_kill (Default) 0 - Give players their grenade back on successful kill.
+<<<<<<< HEAD
+=======
+- dm_hp_start - (Default) 100 - Spawn HP.
+- dm_hp_max - (Default) 100 - Maximum HP.
+- dm_hp_kill - (Default) 5 - HP per kill.
+- dm_hp_hs - (Default) 10 - HP per headshot kill.
+- dm_hp_knife - (Default) 50 - HP per knife kill.
+- dm_hp_nade - (Default) 30 - HP per nade kill.
+- dm_hp_messages - (Default) 1 - Display HP messages.
+- dm_ap_max - (Default) 100 - Maximum Armor Points (AP).
+- dm_ap_kill - (Default) 5 - Armor Points (AP) per kill.
+- dm_ap_hs - (Default) 10 - Armor Points (AP) per headshot kill.
+- dm_ap_knife - (Default) 50 - Armor Points (AP) per knife kill.
+- dm_ap_nade - (Default) 30 - Armor Points (AP) per nade kill.
+- dm_ap_messages - (Default) 1 - Display AP messages.
+>>>>>>> master
 - dm_nade_messages - (Default) 1 - Display grenade messages.
 - dm_hp_start - (Default) 100 - Spawn Health Points (HP).
 - dm_hp_max - (Default) 100 - Maximum Health Points (HP).
@@ -105,8 +132,13 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 
 This plugin is tested on the following Sourcemod & Metamod Versions.
 
+<<<<<<< HEAD
 - <a href="http://sourcemod.net/downloads.php">Sourcemod 1.7 - build 5301+ & 1.8 - build 5868+</a>
 - <a href="http://www.sourcemm.net/snapshots">Metamod 1.10.7-git951+ & 1.11.0-git998</a>
+=======
+- <a href="http://www.sourcemod.net/snapshots.php">Sourcemod 1.8.0+</a>
+- <a href="http://www.sourcemm.net/snapshots">Metamod 1.10.4+</a>
+>>>>>>> master
 
 ### Requirements
 
@@ -145,7 +177,14 @@ A thank you to those who helped:
 - <a href="https://forums.alliedmods.net/member.php?u=187003">Snip3rUK</a> (<a href="https://forums.alliedmods.net/showthread.php?t=189577">Original Plugin</a>)
 - <a href="https://forums.alliedmods.net/member.php?u=26021">Dr!fter</a> (General Code Support)
 - <a href="http://steamcommunity.com/id/DoomHammer69/">DoomHammer</a> (Debugging and Beta Testing)
+<<<<<<< HEAD
 - <a href="https://forums.alliedmods.net/member.php?u=245683">splewis</a> (General Code Support)
+=======
+- <a href="http://steamcommunity.com/id/int64shrandy/">int64 Shrandy</a> (Fixing the ammo clip and reserve refill)
+- <a href="https://forums.alliedmods.net/member.php?u=255924">szyma94</a> (Polish translation)
+- <a href="https://forums.alliedmods.net/member.php?u=260574">Rbt</a> (Brazilian translation)
+- <a href="https://forums.alliedmods.net/member.php?u=245683">splewis</a> (Weapon skins implementation)
+>>>>>>> master
 
 ### Donate
 

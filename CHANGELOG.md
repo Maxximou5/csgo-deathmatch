@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 v2.1.0:
 - NEW: Converted plugin to new syntax!
 - Added: Weapon skins for team based weapons. (Thanks to splewis!)
@@ -12,6 +13,50 @@ Work to be done:
 - Add: Team based spawn points.
 - Add: Knife or weapon only mode.
 - Fix: LoS spawning.
+=======
+v2.0.7a:
+- Fixed: dm_headshot_only not working properly.
+- Fixed: Knife, grenade, and taser damage not being allowed when dm_no_knife_damage was enabled.
+- Fixed: dm_headshot_only_allow_knife not working when dm_no_knife_damage was enabled.
+
+v2.0.7:
+- Updated: Improved ammo replenish system
+	- dm_replenish_ammo - (Default) 1 - Replenish ammo on reload.
+	- dm_replenish_clip - (Default) 0 - Replenish ammo clip on kill.
+	- dm_replenish_reserve - (Default) 0 - Replenish ammo reserve on kill.
+- Updated: SDKHook performance and usage (thanks to Bacardi)
+- Added: Support for late load, safely load the plugin at anytime.
+- Added: Primary only gun mode
+	- dm_gun_menu_mode - (Default) 1 - 1) Enabled. 2) Primary weapons only. 3) Secondary weapons only. 4) Random weapons only. 5) Disabled.
+- Added: No knife damage
+	- dm_no_knife_damage - (Default) 0 - Knives do NO damage to players.
+- Fixed: Wrong language phrase for secondary weapons when not selected.
+- Fixed: Native "SetConVarInt" reported: Invalid convar handle 0 (error 4)
+- Fixed: Native "PrintHintText" reported: Language phrase "^" not found
+- Fixed: P2000 sounding like a deagle. P2000 must now be equipped in player's loadout.
+
+v2.0.6:
+- Updated: Plugin name changed to correctly match the game it was designed for.
+- Updated: Overhaul on syntax, now using 1.8+ syntax!
+- Updated: Spawns for de_nuke & de_cache.
+- Updated: Translation file.
+- Added: Compatibility for Valve's Deathmatch (game_type 1 & game_mode 2) or Custom (game_type 3 & game_mode 0).
+	- dm_valve_deathmatch - (Default) 0 - Enable compatibility for Valve's Deathmatch (game_type 1 & game_mode 2) or Custom (game_type 3 & game_mode 0).
+- Added: Armor addition, players now can gain armor.
+	- dm_ap_max - (Default) 100 - Maximum Armor Points (AP).
+	- dm_ap_kill - (Default) 5 - Armor Points (AP) per kill.
+	- dm_ap_hs - (Default) 10 - Armor Points (AP) per headshot kill.
+	- dm_ap_knife - (Default) 50 - Armor Points (AP) per knife kill.
+	- dm_ap_nade - (Default) 30 - Armor Points (AP) per nade kill.
+	- dm_ap_messages - (Default) 1 - Display AP messages.
+- Added: Enable or disable sounds (bodyshots & headshots).
+	- dm_sounds_bodyshots - (Default) 1 - Enable the sounds of bodyshots.
+	- dm_sounds_headshots - (Default) 1 - Enable the sounds of headshots.
+- Fixed: Weapon skins for all but (usp-s & hkp2000).
+- Fixed: Welcome message creating an invalid index.
+- Fixed: Damage Panel creating an invalid index.
+- Fixed: Spawn system not correctly judging LoS.
+>>>>>>> master
 
 v2.0.5:
 - Added: New R8 weapon.

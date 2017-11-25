@@ -4,6 +4,7 @@
 	{
 		"Version"
 		{
+<<<<<<< HEAD
 			"Latest"	"2.1.0"
 			"Previous"	"2.0.5"
 		}
@@ -11,6 +12,16 @@
 		"Notes"	"Changes in 2.1.0:"
 		"Notes"	"Added: A LOT."
 		"Notes"	"Fixed: A LOT."
+=======
+			"Latest"	"2.0.7a"
+			"Previous"	"2.0.7"
+		}
+
+		"Notes"	"Changes in 2.0.7a:"
+		"Notes" "Fixed: dm_headshot_only not working properly."
+		"Notes" "Fixed: Knife, grenade, and taser damage not being allowed when dm_no_knife_damage was enabled."
+		"Notes" "Fixed: dm_headshot_only_allow_knife not working when dm_no_knife_damage was enabled."
+>>>>>>> master
 	}
 
 	"Files"
