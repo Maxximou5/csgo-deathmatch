@@ -1,19 +1,6 @@
-<<<<<<< HEAD
-v2.1.0:
-- NEW: Converted plugin to new syntax!
-- Added: Weapon skins for team based weapons. (Thanks to splewis!)
-- Added: Armor (AP) per kill.
-- Added: Zeus replenish on kill w/ or w/o knife.
-- Added: Fast weapon equip (dm_fast_equip).
-- Fixed: Annoying and incorrect spawn sounds.
-- Fixed: NULL Ent in GiveNamedItem!
-- Fixed: Attempted to create unknown entity type random!
+v2.0.8:
+- Fixed: 
 
-Work to be done:
-- Add: Team based spawn points.
-- Add: Knife or weapon only mode.
-- Fix: LoS spawning.
-=======
 v2.0.7a:
 - Fixed: dm_headshot_only not working properly.
 - Fixed: Knife, grenade, and taser damage not being allowed when dm_no_knife_damage was enabled.
@@ -56,7 +43,6 @@ v2.0.6:
 - Fixed: Welcome message creating an invalid index.
 - Fixed: Damage Panel creating an invalid index.
 - Fixed: Spawn system not correctly judging LoS.
->>>>>>> master
 
 v2.0.5:
 - Added: New R8 weapon.
