@@ -1,3 +1,6 @@
+v2.0.8:
+- Fixed: 
+
 v2.0.7a:
 - Fixed: dm_headshot_only not working properly.
 - Fixed: Knife, grenade, and taser damage not being allowed when dm_no_knife_damage was enabled.

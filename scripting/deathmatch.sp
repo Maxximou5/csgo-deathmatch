@@ -8,7 +8,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION          "2.0.7a"
+#define PLUGIN_VERSION          "2.0.8"
 #define PLUGIN_NAME             "[CS:GO] Deathmatch"
 #define PLUGIN_AUTHOR           "Maxximou5"
 #define PLUGIN_DESCRIPTION      "Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc)."
@@ -74,6 +74,7 @@ ConVar cvar_dm_display_panel_damage;
 ConVar cvar_dm_sounds_bodyshots;
 ConVar cvar_dm_sounds_headshots;
 ConVar cvar_dm_headshot_only;
+ConVar cvar_dm_headshot_only_allow_client;
 ConVar cvar_dm_headshot_only_allow_world;
 ConVar cvar_dm_headshot_only_allow_knife;
 ConVar cvar_dm_headshot_only_allow_taser;
@@ -117,6 +118,7 @@ ConVar cvar_dm_nades_decoy;
 ConVar cvar_dm_nades_flashbang;
 ConVar cvar_dm_nades_he;
 ConVar cvar_dm_nades_smoke;
+ConVar cvar_dm_nades_tactical;
 
 /* Plugin Variables */
 bool enabled = false;
@@ -129,12 +131,13 @@ bool displayPanelDamage;
 bool bdSounds;
 bool hsSounds;
 bool hsOnly;
+bool hsOnlyClient[MAXPLAYERS + 1];
+bool hsOnly_AllowClient;
 bool hsOnly_AllowWorld;
 bool hsOnly_AllowKnife;
 bool hsOnly_AllowTaser;
 bool hsOnly_AllowNade;
 bool removeObjectives;
-bool hsOnlyClient[MAXPLAYERS];
 
 /* Weapon Variables */
 bool noKnifeDamage;
@@ -213,6 +216,7 @@ int decoy;
 int flashbang;
 int he;
 int smoke;
+int tactical;
 
 /* Menus */
 Handle optionsMenu1 = INVALID_HANDLE;
@@ -303,6 +307,7 @@ public void OnPluginStart()
 	cvar_dm_sounds_bodyshots = CreateConVar("dm_sounds_bodyshots", "1", "Enable the sounds of bodyshots.");
 	cvar_dm_sounds_headshots = CreateConVar("dm_sounds_headshots", "1", "Enable the sounds of headshots.");
 	cvar_dm_headshot_only = CreateConVar("dm_headshot_only", "0", "Headshot only mode.");
+	cvar_dm_headshot_only_allow_client = CreateConVar("dm_headshot_only_allow_client", "1", "Enable clients to have their own personal headshot only mode.");
 	cvar_dm_headshot_only_allow_world = CreateConVar("dm_headshot_only_allow_world", "0", "Enable world damage during headshot only mode.");
 	cvar_dm_headshot_only_allow_knife = CreateConVar("dm_headshot_only_allow_knife", "0", "Enable knife damage during headshot only mode.");
 	cvar_dm_headshot_only_allow_taser = CreateConVar("dm_headshot_only_allow_taser", "0", "Enable taser damage during headshot only mode.");
@@ -346,6 +351,7 @@ public void OnPluginStart()
 	cvar_dm_nades_flashbang = CreateConVar("dm_nades_flashbang", "0", "Number of flashbang grenades to give each player.");
 	cvar_dm_nades_he = CreateConVar("dm_nades_he", "0", "Number of HE grenades to give each player.");
 	cvar_dm_nades_smoke = CreateConVar("dm_nades_smoke", "0", "Number of smoke grenades to give each player.");
+	cvar_dm_nades_tactical = CreateConVar("cvar_dm_nades_tactical", "0", "Number of tactical grenades to give each player.");
 
 	/* Load DM Config */
 	LoadConfig();
@@ -372,6 +378,7 @@ public void OnPluginStart()
 	HookConVarChange(cvar_dm_sounds_bodyshots, Event_CvarChange);
 	HookConVarChange(cvar_dm_sounds_headshots, Event_CvarChange);
 	HookConVarChange(cvar_dm_headshot_only, Event_CvarChange);
+	HookConVarChange(cvar_dm_headshot_only_allow_client, Event_CvarChange);
 	HookConVarChange(cvar_dm_headshot_only_allow_world, Event_CvarChange);
 	HookConVarChange(cvar_dm_headshot_only_allow_knife, Event_CvarChange);
 	HookConVarChange(cvar_dm_headshot_only_allow_taser, Event_CvarChange);
@@ -415,6 +422,7 @@ public void OnPluginStart()
 	HookConVarChange(cvar_dm_nades_flashbang, Event_CvarChange);
 	HookConVarChange(cvar_dm_nades_he, Event_CvarChange);
 	HookConVarChange(cvar_dm_nades_smoke, Event_CvarChange);
+	HookConVarChange(cvar_dm_nades_tactical, Event_CvarChange);
 
 	/* Listen For Client Commands */
 	AddCommandListener(Event_Say, "say");
@@ -571,7 +579,6 @@ public void OnMapStart()
 
 public void OnClientPutInServer(int client)
 {
-	hsOnlyClient[client] = false;
 	SDKHook(client, SDKHook_TraceAttack, OnTraceAttack);
 	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 }
@@ -586,12 +593,10 @@ public void OnClientPostAdminCheck(int client)
 
 public void OnClientDisconnect(int client)
 {
-	hsOnlyClient[client] = false;
 	RemoveRagdoll(client);
 	SDKUnhook(client, SDKHook_TraceAttack, OnTraceAttack);
 	SDKUnhook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 }
-
 
 stock bool IsValidClient(int client)
 {
@@ -715,6 +720,10 @@ void LoadConfig()
 	KvGetString(keyValues, "dm_headshot_only", value, sizeof(value), "no");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
 	SetConVarString(cvar_dm_headshot_only, value);
+
+	KvGetString(keyValues, "dm_headshot_only_allow_client", value, sizeof(value), "yes");
+	value = (StrEqual(value, "yes")) ? "1" : "0";
+	SetConVarString(cvar_dm_headshot_only_allow_client, value);
 
 	KvGetString(keyValues, "dm_headshot_only_allow_world", value, sizeof(value), "no");
 	value = (StrEqual(value, "yes")) ? "1" : "0";
@@ -913,6 +922,9 @@ void LoadConfig()
 	KvGetString(keyValues, "smoke", value, sizeof(value), "0");
 	SetConVarString(cvar_dm_nades_smoke, value);
 
+	KvGetString(keyValues, "tactical", value, sizeof(value), "0");
+	SetConVarString(cvar_dm_nades_tactical, value);
+
 	KvGoBack(keyValues);
 
 	if (KvJumpToKey(keyValues, "TeamData") && KvGotoFirstSubKey(keyValues, false)) {
@@ -988,6 +1000,7 @@ void UpdateState()
 	bdSounds = GetConVarBool(cvar_dm_sounds_bodyshots);
 	hsSounds = GetConVarBool(cvar_dm_sounds_headshots);
 	hsOnly = GetConVarBool(cvar_dm_headshot_only);
+	hsOnly_AllowClient = GetConVarBool(cvar_dm_headshot_only_allow_client);
 	hsOnly_AllowWorld = GetConVarBool(cvar_dm_headshot_only_allow_world);
 	hsOnly_AllowKnife = GetConVarBool(cvar_dm_headshot_only_allow_knife);
 	hsOnly_AllowTaser = GetConVarBool(cvar_dm_headshot_only_allow_taser);
@@ -1031,6 +1044,7 @@ void UpdateState()
 	flashbang = GetConVarInt(cvar_dm_nades_flashbang);
 	he = GetConVarInt(cvar_dm_nades_he);
 	smoke = GetConVarInt(cvar_dm_nades_smoke);
+	tactical = GetConVarInt(cvar_dm_nades_tactical);
 
 	if (respawnTime < 0.0) respawnTime = 0.0;
 	if (gunMenuMode < 1) gunMenuMode = 1;
@@ -1055,6 +1069,7 @@ void UpdateState()
 	if (flashbang < 0) flashbang = 0;
 	if (he < 0) he = 0;
 	if (smoke < 0) smoke = 0;
+	if (tactical < 0) tactical = 0;
 
 	if (enabled && !old_enabled)
 	{
@@ -1164,9 +1179,10 @@ void SetGrenadeState()
 	if (flashbang > maxGrenadesSameType) maxGrenadesSameType = flashbang;
 	if (he > maxGrenadesSameType) maxGrenadesSameType = he;
 	if (smoke > maxGrenadesSameType) maxGrenadesSameType = smoke;
+	if (tactical > maxGrenadesSameType) maxGrenadesSameType = tactical;
 	SetConVarInt(ammo_grenade_limit_default, maxGrenadesSameType);
 	SetConVarInt(ammo_grenade_limit_flashbang, flashbang);
-	SetConVarInt(ammo_grenade_limit_total, incendiary + decoy + flashbang + he + smoke);
+	SetConVarInt(ammo_grenade_limit_total, incendiary + decoy + flashbang + he + smoke + tactical);
 }
 
 void RestoreGrenadeState()
@@ -1276,9 +1292,9 @@ public Action Event_Say(int client, const char[] command, int argc)
 					CPrintToChat(client, "[\x04DM\x01] %t", "Guns Disabled");
 				return Plugin_Handled;
 			}
-			if (StrEqual(text, hsOnlyTriggers[i], false) && !hsOnly)
+			if (StrEqual(text, hsOnlyTriggers[i], false) && !hsOnly && hsOnly_AllowClient)
 			{
-				if (hsOnlyClient[client] == true)
+				if (hsOnlyClient[client])
 				{
 					hsOnlyClient[client] = false;
 					CPrintToChat(client, "[\x04DM\x01] %t", "HS Only Client Disabled");
@@ -1411,8 +1427,10 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 				{
 					PrintHintText(client, "This server is running:\n <font color='#00FF00'>Deathmatch</font> v%s", PLUGIN_VERSION);
 					CPrintToChat(client, "[\x04DM\x01] This server is running \x04Deathmatch \x01v%s", PLUGIN_VERSION);
-					if(!hsOnly)
+					if (!hsOnly)
+					{
 						CPrintToChat(client, "[\x04DM\x01] %t", "HS Hint");
+					}
 				}
 				/* Hide radar. */
 				if (ffa || hideradar)
@@ -1704,10 +1722,9 @@ public Action Event_PlayerHurt(Event event, const char[] name, bool dontBroadcas
 	}
 
 	int attacker = GetClientOfUserId(event.GetInt("attacker"));
-	if (hsOnly || hsOnlyClient[attacker])
+	if (hsOnly || (hsOnlyClient[attacker] && hsOnly_AllowClient))
 	{
 		int victim = GetClientOfUserId(event.GetInt("userid"));
-		//int attacker = GetClientOfUserId(event.GetInt("attacker"));
 		int dhealth = event.GetInt("dmg_health");
 		int darmor = event.GetInt("dmg_iArmor");
 		int health = event.GetInt("health");
@@ -1801,26 +1818,9 @@ public Action Event_WeaponReload(Event event, const char[] name, bool dontBroadc
 
 public Action Event_HegrenadeDetonate(Event event, const char[] name, bool dontBroadcast)
 {
-	int client = GetClientOfUserId(event.GetInt("userid"));
-
-	if (replenishGrenade && !replenishHEGrenade)
+	if (replenishGrenade || replenishHEGrenade)
 	{
-		if (IsValidClient(client) && IsPlayerAlive(client))
-		{
-			GivePlayerItem(client, "weapon_hegrenade");
-		}
-	}
-
-	else if (replenishHEGrenade && !replenishGrenade)
-	{
-		if (IsValidClient(client) && IsPlayerAlive(client))
-		{
-			GivePlayerItem(client, "weapon_hegrenade");
-		}
-	}
-
-	else if (replenishGrenade && replenishHEGrenade)
-	{
+		int client = GetClientOfUserId(event.GetInt("userid"));
 		if (IsValidClient(client) && IsPlayerAlive(client))
 		{
 			GivePlayerItem(client, "weapon_hegrenade");
@@ -1832,15 +1832,9 @@ public Action Event_HegrenadeDetonate(Event event, const char[] name, bool dontB
 
 public Action Event_SmokegrenadeDetonate(Event event, const char[] name, bool dontBroadcast)
 {
-	if (!replenishGrenade)
-	{
-		return Plugin_Continue;
-	}
-
-	int client = GetClientOfUserId(event.GetInt("userid"));
-
 	if (replenishGrenade)
 	{
+		int client = GetClientOfUserId(event.GetInt("userid"));
 		if (IsValidClient(client) && IsPlayerAlive(client))
 		{
 			GivePlayerItem(client, "weapon_smokegrenade");
@@ -1872,15 +1866,9 @@ public Action Event_FlashbangDetonate(Event event, const char[] name, bool dontB
 
 public Action Event_DecoyStarted(Event event, const char[] name, bool dontBroadcast)
 {
-	if (!replenishGrenade)
-	{
-		return Plugin_Continue;
-	}
-
-	int client = GetClientOfUserId(event.GetInt("userid"));
-
 	if (replenishGrenade)
 	{
+		int client = GetClientOfUserId(event.GetInt("userid"));
 		if (IsValidClient(client) && IsPlayerAlive(client))
 		{
 			GivePlayerItem(client, "weapon_decoy");
@@ -1892,15 +1880,9 @@ public Action Event_DecoyStarted(Event event, const char[] name, bool dontBroadc
 
 public Action Event_MolotovDetonate(Event event, const char[] name, bool dontBroadcast)
 {
-	if (!replenishGrenade)
-	{
-		return Plugin_Continue;
-	}
-
-	int client = GetClientOfUserId(event.GetInt("userid"));
-
 	if (replenishGrenade)
 	{
+		int client = GetClientOfUserId(event.GetInt("userid"));
 		if (IsValidClient(client) && IsPlayerAlive(client))
 		{
 			GivePlayerItem(client, "weapon_molotov");
@@ -1912,15 +1894,9 @@ public Action Event_MolotovDetonate(Event event, const char[] name, bool dontBro
 
 public Action Event_InfernoStartburn(Event event, const char[] name, bool dontBroadcast)
 {
-	if (!replenishGrenade)
-	{
-		return Plugin_Continue;
-	}
-
-	int client = GetClientOfUserId(event.GetInt("userid"));
-
 	if (replenishGrenade)
 	{
+		int client = GetClientOfUserId(event.GetInt("userid"));
 		if (IsValidClient(client) && IsPlayerAlive(client))
 		{
 			GivePlayerItem(client, "weapon_incgrenade");
@@ -1942,7 +1918,7 @@ public Action OnTraceAttack(int victim, int &attacker, int &inflictor, float &da
 		}
 	}
 
-	if (hsOnly || hsOnlyClient[attacker])
+	if (hsOnly || (hsOnlyClient[attacker] && hsOnly_AllowClient))
 	{
 		char weapon[32];
 		char grenade[32];
@@ -1989,7 +1965,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 		}
 	}
 
-	if (hsOnly || hsOnlyClient[attacker])
+	if (hsOnly || (hsOnlyClient[attacker] && hsOnly_AllowClient))
 	{
 		char grenade[32];
 		char weapon[32];
@@ -2442,21 +2418,61 @@ public int MenuPrimary(Menu menu, MenuAction action, int param1, int param2)
 	{
 		char info[24];
 		GetMenuItem(menu, param2, info, sizeof(info));
-		IncrementWeaponCount(info);
-		DecrementWeaponCount(primaryWeapon[param1]);
-		primaryWeapon[param1] = info;
-		GiveSavedWeapons(param1, true, false);
-		if (gunMenuMode != 2) {
-			BuildDisplayWeaponMenu(param1, false);
-		} else {
-			DecrementWeaponCount(secondaryWeapon[param1]);
-			secondaryWeapon[param1] = "none";
-			GiveSavedWeapons(param1, false, true);
-			if (!IsPlayerAlive(param1))
-				newWeaponsSelected[param1] = true;
-			if (newWeaponsSelected[param1])
-				CPrintToChat(param1, "[\x04DM\x01] %t", "Guns New Spawn");
-			firstWeaponSelection[param1] = false;
+		int weaponCount;
+		GetTrieValue(weaponCounts, info, weaponCount);
+		int weaponLimit;
+		GetTrieValue(weaponLimits, info, weaponLimit);
+
+		if ((weaponLimit == -1) || (weaponCount < weaponLimit))
+		{
+			IncrementWeaponCount(info);
+			DecrementWeaponCount(primaryWeapon[param1]);
+			primaryWeapon[param1] = info;
+			GiveSavedWeapons(param1, true, false);
+			if (gunMenuMode != 2)
+			{
+				BuildDisplayWeaponMenu(param1, false);
+			}
+			else
+			{
+				DecrementWeaponCount(secondaryWeapon[param1]);
+				secondaryWeapon[param1] = "none";
+				GiveSavedWeapons(param1, false, true);
+				if (!IsPlayerAlive(param1))
+				{
+					newWeaponsSelected[param1] = true;
+				}
+				if (newWeaponsSelected[param1])
+				{
+					CPrintToChat(param1, "[\x04DM\x01] %t", "Guns New Spawn");
+				}
+				firstWeaponSelection[param1] = false;
+			}
+		}
+		else
+		{
+			DecrementWeaponCount(primaryWeapon[param1]);
+			primaryWeapon[param1] = "none";
+			GiveSavedWeapons(param1, true, false);
+			if (gunMenuMode != 2)
+			{
+				BuildDisplayWeaponMenu(param1, false);
+			}
+			else
+			{
+				DecrementWeaponCount(secondaryWeapon[param1]);
+				secondaryWeapon[param1] = "none";
+				GiveSavedWeapons(param1, false, true);
+				if (!IsPlayerAlive(param1))
+				{
+					newWeaponsSelected[param1] = true;
+				}
+				if (newWeaponsSelected[param1])
+				{
+					CPrintToChat(param1, "[\x04DM\x01] %t", "Guns New Spawn");
+				}
+				firstWeaponSelection[param1] = false;
+			}
 		}
 	}
 	else if (action == MenuAction_Cancel)
@@ -2466,7 +2482,8 @@ public int MenuPrimary(Menu menu, MenuAction action, int param1, int param2)
 			DecrementWeaponCount(primaryWeapon[param1]);
 			primaryWeapon[param1] = "none";
 			GiveSavedWeapons(param1, true, false);
-			if (gunMenuMode != 2) {
+			if (gunMenuMode != 2)
+			{
 				BuildDisplayWeaponMenu(param1, false);
 			}
 		}
@@ -2579,6 +2596,8 @@ void GiveSavedWeapons(int client, bool primary, bool secondary)
 				GivePlayerItem(client, "weapon_hegrenade");
 			for (int i = 0; i < smoke; i++)
 				GivePlayerItem(client, "weapon_smokegrenade");
+			for (int i = 0; i < tactical; i++)
+				GivePlayerItem(client, "weapon_tagrenade");
 			weaponsGivenThisRound[client] = true;
 		}
 	}
