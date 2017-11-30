@@ -4,6 +4,7 @@
 	{
 		"br"	"Digite {green}guns{default} para abrir o menu de armas."
 		"en"	"Type {green}guns{default} to open the weapons menu."
+                "de"    "Schreibe {green}guns{default} um das Waffenmenü zu öffnen."
 		"es"	"Escriba {green}guns{default} para abrir el menú de armas."
 		"fr"	"Tapez {green}guns{default} pour ouvrir le menu des armes."
 		"pl"	"Napisz {green}guns{default} aby otworzyć menu broni."
@@ -14,6 +15,7 @@
 	{
 		"br"	"O menu de armas foi {red}desativado{default}."
 		"en"	"The guns menu has been {red}disabled{default}."
+                "de"    "Das Waffenmenü wurde {red}deaktiviert{default}."
 		"es"	"El menú de armas se ha {red}desactivado{default}."
 		"fr"	"Le menu des armes a été {red}désactivé{default}."
 		"pl"	"Menu broni zostało {red}wyłączone{default}."
@@ -23,6 +25,7 @@
 	{
 		"br"	"Type {green}hs{default} to enable personal HS only mode."
 		"en"	"Type {green}hs{default} to enable personal HS only mode."
+                "de"    "Schreibe {green}hs{default} um den persönlichen HS Modus zu aktivieren."
 		"es"	"Type {green}hs{default} to enable personal HS only mode."
 		"fr"	"Type {green}hs{default} to enable personal HS only mode."
 		"pl"	"Type {green}hs{default} to enable personal HS only mode."
@@ -32,6 +35,7 @@
 	{
 		"br"	"HS only mode has been {red}disabled{default}."
 		"en"	"HS only mode has been {red}disabled{default}."
+                "de"    "HS only Modus wurde {red}deaktiviert{default}."
 		"es"	"HS only mode has been {red}disabled{default}."
 		"fr"	"HS only mode has been {red}disabled{default}."
 		"pl"	"HS only mode has been {red}disabled{default}."
@@ -42,6 +46,7 @@
 	{
 		"br"	"HS only mode has been {green}enabled{default}."
 		"en"	"HS only mode has been {green}enabled{default}."
+                "de"    "HS only Modus wurde {green}aktiviert{default}."
 		"es"	"HS only mode has been {green}enabled{default}."
 		"fr"	"HS only mode has been {green}enabled{default}."
 		"pl"	"HS only mode has been {green}enabled{default}."
@@ -52,6 +57,7 @@
 	{
 		"br"	"Voce recebera a {green}nova{default} arma no próximo spawn."
 		"en"	"You will be given {green}new{default} weapons on next spawn."
+                "de"    "Beim nächsten Spawn erhältst du {grün}neue{default} Waffen."
 		"es"	"Se le dará {green}nuevas{default} armas en el próximo desove."
 		"fr"	"Vous recevrez de {green}nouvelles{default} armes sur le prochain spawn."
 		"pl"	"Zostaną dodane {green}nowe{default} bronie po respawnie."
@@ -62,6 +68,7 @@
 	{
 		"br"	"Você recebera as {green}mesmas{default} armas nos próximos spawns"
 		"en"	"You will be given {green}same{default} weapons on next spawn."
+                "de"    "Beim nächsten Spawn erhältst du die {grün}gleichen{default} Waffen."
 		"es"	"Se le dará {green}mismas{default} armas en el próximo desove."
 		"fr"	"Vous recevrez {green}mêmes{default} armes sur le prochain spawn."
 		"pl"	"Zostaną dodane {green}te same{default} bronie po respawnie."
@@ -72,6 +79,7 @@
 	{
 		"br"	"Você recebera armas {green}aleatórias{default} nos próximos spawns"
 		"en"	"You will be given {green}random{default} weapons on next spawn."
+                "de"    "Beim nächsten Spawn erhältst du {grün}zufällige{default} Waffen."
 		"es"	"Se le dará armas {green}al azar{default} en el próximo desove."
 		"fr"	"Vous recevrez armes {green}aléatoires{default} sur le prochain spawn."
 		"pl"	"Zostaną dodane {green}losowe{default} bronie po respawnie."
@@ -82,6 +90,7 @@
 	{
 		"br"	"Vida Restante:"
 		"en"	"Health Remaining:"
+                "de"    "Verbleibende Gesundheit:"
 		"es"	"Salud restante:"
 		"fr"	"Restant Santé:"
 		"pl"	"Pozostałe zdrowie:"
@@ -92,6 +101,7 @@
 	{
 		"br"	"Você fez"
 		"en"	"You did"
+                "de"    "Du hast es geschafft"
 		"es"	"Lo hiciste"
 		"fr"	"Vous avez"
 		"pl"	"Zadałeś"
@@ -102,6 +112,7 @@
 	{
 		"br"	"danos ao"
 		"en"	"damage to"
+                "de"    "schaden"
 		"es"	"daño a"
 		"fr"	"dommages à"
 		"pl"	"obrażeń graczowi"
@@ -112,6 +123,7 @@
 	{
 		"br"	"Você matou."
 		"en"	"You killed him."
+                "de"    "Du hast ihn getötet."
 		"es"	"Usted lo mató."
 		"fr"	"Vous l'avez tué."
 		"pl"	"Zabiłeś go."
@@ -122,6 +134,7 @@
 	{
 		"br"	"Por matar um inimigo com a ({green}faca{default})."
 		"en"	"for killing an enemy ({green}knife{default})."
+                "de"    "für das Töten eines Feindes mit dem ({green}Messer{default})."
 		"es"	"por matar a un enemigo ({green}cuchillo{default})."
 		"fr"	"pour avoir frag ({green}couteau{default})."
 		"pl"	"za zabicie przeciwnika ({green}nożem{default})."
@@ -132,6 +145,7 @@
 	{
 		"br"	"Por matar um inimigo de ({green}headshot{default})."
 		"en"	"for killing an enemy ({green}headshot{default})."
+                "de"    "für das Töten eines Feindes mit einem ({green}Kopfschuss{default})."
 		"es"	"por matar a un enemigo ({green}disparo a la cabeza{default})."
 		"fr"	"pour avoir frag ({green}à la tête{default})."
 		"pl"	"za zabicie przeciwnika ({green}headshotem{default})."
@@ -142,6 +156,7 @@
 	{
 		"br"	"Por matar um inimigo na ({green}granada{default})."
 		"en"	"for killing an enemy ({green}grenade{default})."
+                "de"    "für das Töten eines Feindes mit einer ({green}Granate{default})."
 		"es"	"por matar a un enemigo ({green}granada{default})."
 		"fr"	"pour avoir frag ({green}grenade{default})."
 		"pl"	"za zabicie przeciwnika ({green}granatem{default})."
@@ -152,6 +167,7 @@
 	{
 		"br"	"Por matar um inimigo."
 		"en"	"for killing an enemy."
+                "de"    "für das Töten eines Feindes."
 		"es"	"por matar a un enemigo."
 		"fr"	"pour avoir frag."
 		"pl"	"za zabicie przeciwnika."
@@ -162,6 +178,7 @@
 	{
 		"br"	"Por matar um inimigo com a ({green}faca{default})."
 		"en"	"for killing an enemy ({green}knife{default})."
+                "de"    "für das Töten eines Feindes mit dem ({green}Messer{default})."
 		"es"	"por matar a un enemigo ({green}cuchillo{default})."
 		"fr"	"pour avoir frag ({green}couteau{default})."
 		"pl"	"za zabicie przeciwnika ({green}nożem{default})."
@@ -172,6 +189,7 @@
 	{
 		"br"	"Por matar um inimigo de ({green}headshot{default})."
 		"en"	"for killing an enemy ({green}headshot{default})."
+                "de"    "für das Töten eines Feindes mit einem ({green}Kopfschuss{default})."
 		"es"	"por matar a un enemigo ({green}disparo a la cabeza{default})."
 		"fr"	"pour avoir frag ({green}à la tête{default})."
 		"pl"	"za zabicie przeciwnika ({green}headshotem{default})."
@@ -182,6 +200,7 @@
 	{
 		"br"	"Por matar um inimigo na ({green}granada{default})."
 		"en"	"for killing an enemy ({green}grenade{default})."
+                "de"    "für das Töten eines Feindes mit einer ({green}Granate{default})."
 		"es"	"por matar a un enemigo ({green}granada{default})."
 		"fr"	"pour avoir frag ({green}grenade{default})."
 		"pl"	"za zabicie przeciwnika ({green}granatem{default})."
@@ -192,6 +211,7 @@
 	{
 		"br"	"Por matar um inimigo."
 		"en"	"for killing an enemy."
+                "de"    "für das Töten eines Feindes."
 		"es"	"por matar a un enemigo."
 		"fr"	"pour avoir frag."
 		"pl"	"za zabicie przeciwnika."
@@ -202,6 +222,7 @@
 	{
 		"br"	"Edit mode {green}ativado{default}."
 		"en"	"Edit mode {green}enabled{default}."
+                "de"    "Bearbeitungsmodus {grün}aktiviert{default}."
 		"es"	"El modo de edición {green}activado{default}."
 		"fr"	"Modifier le mode {green}activé{default}."
 		"pl"	"Tryb edycji {green}włączony{default}."
@@ -212,6 +233,7 @@
 	{
 		"br"	"Edit mode {red}desativado{default}."
 		"en"	"Edit mode {red}disabled{default}."
+                "de"    "Bearbeitungsmodus {red}deaktiviert{default}."
 		"es"	"El modo de edición {red}deshabilitado{default}."
 		"fr"	"Modifier le mode {red}désactivé{default}."
 		"pl"	"Tryb edycji {red}wyłączony{default}."
@@ -222,6 +244,7 @@
 	{
 		"br"	"Teleportado para spawn point"
 		"en"	"Teleported to spawn point"
+                "de"    "Teleportiert zum Spawn"
 		"es"	"Teletransportado a desovar puntos"
 		"fr"	"Téléporté pour frayer le point"
 		"pl"	"Przeteleportowany do punktu respawnu"
@@ -232,6 +255,7 @@
 	{
 		"br"	"Não há pontos de spawn."
 		"en"	"There are no spawn points."
+                "de"    "Es sind keine Spawnpunkte vorhanden."
 		"es"	"No hay puntos de regeneración."
 		"fr"	"Il n'y a pas de points de spawn."
 		"pl"	"Brak punktów respawnu."
@@ -242,6 +266,7 @@
 	{
 		"br"	"Ponto de spwan deletado."
 		"en"	"Deleted spawn point"
+                "de"    "Spawnpunkt gelöscht"
 		"es"	"Punto de desovar eliminados"
 		"fr"	"Point de spawn supprimé"
 		"pl"	"Usunięto punkt respawnu"
@@ -252,6 +277,7 @@
 	{
 		"br"	"Todos os pontos de spwan deletados."
 		"en"	"All spawn points have been deleted."
+                "de"    "Alle Spawnpunkte wurden gelöscht"
 		"es"	"Se han eliminado todos los puntos de regeneración."
 		"fr"	"Tous les points spawn ont été supprimés."
 		"pl"	"Wszystkie punkty respawnu zostały usunięte."
@@ -262,6 +288,7 @@
 	{
 		"br"	"Adicionado ponto de spawn"
 		"en"	"Added spawn point"
+                "de"    "Spawnpunkt hinzugefügt"
 		"es"	"Punto de desovar añadido"
 		"fr"	"Point de spawn Ajouté"
 		"pl"	"Dodano punkt respawnu"
@@ -272,6 +299,7 @@
 	{
 		"br"	"Não foi possível adicionar ponto de spawn (limite máximo alcançado)."
 		"en"	"Could not add spawn point (max limit reached)."
+                "de"    "Es konnte kein weiterer Spawn hinzugefügt werden (Maximale Anzahl ereicht)."
 		"es"	"No se pudo añadir punto de desovar (límite máximo alcanzado)."
 		"fr"	"Impossible d'ajouter le point spawn (limite maximale atteinte)."
 		"pl"	"Nie można dodać punktu respawnu (maksymalny limit osiągnięty)."
@@ -282,6 +310,7 @@
 	{
 		"br"	"Ponto de spawn inserido no"
 		"en"	"Inserted spawn point at"
+                "de"    "Eingefügter Spawnpunkt bei"
 		"es"	"Punto de desovar Insertado en"
 		"fr"	"Point de spawn inséré à"
 		"pl"	"Ustawiono punkt respawnu na"
@@ -292,6 +321,7 @@
 	{
 		"br"	"A configuração foi salva."
 		"en"	"Configuration has been saved."
+                "de"    "Konfiguration wurde gespeichert"
 		"es"	"La configuración se ha guardado."
 		"fr"	"Configuration a été enregistrée."
 		"pl"	"Konfiguracja została zapisana."
@@ -302,6 +332,7 @@
 	{
 		"br"	"Configuração não pôde ser salva."
 		"en"	"Configuration could not be saved."
+                "de"    "Konfiguration konnte nicht gespeichert werden."
 		"es"	"La configuración no ha podido guardar."
 		"fr"	"Configuration n'a pas pu être sauvé."
 		"pl"	"Konfigurcja nie może zostać zapisana."
