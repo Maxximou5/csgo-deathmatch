@@ -26,6 +26,7 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - Auto-Update Support
 - Multi-Lanugage Support
 	- English Supported
+	- German Supported
 	- Spanish Supported
 	- French Supported
 	- Polish Supported
@@ -148,6 +149,7 @@ A thank you to those who helped:
 - <a href="https://forums.alliedmods.net/member.php?u=255924">szyma94</a> (Polish translation)
 - <a href="https://forums.alliedmods.net/member.php?u=260574">Rbt</a> (Brazilian translation)
 - <a href="https://forums.alliedmods.net/member.php?u=245683">splewis</a> (Weapon skins implementation)
+- <a href="https://github.com/Shoxxo">Shoxxo</a> (German translation)
 
 ### Donate
 
