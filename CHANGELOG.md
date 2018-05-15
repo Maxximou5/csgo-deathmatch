@@ -1,75 +1,95 @@
+v2.0.8:
+- Updated: Syntax and naming convention
+- Updated: Compiled for SM 110+ & MM 111+
+- Updated: Consistency checks when not needed for validity
+- Updated: Load-out improvements for bots and players
+- Updated: Many performance improvements to general code and structure
+- Added: German language is now supported (thanks to Shoxxo)
+- Added: Clientprefs - All weapons are now saved on the server after a complete selection
+- Added: dm_nades_tactical - tactical grenade
+- Added: Cookies are reset when the gunmode is changed, only reset to "none" if none is required
+- Added: dm_cash_messages - Cash messages are now depressed by default
+- Fixed: Weapons limit menu not being updated properly
+- Fixed: Missing and corrected invalid configuration entries
+- Fixed: Correct weapon and grenade given when killed while selecting
+- Fixed: Menus being sent when unnecessary or at inappropriate times
+- Fixed: Issues with bots sometimes not being given random weapons
+- Fixed: Spawns for de_dust2
+- Removed: Menu options "Same weapons every round" and "Random weapons every round"
+- Removed: Unnecessary code and client checks
+
 v2.0.7a:
-- Fixed: dm_headshot_only not working properly.
-- Fixed: Knife, grenade, and taser damage not being allowed when dm_no_knife_damage was enabled.
-- Fixed: dm_headshot_only_allow_knife not working when dm_no_knife_damage was enabled.
+- Fixed: dm_headshot_only not working properly
+- Fixed: Knife, grenade, and taser damage not being allowed when dm_no_knife_damage was enabled
+- Fixed: dm_headshot_only_allow_knife not working when dm_no_knife_damage was enabled
 
 v2.0.7:
 - Updated: Improved ammo replenish system
-	- dm_replenish_ammo - (Default) 1 - Replenish ammo on reload.
-	- dm_replenish_clip - (Default) 0 - Replenish ammo clip on kill.
-	- dm_replenish_reserve - (Default) 0 - Replenish ammo reserve on kill.
+	- dm_replenish_ammo - (Default) 1 - Replenish ammo on reload
+	- dm_replenish_ammo_clip - (Default) 0 - Replenish ammo clip on kill
+	- dm_replenish_ammo_reserve - (Default) 0 - Replenish ammo reserve on kill
 - Updated: SDKHook performance and usage (thanks to Bacardi)
-- Added: Support for late load, safely load the plugin at anytime.
+- Added: Support for late load, safely load the plugin at anytime
 - Added: Primary only gun mode
-	- dm_gun_menu_mode - (Default) 1 - 1) Enabled. 2) Primary weapons only. 3) Secondary weapons only. 4) Random weapons only. 5) Disabled.
+	- dm_gun_menu_mode - (Default) 1 - 1) Enabled 2) Primary weapons only 3) Secondary weapons only 4) Random weapons only 5) Disabled
 - Added: No knife damage
-	- dm_no_knife_damage - (Default) 0 - Knives do NO damage to players.
-- Fixed: Wrong language phrase for secondary weapons when not selected.
+	- dm_no_knife_damage - (Default) 0 - Knives do NO damage to players
+- Fixed: Wrong language phrase for secondary weapons when not selected
 - Fixed: Native "SetConVarInt" reported: Invalid convar handle 0 (error 4)
 - Fixed: Native "PrintHintText" reported: Language phrase "^" not found
-- Fixed: P2000 sounding like a deagle. P2000 must now be equipped in player's loadout.
+- Fixed: P2000 sounding like a deagle P2000 must now be equipped in player's load-out
 
 v2.0.6:
-- Updated: Plugin name changed to correctly match the game it was designed for.
-- Updated: Overhaul on syntax, now using 1.8+ syntax!
-- Updated: Spawns for de_nuke & de_cache.
-- Updated: Translation file.
-- Added: Compatibility for Valve's Deathmatch (game_type 1 & game_mode 2) or Custom (game_type 3 & game_mode 0).
-	- dm_valve_deathmatch - (Default) 0 - Enable compatibility for Valve's Deathmatch (game_type 1 & game_mode 2) or Custom (game_type 3 & game_mode 0).
-- Added: Armor addition, players now can gain armor.
-	- dm_ap_max - (Default) 100 - Maximum Armor Points (AP).
-	- dm_ap_kill - (Default) 5 - Armor Points (AP) per kill.
-	- dm_ap_hs - (Default) 10 - Armor Points (AP) per headshot kill.
-	- dm_ap_knife - (Default) 50 - Armor Points (AP) per knife kill.
-	- dm_ap_nade - (Default) 30 - Armor Points (AP) per nade kill.
-	- dm_ap_messages - (Default) 1 - Display AP messages.
-- Added: Enable or disable sounds (bodyshots & headshots).
-	- dm_sounds_bodyshots - (Default) 1 - Enable the sounds of bodyshots.
-	- dm_sounds_headshots - (Default) 1 - Enable the sounds of headshots.
-- Fixed: Weapon skins for all but (usp-s & hkp2000).
-- Fixed: Welcome message creating an invalid index.
-- Fixed: Damage Panel creating an invalid index.
-- Fixed: Spawn system not correctly judging LoS.
+- Updated: Plugin name changed to correctly match the game it was designed for
+- Updated: Overhaul on syntax, now using 18+ syntax!
+- Updated: Spawns for de_nuke & de_cache
+- Updated: Translation file
+- Added: Compatibility for Valve's Deathmatch (game_type 1 & game_mode 2) or Custom (game_type 3 & game_mode 0)
+	- dm_valve_deathmatch - (Default) 0 - Enable compatibility for Valve's Deathmatch (game_type 1 & game_mode 2) or Custom (game_type 3 & game_mode 0)
+- Added: Armor addition, players now can gain armor
+	- dm_ap_max - (Default) 100 - Maximum Armor Points (AP)
+	- dm_ap_kill - (Default) 5 - Armor Points (AP) per kill
+	- dm_ap_headshot - (Default) 10 - Armor Points (AP) per headshot kill
+	- dm_ap_knife - (Default) 50 - Armor Points (AP) per knife kill
+	- dm_ap_nade - (Default) 30 - Armor Points (AP) per nade kill
+	- dm_ap_messages - (Default) 1 - Display AP messages
+- Added: Enable or disable sounds (bodyshots & headshots)
+	- dm_sounds_bodyshots - (Default) 1 - Enable the sounds of bodyshots
+	- dm_sounds_headshots - (Default) 1 - Enable the sounds of headshots
+- Fixed: Weapon skins for all but (usp-s & hkp2000)
+- Fixed: Welcome message creating an invalid index
+- Fixed: Damage Panel creating an invalid index
+- Fixed: Spawn system not correctly judging LoS
 
 v2.0.5:
-- Added: New R8 weapon.
-- Added: Hide radar for all players.
-- Fixed: Incorrect ammo for shared weapon names.
-- Fixed: Welcome message not working.
+- Added: New R8 weapon
+- Added: Hide radar for all players
+- Fixed: Incorrect ammo for shared weapon names
+- Fixed: Welcome message not working
 
 v2.0.4d:
-- Fixed: Chest armor not working if full armor wasn't selected, thanks to sk1ll.
+- Fixed: Chest armor not working if full armor wasn't selected (thanks to sk1ll)
 
 v2.0.4c:
-- Added: BuildPaths, you can now utilize different SM paths.
-- Added: Brazilian translation. Credit: Rbt
+- Added: BuildPaths, you can now utilize different SM paths
+- Added: Brazilian translation (thanks to Rbt)
 
 v2.0.4b:
-- Fixed: Armor not spawning on player.
+- Fixed: Armor not spawning on player
 
 v2.0.4a:
-- Fixed: Translation file, incorrect color syntax due to new include.
-- Added: Polish translation thanks to szyma94
+- Fixed: Translation file, incorrect color syntax due to new include
+- Added: Polish translation (thanks to szyma94)
 
 v2.0.4:
-- Fixed: Random weapons not parsing from the deathmatch.ini
-- Fixed: Error: Line 1051, deathmatch.sp::Event_Say()
-- Fixed: Error: Line 1730, deathmatch.sp::RefillWeapons()
-- Fixed: Display panel not being shown despite being set yes in deathmatch.ini file.
-- Fixed: Spawn location glitches on maps.
-- Added: New spawn locations for new maps.
+- Fixed: Random weapons not parsing from the deathmatchini
+- Fixed: Error: Line 1051, deathmatchsp::Event_Say()
+- Fixed: Error: Line 1730, deathmatchsp::RefillWeapons()
+- Fixed: Display panel not being shown despite being set yes in deathmatchini file
+- Fixed: Spawn location glitches on maps
+- Added: New spawn locations for new maps
 - Added: Armor (chest) & Armor (full)
-- Added: dm_replenish_grenade_kill (Give players their grenade back on successful grenade kill.)
+- Added: dm_replenish_grenade_kill (Give players their grenade back on successful grenade kill)
 
 v2.0.3:
 - Changed the way ammo replenish works (thanks to int64 Shrandy)
@@ -81,7 +101,7 @@ v2.0.3:
 	- English Supported
 	- Spanish Supported
 	- French Supported
-- Added csgocolors (need csgocolors.inc for compiling)
+- Added csgocolors (need csgocolorsinc for compiling)
 - Fixed blood splatter issue when turning hsonly off & on
 - Fixed bots not having or not equiping guns
 - Fixed timer message (client index 0)
