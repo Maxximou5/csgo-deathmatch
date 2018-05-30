@@ -70,7 +70,7 @@ Enables deathmatch style gameplay (respawning, gun selection, spawn protection, 
 - dm_los_spawning - (Default) 1 - Enable line of sight spawning.
 - dm_los_attempts - (Default) 10 - Maximum attempts to find a suitable line of sight spawn point.
 - dm_spawn_distance - (Default) 0 - Minimum distance from enemies at which a player can spawn.
-- dm_sp_time - (Default) 1.0 - Spawn protection time.
+- dm_spawn_time - (Default) 1.0 - Spawn protection time.
 - dm_no_knife_damage - (Default) 0 - Knives do NO damage to players.
 - dm_remove_weapons - (Default) 1 - Remove ground weapons.
 - dm_replenish_ammo - (Default) 1 - Replenish ammo when empty.
