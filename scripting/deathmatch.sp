@@ -1,20 +1,17 @@
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
-#include <clientprefs>
-#include <csgocolors>
 #include <cstrike>
-#undef REQUIRE_PLUGIN
-#include <updater>
+#include <csgocolors>
+#include <clientprefs>
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION          "2.0.8"
+#define PLUGIN_VERSION          "2.0.9"
 #define PLUGIN_NAME             "[CS:GO] Deathmatch"
 #define PLUGIN_AUTHOR           "Maxximou5"
 #define PLUGIN_DESCRIPTION      "Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc)."
 #define PLUGIN_URL              "https://github.com/Maxximou5/csgo-deathmatch/"
-#define UPDATE_URL              "http://www.maxximou5.com/sourcemod/deathmatch/update.txt"
 
 public Plugin myinfo =
 {
@@ -31,23 +28,23 @@ public Plugin myinfo =
 #define DMG_HEADSHOT (1 << 30)
 
 /* Native Console Variables */
-Handle g_hMP_ct_default_primary;
-Handle g_hMP_t_default_primary;
-Handle g_hMP_ct_default_secondary;
-Handle g_hMP_t_default_secondary;
-Handle g_hMP_startmoney;
-Handle g_hMP_playercashawards;
-Handle g_hMP_teamcashawards;
-Handle g_hMP_friendlyfire;
-Handle g_hMP_autokick;
-Handle g_hMP_tkpunish;
-Handle g_hMP_teammates_are_enemies;
-Handle g_hFF_damage_reduction_bullets;
-Handle g_hFF_damage_reduction_grenade;
-Handle g_hFF_damage_reduction_other;
-Handle g_hAmmo_grenade_limit_default;
-Handle g_hAmmo_grenade_limit_flashbang;
-Handle g_hAmmo_grenade_limit_total;
+ConVar g_cvMP_ct_default_primary;
+ConVar g_cvMP_t_default_primary;
+ConVar g_cvMP_ct_default_secondary;
+ConVar g_cvMP_t_default_secondary;
+ConVar g_cvMP_startmoney;
+ConVar g_cvMP_playercashawards;
+ConVar g_cvMP_teamcashawards;
+ConVar g_cvMP_friendlyfire;
+ConVar g_cvMP_autokick;
+ConVar g_cvMP_tkpunish;
+ConVar g_cvMP_teammates_are_enemies;
+ConVar g_cvFF_damage_reduction_bullets;
+ConVar g_cvFF_damage_reduction_grenade;
+ConVar g_cvFF_damage_reduction_other;
+ConVar g_cvAmmo_grenade_limit_default;
+ConVar g_cvAmmo_grenade_limit_flashbang;
+ConVar g_cvAmmo_grenade_limit_total;
 
 /* Native Backup Variables */
 int g_iBackup_mp_startmoney;
@@ -69,6 +66,7 @@ Handle g_hWeapon_Primary_Cookie;
 Handle g_hWeapon_Secondary_Cookie;
 Handle g_hWeapon_Remember_Cookie;
 Handle g_hWeapon_First_Cookie;
+Handle g_hHSOnly_Cookie;
 
 /* Console variables */
 ConVar g_cvDM_enabled;
@@ -93,12 +91,15 @@ ConVar g_cvDM_gun_menu_mode;
 ConVar g_cvDM_los_spawning;
 ConVar g_cvDM_los_attempts;
 ConVar g_cvDM_spawn_distance;
-ConVar g_cvDM_spawn_time;
+ConVar g_cvDM_spawn_protection_time;
+ConVar g_cvDM_loadout_style;
+ConVar g_cvDM_fast_equip;
 ConVar g_cvDM_no_knife_damage;
 ConVar g_cvDM_remove_weapons;
-ConVar g_cvDM_replenish_ammo;
-ConVar g_cvDM_replenish_ammo_clip;
-ConVar g_cvDM_replenish_ammo_reserve;
+ConVar g_cvDM_replenish_ammo_empty;
+ConVar g_cvDM_replenish_ammo_reload;
+ConVar g_cvDM_replenish_ammo_kill;
+ConVar g_cvDM_replenish_ammo_type;
 ConVar g_cvDM_replenish_grenade;
 ConVar g_cvDM_replenish_hegrenade;
 ConVar g_cvDM_replenish_grenade_kill;
@@ -146,22 +147,13 @@ float g_fSpawnAngles[MAX_SPAWNS][3];
 float g_fEyeOffset[3] = { 0.0, 0.0, 64.0 }; /* CSGO offset. */
 float g_fSpawnPointOffset[3] = { 0.0, 0.0, 20.0 };
 
-/* Offsets */
-int g_iOwnerOffset;
-int g_iHealthOffset;
-int g_iArmorOffset;
-int g_iHelmetOffset;
-int g_iAmmoTypeOffset;
-int g_iAmmoOffset;
-int g_iRagdollOffset;
-
 /* Weapon Info */
-Handle g_hPrimaryWeaponsAvailable;
-Handle g_hSecondaryWeaponsAvailable;
-Handle g_hWeaponMenuNames;
-Handle g_hWeaponLimits;
-Handle g_hWeaponCounts;
-StringMap g_smWeaponTeams;
+ArrayList g_aPrimaryWeaponsAvailable;
+ArrayList g_aSecondaryWeaponsAvailable;
+StringMap g_smWeaponMenuNames;
+StringMap g_smWeaponLimits;
+StringMap g_smWeaponCounts;
+StringMap g_smWeaponSkinsTeam;
 
 /* Menus */
 Handle g_hPrimaryMenus[MAXPLAYERS + 1];
@@ -169,17 +161,20 @@ Handle g_hSecondaryMenus[MAXPLAYERS + 1];
 Handle g_hDamageDisplay[MAXPLAYERS+1];
 
 /* Player settings */
-int g_iLastEditorSpawnPoint[MAXPLAYERS + 1] = { -1, ... };
+int g_iLastEditorSpawnPoint[MAXPLAYERS + 1] = {-1, ...};
 char g_cPrimaryWeapon[MAXPLAYERS + 1][24];
 char g_cSecondaryWeapon[MAXPLAYERS + 1][24];
-int g_iInfoMessageCount[MAXPLAYERS + 1] = { 2, ... };
-bool g_bFirstWeaponSelection[MAXPLAYERS + 1] = { true, ... };
-bool g_bWeaponsGivenThisRound[MAXPLAYERS + 1] = { false, ... };
-bool g_bRememberChoice[MAXPLAYERS + 1] = { false, ... };
-bool g_bPlayerMoved[MAXPLAYERS + 1] = { false, ... };
+bool g_bInfoMessage[MAXPLAYERS + 1] = {false, ... };
+bool g_bFirstWeaponSelection[MAXPLAYERS + 1] = {true, ...};
+bool g_bWeaponsGivenThisRound[MAXPLAYERS + 1] = {false, ...};
+bool g_bRememberChoice[MAXPLAYERS + 1] = {false, ...};
+bool g_bPlayerMoved[MAXPLAYERS + 1] = {false, ...};
 
 /* Player Glow Sprite */
 int g_iGlowSprite;
+
+/* Offsets */
+int g_iAmmoOffset;
 
 /* Spawn stats */
 int g_iNumberOfPlayerSpawns = 0;
@@ -191,13 +186,10 @@ int g_iDistanceSearchSuccesses = 0;
 int g_iDistanceSearchFailures = 0;
 int g_iSpawnPointSearchFailures = 0;
 
-/* Static Offsets */
-static int g_iWeapons_Clip1Offset;
-
 public void OnPluginStart()
 {
     /* Let's not waste our time here... */
-    if(GetEngineVersion() != Engine_CSGO)
+    if (GetEngineVersion() != Engine_CSGO)
     {
         SetFailState("ERROR: This plugin is designed only for CS:GO.");
     }
@@ -206,32 +198,19 @@ public void OnPluginStart()
     LoadTranslations("deathmatch.phrases");
     LoadTranslations("common.phrases");
 
-    /* Create spawns directory if necessary. */
-    char spawnsPath[PLATFORM_MAX_PATH];
-    BuildPath(Path_SM, spawnsPath, sizeof(spawnsPath), "configs/deathmatch/spawns");
-    if (!DirExists(spawnsPath))
-        CreateDirectory(spawnsPath, 711);
-
-    /* Find Offsets */
-    g_iOwnerOffset = FindSendPropInfo("CBaseCombatWeapon", "m_hOwnerEntity");
-    g_iHealthOffset = FindSendPropInfo("CCSPlayerResource", "m_iHealth");
-    g_iArmorOffset = FindSendPropInfo("CCSPlayer", "m_ArmorValue");
-    g_iHelmetOffset = FindSendPropInfo("CCSPlayer", "m_bHasHelmet");
-    g_iAmmoTypeOffset = FindSendPropInfo("CBaseCombatWeapon", "m_iPrimaryAmmoType");
     g_iAmmoOffset = FindSendPropInfo("CCSPlayer", "m_iAmmo");
-    g_iRagdollOffset = FindSendPropInfo("CCSPlayer", "m_hRagdoll");
 
     /* Create arrays to store available weapons loaded by config */
-    g_hPrimaryWeaponsAvailable = CreateArray(24);
-    g_hSecondaryWeaponsAvailable = CreateArray(10);
-    g_smWeaponTeams = new StringMap();
+    g_aPrimaryWeaponsAvailable =  new ArrayList(24);
+    g_aSecondaryWeaponsAvailable =  new ArrayList(11);
+
+    /* Create stringmap to store weapon limits, counts, and teams */
+    g_smWeaponLimits = new StringMap();
+    g_smWeaponCounts = new StringMap();
+    g_smWeaponSkinsTeam = new StringMap();
 
     /* Create trie to store menu names for weapons */
     BuildWeaponMenuNames();
-
-    /* Create trie to store weapon limits and counts */
-    g_hWeaponLimits = CreateTrie();
-    g_hWeaponCounts = CreateTrie();
 
     /* Create Console Variables */
     CreateConVar("dm_m5_version", PLUGIN_VERSION, PLUGIN_NAME, FCVAR_SPONLY | FCVAR_REPLICATED | FCVAR_NOTIFY | FCVAR_DONTRECORD);
@@ -252,17 +231,20 @@ public void OnPluginStart()
     g_cvDM_headshot_only_allow_nade = CreateConVar("dm_headshot_only_allow_nade", "0", "Enable grenade damage during headshot only mode.");
     g_cvDM_remove_objectives = CreateConVar("dm_remove_objectives", "1", "Remove objectives (disables bomb sites, and removes c4 and hostages).");
     g_cvDM_respawning = CreateConVar("dm_respawning", "1", "Enable respawning.");
-    g_cvDM_respawn_time = CreateConVar("dm_respawn_time", "2.0", "Respawn time.");
+    g_cvDM_respawn_time = CreateConVar("dm_respawn_time", "1.0", "Respawn time.");
     g_cvDM_gun_menu_mode = CreateConVar("dm_gun_menu_mode", "1", "Gun menu mode. 1) Enabled. 2) Primary weapons only. 3) Secondary weapons only. 4) Random weapons only. 5) Disabled.");
     g_cvDM_los_spawning = CreateConVar("dm_los_spawning", "1", "Enable line of sight spawning. If enabled, players will be spawned at a point where they cannot see enemies, and enemies cannot see them.");
     g_cvDM_los_attempts = CreateConVar("dm_los_attempts", "10", "Maximum number of attempts to find a suitable line of sight spawn point.");
     g_cvDM_spawn_distance = CreateConVar("dm_spawn_distance", "0.0", "Minimum distance from enemies at which a player can spawn.");
-    g_cvDM_spawn_time = CreateConVar("dm_spawn_time", "1.0", "Spawn protection time.");
+    g_cvDM_spawn_protection_time = CreateConVar("dm_spawn_protection_time", "1.0", "Spawn protection time.");
+    g_cvDM_loadout_style = CreateConVar("dm_loadout_style", "1", "When players can receive weapons. 1) On respawn. 2) Immediately.");
+    g_cvDM_fast_equip = CreateConVar("dm_fast_equip", "0", "Enable fast weapon equipping.");
     g_cvDM_no_knife_damage = CreateConVar("dm_no_knife_damage", "0", "Knives do NO damage to players.");
     g_cvDM_remove_weapons = CreateConVar("dm_remove_weapons", "1", "Remove ground weapons.");
-    g_cvDM_replenish_ammo = CreateConVar("dm_replenish_ammo", "1", "Replenish ammo on reload.");
-    g_cvDM_replenish_ammo_clip = CreateConVar("dm_replenish_ammo_clip", "0", "Replenish ammo clip on kill.");
-    g_cvDM_replenish_ammo_reserve = CreateConVar("dm_replenish_ammo_reserve", "0", "Replenish ammo reserve on kill.");
+    g_cvDM_replenish_ammo_empty = CreateConVar("dm_replenish_ammo_empty", "1", "Replenish ammo when weapon is empty.");
+    g_cvDM_replenish_ammo_reload = CreateConVar("dm_replenish_ammo_reload", "0", "Replenish ammo on reload action.");
+    g_cvDM_replenish_ammo_kill = CreateConVar("dm_replenish_ammo_kill", "1", "Replenish ammo clip on kill.");
+    g_cvDM_replenish_ammo_type = CreateConVar("dm_replenish_ammo_type", "2", "Replenish type. 1) Clip only. 2) Reserve only. 3) Both.");
     g_cvDM_replenish_grenade = CreateConVar("dm_replenish_grenade", "0", "Unlimited player grenades.");
     g_cvDM_replenish_hegrenade = CreateConVar("dm_replenish_hegrenade", "0", "Unlimited hegrenades.");
     g_cvDM_replenish_grenade_kill = CreateConVar("dm_replenish_grenade_kill", "0", "Give players their grenade back on successful kill.");
@@ -301,68 +283,66 @@ public void OnPluginStart()
     RegAdminCmd("dm_stats", Command_Stats, ADMFLAG_CHANGEMAP, "Displays spawn statistics.");
     RegAdminCmd("dm_reset_stats", Command_ResetStats, ADMFLAG_CHANGEMAP, "Resets spawn statistics.");
 
-    /* Client Commands */
-    char guns[32];
-    Format(guns, sizeof(guns), "%t", "Guns Menu");
-    RegConsoleCmd(guns, Command_Guns);
-
     /* Hook Console Variables */
-    HookConVarChange(g_cvDM_enabled, Event_CvarChange);
-    HookConVarChange(g_cvDM_valvedm, Event_CvarChange);
-    HookConVarChange(g_cvDM_welcomemsg, Event_CvarChange);
-    HookConVarChange(g_cvDM_free_for_all, Event_CvarChange);
-    HookConVarChange(g_cvDM_hide_radar, Event_CvarChange);
-    HookConVarChange(g_cvDM_display_panel, Event_CvarChange);
-    HookConVarChange(g_cvDM_display_panel_damage, Event_CvarChange);
-    HookConVarChange(g_cvDM_sounds_bodyshots, Event_CvarChange);
-    HookConVarChange(g_cvDM_sounds_headshots, Event_CvarChange);
-    HookConVarChange(g_cvDM_headshot_only, Event_CvarChange);
-    HookConVarChange(g_cvDM_headshot_only_allow_client, Event_CvarChange);
-    HookConVarChange(g_cvDM_headshot_only_allow_world, Event_CvarChange);
-    HookConVarChange(g_cvDM_headshot_only_allow_knife, Event_CvarChange);
-    HookConVarChange(g_cvDM_headshot_only_allow_taser, Event_CvarChange);
-    HookConVarChange(g_cvDM_headshot_only_allow_nade, Event_CvarChange);
-    HookConVarChange(g_cvDM_remove_objectives, Event_CvarChange);
-    HookConVarChange(g_cvDM_respawning, Event_CvarChange);
-    HookConVarChange(g_cvDM_respawn_time, Event_CvarChange);
-    HookConVarChange(g_cvDM_gun_menu_mode, Event_CvarChange);
-    HookConVarChange(g_cvDM_los_spawning, Event_CvarChange);
-    HookConVarChange(g_cvDM_los_attempts, Event_CvarChange);
-    HookConVarChange(g_cvDM_spawn_distance, Event_CvarChange);
-    HookConVarChange(g_cvDM_spawn_time, Event_CvarChange);
-    HookConVarChange(g_cvDM_no_knife_damage, Event_CvarChange);
-    HookConVarChange(g_cvDM_remove_weapons, Event_CvarChange);
-    HookConVarChange(g_cvDM_replenish_ammo, Event_CvarChange);
-    HookConVarChange(g_cvDM_replenish_ammo_clip, Event_CvarChange);
-    HookConVarChange(g_cvDM_replenish_ammo_reserve, Event_CvarChange);
-    HookConVarChange(g_cvDM_replenish_grenade, Event_CvarChange);
-    HookConVarChange(g_cvDM_replenish_hegrenade, Event_CvarChange);
-    HookConVarChange(g_cvDM_replenish_grenade_kill, Event_CvarChange);
-    HookConVarChange(g_cvDM_hp_start, Event_CvarChange);
-    HookConVarChange(g_cvDM_hp_max, Event_CvarChange);
-    HookConVarChange(g_cvDM_hp_kill, Event_CvarChange);
-    HookConVarChange(g_cvDM_hp_headshot, Event_CvarChange);
-    HookConVarChange(g_cvDM_hp_knife, Event_CvarChange);
-    HookConVarChange(g_cvDM_hp_nade, Event_CvarChange);
-    HookConVarChange(g_cvDM_hp_messages, Event_CvarChange);
-    HookConVarChange(g_cvDM_ap_max, Event_CvarChange);
-    HookConVarChange(g_cvDM_ap_kill, Event_CvarChange);
-    HookConVarChange(g_cvDM_ap_headshot, Event_CvarChange);
-    HookConVarChange(g_cvDM_ap_knife, Event_CvarChange);
-    HookConVarChange(g_cvDM_ap_nade, Event_CvarChange);
-    HookConVarChange(g_cvDM_ap_messages, Event_CvarChange);
-    HookConVarChange(g_cvDM_nade_messages, Event_CvarChange);
-    HookConVarChange(g_cvDM_cash_messages, Event_CvarChange);
-    HookConVarChange(g_cvDM_armor, Event_CvarChange);
-    HookConVarChange(g_cvDM_armor_full, Event_CvarChange);
-    HookConVarChange(g_cvDM_zeus, Event_CvarChange);
-    HookConVarChange(g_cvDM_nades_incendiary, Event_CvarChange);
-    HookConVarChange(g_cvDM_nades_molotov, Event_CvarChange);
-    HookConVarChange(g_cvDM_nades_decoy, Event_CvarChange);
-    HookConVarChange(g_cvDM_nades_flashbang, Event_CvarChange);
-    HookConVarChange(g_cvDM_nades_he, Event_CvarChange);
-    HookConVarChange(g_cvDM_nades_smoke, Event_CvarChange);
-    HookConVarChange(g_cvDM_nades_tactical, Event_CvarChange);
+    g_cvDM_enabled.AddChangeHook(Event_CvarChange);
+    g_cvDM_valvedm.AddChangeHook(Event_CvarChange);
+    g_cvDM_welcomemsg.AddChangeHook(Event_CvarChange);
+    g_cvDM_free_for_all.AddChangeHook(Event_CvarChange);
+    g_cvDM_hide_radar.AddChangeHook(Event_CvarChange);
+    g_cvDM_display_panel.AddChangeHook(Event_CvarChange);
+    g_cvDM_display_panel_damage.AddChangeHook(Event_CvarChange);
+    g_cvDM_sounds_bodyshots.AddChangeHook(Event_CvarChange);
+    g_cvDM_sounds_headshots.AddChangeHook(Event_CvarChange);
+    g_cvDM_headshot_only.AddChangeHook(Event_CvarChange);
+    g_cvDM_headshot_only_allow_client.AddChangeHook(Event_CvarChange);
+    g_cvDM_headshot_only_allow_world.AddChangeHook(Event_CvarChange);
+    g_cvDM_headshot_only_allow_knife.AddChangeHook(Event_CvarChange);
+    g_cvDM_headshot_only_allow_taser.AddChangeHook(Event_CvarChange);
+    g_cvDM_headshot_only_allow_nade.AddChangeHook(Event_CvarChange);
+    g_cvDM_remove_objectives.AddChangeHook(Event_CvarChange);
+    g_cvDM_respawning.AddChangeHook(Event_CvarChange);
+    g_cvDM_respawn_time.AddChangeHook(Event_CvarChange);
+    g_cvDM_gun_menu_mode.AddChangeHook(Event_CvarChange);
+    g_cvDM_los_spawning.AddChangeHook(Event_CvarChange);
+    g_cvDM_los_attempts.AddChangeHook(Event_CvarChange);
+    g_cvDM_spawn_distance.AddChangeHook(Event_CvarChange);
+    g_cvDM_spawn_protection_time.AddChangeHook(Event_CvarChange);
+    g_cvDM_loadout_style.AddChangeHook(Event_CvarChange);
+    g_cvDM_fast_equip.AddChangeHook(Event_CvarChange);
+    g_cvDM_no_knife_damage.AddChangeHook(Event_CvarChange);
+    g_cvDM_remove_weapons.AddChangeHook(Event_CvarChange);
+    g_cvDM_replenish_ammo_empty.AddChangeHook(Event_CvarChange);
+    g_cvDM_replenish_ammo_reload.AddChangeHook(Event_CvarChange);
+    g_cvDM_replenish_ammo_kill.AddChangeHook(Event_CvarChange);
+    g_cvDM_replenish_ammo_type.AddChangeHook(Event_CvarChange);
+    g_cvDM_replenish_grenade.AddChangeHook(Event_CvarChange);
+    g_cvDM_replenish_hegrenade.AddChangeHook(Event_CvarChange);
+    g_cvDM_replenish_grenade_kill.AddChangeHook(Event_CvarChange);
+    g_cvDM_hp_start.AddChangeHook(Event_CvarChange);
+    g_cvDM_hp_max.AddChangeHook(Event_CvarChange);
+    g_cvDM_hp_kill.AddChangeHook(Event_CvarChange);
+    g_cvDM_hp_headshot.AddChangeHook(Event_CvarChange);
+    g_cvDM_hp_knife.AddChangeHook(Event_CvarChange);
+    g_cvDM_hp_nade.AddChangeHook(Event_CvarChange);
+    g_cvDM_hp_messages.AddChangeHook(Event_CvarChange);
+    g_cvDM_ap_max.AddChangeHook(Event_CvarChange);
+    g_cvDM_ap_kill.AddChangeHook(Event_CvarChange);
+    g_cvDM_ap_headshot.AddChangeHook(Event_CvarChange);
+    g_cvDM_ap_knife.AddChangeHook(Event_CvarChange);
+    g_cvDM_ap_nade.AddChangeHook(Event_CvarChange);
+    g_cvDM_ap_messages.AddChangeHook(Event_CvarChange);
+    g_cvDM_nade_messages.AddChangeHook(Event_CvarChange);
+    g_cvDM_cash_messages.AddChangeHook(Event_CvarChange);
+    g_cvDM_armor.AddChangeHook(Event_CvarChange);
+    g_cvDM_armor_full.AddChangeHook(Event_CvarChange);
+    g_cvDM_zeus.AddChangeHook(Event_CvarChange);
+    g_cvDM_nades_incendiary.AddChangeHook(Event_CvarChange);
+    g_cvDM_nades_molotov.AddChangeHook(Event_CvarChange);
+    g_cvDM_nades_decoy.AddChangeHook(Event_CvarChange);
+    g_cvDM_nades_flashbang.AddChangeHook(Event_CvarChange);
+    g_cvDM_nades_he.AddChangeHook(Event_CvarChange);
+    g_cvDM_nades_smoke.AddChangeHook(Event_CvarChange);
+    g_cvDM_nades_tactical.AddChangeHook(Event_CvarChange);
 
     /* Listen For Client Commands */
     AddCommandListener(Event_Say, "say");
@@ -402,54 +382,23 @@ public void OnPluginStart()
     g_hWeapon_Secondary_Cookie = RegClientCookie("dm_weapon_secondary", "Secondary Weapon Selection", CookieAccess_Protected);
     g_hWeapon_Remember_Cookie = RegClientCookie("dm_weapon_remember", "Remember Weapon Selection", CookieAccess_Protected);
     g_hWeapon_First_Cookie = RegClientCookie("dm_weapon_first", "First Weapon Selection", CookieAccess_Protected);
+    g_hHSOnly_Cookie = RegClientCookie("dm_hsonly", "Headshot Only", CookieAccess_Protected);
 
     /* Late Load Cookies */
     for (int i = 1; i <= MaxClients; i++)
     {
         if (IsClientConnected(i) && IsValidClient(i) && !IsFakeClient(i))
-        {
             OnClientCookiesCached(i);
-        }
-    }
-
-    /* Find Offsets */
-    g_iWeapons_Clip1Offset = FindSendPropInfo("CBaseCombatWeapon", "m_iClip1");
-
-    if (g_iWeapons_Clip1Offset == -1)
-    {
-        SetFailState("[DM] Error - Unable to get offset for CBaseCombatWeapon::m_iClip1");
-    }
-
-    g_iHealthOffset = FindSendPropInfo("CCSPlayer", "m_iHealth");
-
-    if (g_iHealthOffset == -1)
-    {
-        SetFailState("[DM] Error - Unable to get offset for CCSPlayer::m_iHealth");
-    }
-
-    g_iArmorOffset = FindSendPropInfo("CCSPlayer", "m_ArmorValue");
-
-    if (g_iArmorOffset == -1)
-    {
-        SetFailState("[DM] Error - Unable to get offset for CCSPlayer::m_ArmorValue");
     }
 
     /* SDK Hooks For Clients */
     for (int i = 1; i <= MaxClients; i++)
     {
         if (IsClientInGame(i))
-        {
             OnClientPutInServer(i);
-        }
     }
 
-    /* Updater */
-    if (LibraryExists("updater"))
-    {
-        Updater_AddPlugin(UPDATE_URL);
-    }
-
-    /* Update and retrieve */
+    /* Update and Retrieve */
     RetrieveVariables();
     UpdateState();
 }
@@ -460,10 +409,12 @@ public void OnClientCookiesCached(int client)
     char cSecondary[24];
     char cRemember[24];
     char cFirst[24];
+    char cHSOnly[24];
     GetClientCookie(client, g_hWeapon_Primary_Cookie, cPrimary, sizeof(cPrimary));
     GetClientCookie(client, g_hWeapon_Secondary_Cookie, cSecondary, sizeof(cSecondary));
     GetClientCookie(client, g_hWeapon_Remember_Cookie, cRemember, sizeof(cRemember));
     GetClientCookie(client, g_hWeapon_First_Cookie, cFirst, sizeof(cFirst));
+    GetClientCookie(client, g_hHSOnly_Cookie, cHSOnly, sizeof(cHSOnly));
     if (!StrEqual(cPrimary, ""))
         g_cPrimaryWeapon[client] = cPrimary;
     else g_cPrimaryWeapon[client] = "none";
@@ -476,22 +427,9 @@ public void OnClientCookiesCached(int client)
     if (!StrEqual(cFirst, ""))
         g_bFirstWeaponSelection[client] = view_as<bool>(StringToInt(cFirst));
     else g_bFirstWeaponSelection[client] = false;
-}
-
-public void OnLibraryAdded(const char[] name)
-{
-    if (StrEqual(name, "updater"))
-    {
-        Updater_AddPlugin(UPDATE_URL);
-    }
-}
-
-public void OnLibraryRemoved(const char[] name)
-{
-    if (StrEqual(name, "updater"))
-    {
-        Updater_RemovePlugin();
-    }
+    if (!StrEqual(cHSOnly, ""))
+        g_bHSOnlyClient[client] = view_as<bool>(StringToInt(cHSOnly));
+    else g_bHSOnlyClient[client] = false;
 }
 
 public void OnPluginEnd()
@@ -499,6 +437,7 @@ public void OnPluginEnd()
     for (int i = 1; i <= MaxClients; i++)
     {
         DisableSpawnProtection(INVALID_HANDLE, i);
+        OnClientDisconnect(i);
     }
     SetBuyZones("Enable");
     SetObjectives("Enable");
@@ -565,9 +504,7 @@ public void OnClientPutInServer(int client)
 public void OnClientPostAdminCheck(int client)
 {
     if (g_cvDM_enabled.BoolValue)
-    {
         ResetClientSettings(client);
-    }
 }
 
 public void OnClientDisconnect(int client)
@@ -577,7 +514,7 @@ public void OnClientDisconnect(int client)
     SDKUnhook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 }
 
-stock bool IsValidClient(int client)
+bool IsValidClient(int client)
 {
     if (!(0 < client <= MaxClients)) return false;
     if (!IsClientInGame(client)) return false;
@@ -588,10 +525,16 @@ void ResetClientSettings(int client)
 {
     g_iLastEditorSpawnPoint[client] = -1;
     SetClientGunModeSettings(client);
-    g_iInfoMessageCount[client] = 2;
+    g_bInfoMessage[client] = false;
     g_bWeaponsGivenThisRound[client] = false;
     g_bPlayerMoved[client] = false;
-    g_bHSOnlyClient[client] = false;
+}
+
+void SetClientGunSettings(int client, char[] primary, char[] secondary, bool firstweapon)
+{
+    strcopy(g_cPrimaryWeapon[client], sizeof(g_cPrimaryWeapon[]), primary);
+    strcopy(g_cSecondaryWeapon[client], sizeof(g_cSecondaryWeapon[]), secondary);
+    g_bFirstWeaponSelection[client] = firstweapon;
 }
 
 void SetClientGunModeSettings(int client)
@@ -601,35 +544,21 @@ void SetClientGunModeSettings(int client)
         case 1:
         {
             if (IsFakeClient(client))
-            {
-                g_cPrimaryWeapon[client] = "random";
-                g_cSecondaryWeapon[client] = "random";
-                g_bFirstWeaponSelection[client] = false;
-            }
+                SetClientGunSettings(client, "random", "random", false);
         }
         case 2:
         {
             if (IsFakeClient(client))
-            {
-                g_cPrimaryWeapon[client] = "random";
-                g_cSecondaryWeapon[client] = "none";
-                g_bFirstWeaponSelection[client] = false;
-            }
+                SetClientGunSettings(client, "random", "none", false);
         }
         case 3:
         {
             if (IsFakeClient(client))
-            {
-                g_cPrimaryWeapon[client] = "none";
-                g_cSecondaryWeapon[client] = "random";
-                g_bFirstWeaponSelection[client] = false;
-            }
+                SetClientGunSettings(client, "none", "random", false);
         }
         case 4:
         {
-            g_cPrimaryWeapon[client] = "random";
-            g_cSecondaryWeapon[client] = "random";
-            g_bFirstWeaponSelection[client] = false;
+            SetClientGunSettings(client, "random", "random", false);
             if (!IsFakeClient(client))
             {
                 SetClientCookie(client, g_hWeapon_Primary_Cookie, "random");
@@ -641,9 +570,7 @@ void SetClientGunModeSettings(int client)
         {
             if (IsFakeClient(client))
             {
-                g_cPrimaryWeapon[client] = "random";
-                g_cSecondaryWeapon[client] = "random";
-                g_bFirstWeaponSelection[client] = false;
+                SetClientGunSettings(client, "random", "random", false);
                 g_bRememberChoice[client] = true;
             }
         }
@@ -657,326 +584,334 @@ public void Event_CvarChange(ConVar cvar, const char[] oldValue, const char[] ne
 
 void LoadConfig()
 {
-    Handle keyValues = CreateKeyValues("Deathmatch Config");
+    KeyValues kv = new KeyValues("Deathmatch Config");
     char path[PLATFORM_MAX_PATH];
     BuildPath(Path_SM, path, sizeof(path), "configs/deathmatch/deathmatch.ini");
 
-    if (!FileToKeyValues(keyValues, path))
+    if (!FileToKeyValues(kv, path))
         SetFailState("The configuration file could not be read.");
+
+    if (!kv.JumpToKey("Options"))
+        SetFailState("The configuration file is corrupt (\"Options\" section could not be found).");
 
     char key[25];
     char value[25];
 
-    if (!KvJumpToKey(keyValues, "Options"))
-        SetFailState("The configuration file is corrupt (\"Options\" section could not be found).");
-
-    KvGetString(keyValues, "dm_enabled", value, sizeof(value), "yes");
+    kv.GetString("dm_enabled", value, sizeof(value), "yes");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_enabled, value);
+    g_cvDM_enabled.SetString(value);
 
-    KvGetString(keyValues, "dm_enable_valve_deathmatch", value, sizeof(value), "no");
+    kv.GetString("dm_enable_valve_deathmatch", value, sizeof(value), "no");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_valvedm, value);
+    g_cvDM_valvedm.SetString(value);
 
-    KvGetString(keyValues, "dm_welcomemsg", value, sizeof(value), "yes");
+    kv.GetString("dm_welcomemsg", value, sizeof(value), "yes");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_welcomemsg, value);
+    g_cvDM_welcomemsg.SetString(value);
 
-    KvGetString(keyValues, "dm_free_for_all", value, sizeof(value), "no");
+    kv.GetString("dm_free_for_all", value, sizeof(value), "no");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_free_for_all, value);
+    g_cvDM_free_for_all.SetString(value);
 
-    KvGetString(keyValues, "dm_hide_radar", value, sizeof(value), "no");
+    kv.GetString("dm_hide_radar", value, sizeof(value), "no");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_hide_radar, value);
+    g_cvDM_hide_radar.SetString(value);
 
-    KvGetString(keyValues, "dm_display_panel", value, sizeof(value), "no");
+    kv.GetString("dm_display_panel", value, sizeof(value), "no");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_display_panel, value);
+    g_cvDM_display_panel.SetString(value);
 
-    KvGetString(keyValues, "dm_display_panel_damage", value, sizeof(value), "no");
+    kv.GetString("dm_display_panel_damage", value, sizeof(value), "no");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_display_panel_damage, value);
+    g_cvDM_display_panel_damage.SetString(value);
 
-    KvGetString(keyValues, "dm_sounds_bodyshots", value, sizeof(value), "no");
+    kv.GetString("dm_sounds_bodyshots", value, sizeof(value), "no");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_sounds_bodyshots, value);
+    g_cvDM_sounds_bodyshots.SetString(value);
 
-    KvGetString(keyValues, "dm_sounds_headshots", value, sizeof(value), "no");
+    kv.GetString("dm_sounds_headshots", value, sizeof(value), "no");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_sounds_headshots, value);
+    g_cvDM_sounds_headshots.SetString(value);
 
-    KvGetString(keyValues, "dm_headshot_only", value, sizeof(value), "no");
+    kv.GetString("dm_headshot_only", value, sizeof(value), "no");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_headshot_only, value);
+    g_cvDM_headshot_only.SetString(value);
 
-    KvGetString(keyValues, "dm_headshot_only_allow_client", value, sizeof(value), "yes");
+    kv.GetString("dm_headshot_only_allow_client", value, sizeof(value), "yes");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_headshot_only_allow_client, value);
+    g_cvDM_headshot_only_allow_client.SetString(value);
 
-    KvGetString(keyValues, "dm_headshot_only_allow_world", value, sizeof(value), "no");
+    kv.GetString("dm_headshot_only_allow_world", value, sizeof(value), "no");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_headshot_only_allow_world, value);
+    g_cvDM_headshot_only_allow_world.SetString(value);
 
-    KvGetString(keyValues, "dm_headshot_only_allow_knife", value, sizeof(value), "no");
+    kv.GetString("dm_headshot_only_allow_knife", value, sizeof(value), "no");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_headshot_only_allow_knife, value);
+    g_cvDM_headshot_only_allow_knife.SetString(value);
 
-    KvGetString(keyValues, "dm_headshot_only_allow_taser", value, sizeof(value), "no");
+    kv.GetString("dm_headshot_only_allow_taser", value, sizeof(value), "no");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_headshot_only_allow_taser, value);
+    g_cvDM_headshot_only_allow_taser.SetString(value);
 
-    KvGetString(keyValues, "dm_headshot_only_allow_nade", value, sizeof(value), "no");
+    kv.GetString("dm_headshot_only_allow_nade", value, sizeof(value), "no");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_headshot_only_allow_nade, value);
+    g_cvDM_headshot_only_allow_nade.SetString(value);
 
-    KvGetString(keyValues, "dm_remove_objectives", value, sizeof(value), "yes");
+    kv.GetString("dm_remove_objectives", value, sizeof(value), "yes");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_remove_objectives, value);
+    g_cvDM_remove_objectives.SetString(value);
 
-    KvGetString(keyValues, "dm_respawning", value, sizeof(value), "yes");
+    kv.GetString("dm_respawning", value, sizeof(value), "yes");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_respawning, value);
+    g_cvDM_respawning.SetString(value);
 
-    KvGetString(keyValues, "dm_respawn_time", value, sizeof(value), "2.0");
-    SetConVarString(g_cvDM_respawn_time, value);
+    kv.GetString("dm_respawn_time", value, sizeof(value), "2.0");
+    g_cvDM_respawn_time.SetString(value);
 
-    KvGetString(keyValues, "dm_gun_menu_mode", value, sizeof(value), "1");
-    SetConVarString(g_cvDM_gun_menu_mode, value);
+    kv.GetString("dm_gun_menu_mode", value, sizeof(value), "1");
+    g_cvDM_gun_menu_mode.SetString(value);
 
-    KvGetString(keyValues, "dm_los_spawning", value, sizeof(value), "yes");
+    kv.GetString("dm_los_spawning", value, sizeof(value), "yes");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_los_spawning, value);
+    g_cvDM_los_spawning.SetString(value);
 
-    KvGetString(keyValues, "dm_los_attempts", value, sizeof(value), "10");
-    SetConVarString(g_cvDM_los_attempts, value);
+    kv.GetString("dm_los_attempts", value, sizeof(value), "10");
+    g_cvDM_los_attempts.SetString(value);
 
-    KvGetString(keyValues, "dm_spawn_distance", value, sizeof(value), "0.0");
-    SetConVarString(g_cvDM_spawn_distance, value);
+    kv.GetString("dm_spawn_distance", value, sizeof(value), "0.0");
+    g_cvDM_spawn_distance.SetString(value);
 
-    KvGetString(keyValues, "dm_spawn_time", value, sizeof(value), "1.0");
-    SetConVarString(g_cvDM_spawn_time, value);
+    kv.GetString("dm_spawn_protection_time", value, sizeof(value), "1.0");
+    g_cvDM_spawn_protection_time.SetString(value);
 
-    KvGetString(keyValues, "dm_no_knife_damage", value, sizeof(value), "no");
+    kv.GetString("dm_loadout_style", value, sizeof(value), "1");
+    g_cvDM_loadout_style.SetString(value);
+
+    kv.GetString("dm_fast_equip", value, sizeof(value), "no");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_no_knife_damage, value);
+    g_cvDM_fast_equip.SetString(value);
 
-    KvGetString(keyValues, "dm_remove_weapons", value, sizeof(value), "yes");
+    kv.GetString("dm_no_knife_damage", value, sizeof(value), "no");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_remove_weapons, value);
+    g_cvDM_no_knife_damage.SetString(value);
 
-    KvGetString(keyValues, "dm_replenish_ammo", value, sizeof(value), "yes");
+    kv.GetString("dm_remove_weapons", value, sizeof(value), "yes");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_replenish_ammo, value);
+    g_cvDM_remove_weapons.SetString(value);
 
-    KvGetString(keyValues, "dm_replenish_ammo_clip", value, sizeof(value), "no");
+    kv.GetString("dm_replenish_ammo_empty", value, sizeof(value), "yes");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_replenish_ammo_clip, value);
+    g_cvDM_replenish_ammo_empty.SetString(value);
 
-    KvGetString(keyValues, "dm_replenish_ammo_reserve", value, sizeof(value), "no");
+    kv.GetString("dm_replenish_ammo_reload", value, sizeof(value), "no");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_replenish_ammo_reserve, value);
+    g_cvDM_replenish_ammo_reload.SetString(value);
 
-    KvGetString(keyValues, "dm_replenish_grenade", value, sizeof(value), "no");
+    kv.GetString("dm_replenish_ammo_kill", value, sizeof(value), "yes");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_replenish_grenade, value);
+    g_cvDM_replenish_ammo_kill.SetString(value);
 
-    KvGetString(keyValues, "dm_replenish_hegrenade", value, sizeof(value), "no");
+    kv.GetString("dm_replenish_ammo_type", value, sizeof(value), "2");
+    g_cvDM_replenish_ammo_type.SetString(value);
+
+    kv.GetString("dm_replenish_grenade", value, sizeof(value), "no");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_replenish_hegrenade, value);
+    g_cvDM_replenish_grenade.SetString(value);
 
-    KvGetString(keyValues, "dm_replenish_grenade_kill", value, sizeof(value), "no");
+    kv.GetString("dm_replenish_hegrenade", value, sizeof(value), "no");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_replenish_grenade_kill, value);
+    g_cvDM_replenish_hegrenade.SetString(value);
 
-    KvGetString(keyValues, "dm_nade_messages", value, sizeof(value), "no");
+    kv.GetString("dm_replenish_grenade_kill", value, sizeof(value), "no");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_nade_messages, value);
+    g_cvDM_replenish_grenade_kill.SetString(value);
 
-    KvGetString(keyValues, "dm_cash_messages", value, sizeof(value), "no");
+    kv.GetString("dm_nade_messages", value, sizeof(value), "no");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_cash_messages, value);
+    g_cvDM_nade_messages.SetString(value);
 
-    KvGetString(keyValues, "dm_hp_start", value, sizeof(value), "100");
-    SetConVarString(g_cvDM_hp_start, value);
-
-    KvGetString(keyValues, "dm_hp_max", value, sizeof(value), "100");
-    SetConVarString(g_cvDM_hp_max, value);
-
-    KvGetString(keyValues, "dm_hp_kill", value, sizeof(value), "5");
-    SetConVarString(g_cvDM_hp_kill, value);
-
-    KvGetString(keyValues, "dm_hp_headshot", value, sizeof(value), "10");
-    SetConVarString(g_cvDM_hp_headshot, value);
-
-    KvGetString(keyValues, "dm_hp_knife", value, sizeof(value), "50");
-    SetConVarString(g_cvDM_hp_knife, value);
-
-    KvGetString(keyValues, "dm_hp_kill", value, sizeof(value), "30");
-    SetConVarString(g_cvDM_hp_nade, value);
-
-    KvGetString(keyValues, "dm_hp_messages", value, sizeof(value), "yes");
+    kv.GetString("dm_cash_messages", value, sizeof(value), "no");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_hp_messages, value);
+    g_cvDM_cash_messages.SetString(value);
 
-    KvGetString(keyValues, "dm_ap_max", value, sizeof(value), "100");
-    SetConVarString(g_cvDM_ap_max, value);
+    kv.GetString("dm_hp_start", value, sizeof(value), "100");
+    g_cvDM_hp_start.SetString(value);
 
-    KvGetString(keyValues, "dm_ap_kill", value, sizeof(value), "5");
-    SetConVarString(g_cvDM_ap_kill, value);
+    kv.GetString("dm_hp_max", value, sizeof(value), "100");
+    g_cvDM_hp_max.SetString(value);
 
-    KvGetString(keyValues, "dm_ap_headshot", value, sizeof(value), "10");
-    SetConVarString(g_cvDM_ap_headshot, value);
+    kv.GetString("dm_hp_kill", value, sizeof(value), "5");
+    g_cvDM_hp_kill.SetString(value);
 
-    KvGetString(keyValues, "dm_ap_knife", value, sizeof(value), "50");
-    SetConVarString(g_cvDM_ap_knife, value);
+    kv.GetString("dm_hp_headshot", value, sizeof(value), "10");
+    g_cvDM_hp_headshot.SetString(value);
 
-    KvGetString(keyValues, "dm_ap_nade", value, sizeof(value), "30");
-    SetConVarString(g_cvDM_ap_nade, value);
+    kv.GetString("dm_hp_knife", value, sizeof(value), "50");
+    g_cvDM_hp_knife.SetString(value);
 
-    KvGetString(keyValues, "dm_ap_messages", value, sizeof(value), "yes");
+    kv.GetString("dm_hp_kill", value, sizeof(value), "30");
+    g_cvDM_hp_nade.SetString(value);
+
+    kv.GetString("dm_hp_messages", value, sizeof(value), "yes");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_ap_messages, value);
+    g_cvDM_hp_messages.SetString(value);
 
-    KvGoBack(keyValues);
+    kv.GetString("dm_ap_max", value, sizeof(value), "100");
+    g_cvDM_ap_max.SetString(value);
 
-    if (!KvJumpToKey(keyValues, "Weapons"))
+    kv.GetString("dm_ap_kill", value, sizeof(value), "5");
+    g_cvDM_ap_kill.SetString(value);
+
+    kv.GetString("dm_ap_headshot", value, sizeof(value), "10");
+    g_cvDM_ap_headshot.SetString(value);
+
+    kv.GetString("dm_ap_knife", value, sizeof(value), "50");
+    g_cvDM_ap_knife.SetString(value);
+
+    kv.GetString("dm_ap_nade", value, sizeof(value), "30");
+    g_cvDM_ap_nade.SetString(value);
+
+    kv.GetString("dm_ap_messages", value, sizeof(value), "yes");
+    value = (StrEqual(value, "yes")) ? "1" : "0";
+    g_cvDM_ap_messages.SetString(value);
+
+    kv.GoBack();
+
+    if (!kv.JumpToKey("Weapons"))
         SetFailState("The configuration file is corrupt (\"Weapons\" section could not be found).");
 
-    if (!KvJumpToKey(keyValues, "Primary"))
+    if (!kv.JumpToKey("Primary"))
         SetFailState("The configuration file is corrupt (\"Primary\" section could not be found).");
 
-    if (KvGotoFirstSubKey(keyValues, false))
+    if (kv.GotoFirstSubKey(false))
     {
         do {
-            KvGetSectionName(keyValues, key, sizeof(key));
-            int limit = KvGetNum(keyValues, NULL_STRING, -1);
-            if(limit == 0) {continue;}
-            PushArrayString(g_hPrimaryWeaponsAvailable, key);
-            SetTrieValue(g_hWeaponLimits, key, limit);
-        } while (KvGotoNextKey(keyValues, false));
+            kv.GetSectionName(key, sizeof(key));
+            int limit = kv.GetNum(NULL_STRING, -1);
+            if (limit == 0) {continue;}
+            g_aPrimaryWeaponsAvailable.PushString(key);
+            g_smWeaponLimits.SetValue(key, limit);
+        } while (kv.GotoNextKey(false));
     }
 
-    KvGoBack(keyValues);
-    KvGoBack(keyValues);
+    kv.GoBack();
+    kv.GoBack();
 
-    if (!KvJumpToKey(keyValues, "Secondary"))
+    if (!kv.JumpToKey("Secondary"))
         SetFailState("The configuration file is corrupt (\"Secondary\" section could not be found).");
 
-    if (KvGotoFirstSubKey(keyValues, false))
+    if (kv.GotoFirstSubKey(false))
     {
         do {
-            KvGetSectionName(keyValues, key, sizeof(key));
-            int limit = KvGetNum(keyValues, NULL_STRING, -1);
-            if(limit == 0) {continue;}
-            PushArrayString(g_hSecondaryWeaponsAvailable, key);
-            SetTrieValue(g_hWeaponLimits, key, limit);
-        } while (KvGotoNextKey(keyValues, false));
+            kv.GetSectionName(key, sizeof(key));
+            int limit = kv.GetNum(NULL_STRING, -1);
+            if (limit == 0) {continue;}
+            g_aSecondaryWeaponsAvailable.PushString(key);
+            g_smWeaponLimits.SetValue(key, limit);
+        } while (kv.GotoNextKey(false));
     }
 
-    KvGoBack(keyValues);
-    KvGoBack(keyValues);
+    kv.GoBack();
+    kv.GoBack();
 
-    if (!KvJumpToKey(keyValues, "Misc"))
+    if (!kv.JumpToKey("Misc"))
         SetFailState("The configuration file is corrupt (\"Misc\" section could not be found).");
 
-    KvGetString(keyValues, "armor (chest)", value, sizeof(value), "no");
+    kv.GetString("armor (chest)", value, sizeof(value), "no");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_armor, value);
+    g_cvDM_armor.SetString(value);
 
-    KvGetString(keyValues, "armor (full)", value, sizeof(value), "yes");
+    kv.GetString("armor (full)", value, sizeof(value), "yes");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_armor_full, value);
+    g_cvDM_armor_full.SetString(value);
 
-    KvGetString(keyValues, "zeus", value, sizeof(value), "no");
+    kv.GetString("zeus", value, sizeof(value), "no");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    SetConVarString(g_cvDM_zeus, value);
+    g_cvDM_zeus.SetString(value);
 
-    KvGoBack(keyValues);
+    kv.GoBack();
 
-    if (!KvJumpToKey(keyValues, "Grenades"))
+    if (!kv.JumpToKey("Grenades"))
         SetFailState("The configuration file is corrupt (\"Grenades\" section could not be found).");
 
-    KvGetString(keyValues, "incendiary", value, sizeof(value), "0");
-    SetConVarString(g_cvDM_nades_incendiary, value);
+    kv.GetString("incendiary", value, sizeof(value), "0");
+    g_cvDM_nades_incendiary.SetString(value);
 
-    KvGetString(keyValues, "molotov", value, sizeof(value), "0");
-    SetConVarString(g_cvDM_nades_incendiary, value);
+    kv.GetString("molotov", value, sizeof(value), "0");
+    g_cvDM_nades_incendiary.SetString(value);
 
-    KvGetString(keyValues, "decoy", value, sizeof(value), "0");
-    SetConVarString(g_cvDM_nades_decoy, value);
+    kv.GetString("decoy", value, sizeof(value), "0");
+    g_cvDM_nades_decoy.SetString(value);
 
-    KvGetString(keyValues, "flashbang", value, sizeof(value), "0");
-    SetConVarString(g_cvDM_nades_flashbang, value);
+    kv.GetString("flashbang", value, sizeof(value), "0");
+    g_cvDM_nades_flashbang.SetString(value);
 
-    KvGetString(keyValues, "he", value, sizeof(value), "0");
-    SetConVarString(g_cvDM_nades_he, value);
+    kv.GetString("he", value, sizeof(value), "0");
+    g_cvDM_nades_he.SetString(value);
 
-    KvGetString(keyValues, "smoke", value, sizeof(value), "0");
-    SetConVarString(g_cvDM_nades_smoke, value);
+    kv.GetString("smoke", value, sizeof(value), "0");
+    g_cvDM_nades_smoke.SetString(value);
 
-    KvGetString(keyValues, "tactical", value, sizeof(value), "0");
-    SetConVarString(g_cvDM_nades_tactical, value);
+    kv.GetString("tactical", value, sizeof(value), "0");
+    g_cvDM_nades_tactical.SetString(value);
 
-    KvGoBack(keyValues);
+    kv.GoBack();
 
-    if (KvJumpToKey(keyValues, "TeamData") && KvGotoFirstSubKey(keyValues, false))
+    if (!kv.JumpToKey("TeamSkins"))
+        SetFailState("The configuration file is corrupt (\"TeamSkins\" section could not be found).");
+
+    if (kv.GotoFirstSubKey(false))
     {
         do {
-            KvGetSectionName(keyValues, key, sizeof(key));
-            KvGetString(keyValues, NULL_STRING, value, sizeof(value), "");
+            kv.GetSectionName(key, sizeof(key));
+            kv.GetString(NULL_STRING, value, sizeof(value), "");
             int team = 0;
             if (StrEqual(value, "CT", false))
-            {
                 team = CS_TEAM_CT;
-            }
             else if (StrEqual(value, "T", false))
-            {
                 team = CS_TEAM_T;
-            }
-            g_smWeaponTeams.SetValue(key, team);
-        } while (KvGotoNextKey(keyValues, false));
-        KvGoBack(keyValues);
+            g_smWeaponSkinsTeam.SetValue(key, team);
+        } while (kv.GotoNextKey(false));
+        kv.GoBack();
     }
 
-    CloseHandle(keyValues);
+    delete kv;
 }
 
 void RetrieveVariables()
 {
     /* Retrieve Native Console Variables */
-    g_hMP_ct_default_primary = FindConVar("mp_ct_default_primary");
-    g_hMP_t_default_primary = FindConVar("mp_t_default_primary");
-    g_hMP_ct_default_secondary = FindConVar("mp_ct_default_secondary");
-    g_hMP_t_default_secondary = FindConVar("mp_t_default_secondary");
-    g_hMP_startmoney = FindConVar("mp_startmoney");
-    g_hMP_playercashawards = FindConVar("mp_playercashawards");
-    g_hMP_teamcashawards = FindConVar("mp_teamcashawards");
-    g_hMP_friendlyfire = FindConVar("mp_friendlyfire");
-    g_hMP_autokick = FindConVar("mp_autokick");
-    g_hMP_tkpunish = FindConVar("mp_tkpunish");
-    g_hMP_teammates_are_enemies = FindConVar("mp_teammates_are_enemies");
-    g_hFF_damage_reduction_bullets = FindConVar("ff_damage_reduction_bullets");
-    g_hFF_damage_reduction_grenade = FindConVar("ff_damage_reduction_grenade");
-    g_hFF_damage_reduction_other = FindConVar("ff_damage_reduction_other");
-    g_hAmmo_grenade_limit_default = FindConVar("ammo_grenade_limit_default");
-    g_hAmmo_grenade_limit_flashbang = FindConVar("ammo_grenade_limit_flashbang");
-    g_hAmmo_grenade_limit_total = FindConVar("ammo_grenade_limit_total");
-
+    g_cvMP_ct_default_primary = FindConVar("mp_ct_default_primary");
+    g_cvMP_t_default_primary = FindConVar("mp_t_default_primary");
+    g_cvMP_ct_default_secondary = FindConVar("mp_ct_default_secondary");
+    g_cvMP_t_default_secondary = FindConVar("mp_t_default_secondary");
+    g_cvMP_startmoney = FindConVar("mp_startmoney");
+    g_cvMP_playercashawards = FindConVar("mp_playercashawards");
+    g_cvMP_teamcashawards = FindConVar("mp_teamcashawards");
+    g_cvMP_friendlyfire = FindConVar("mp_friendlyfire");
+    g_cvMP_autokick = FindConVar("mp_autokick");
+    g_cvMP_tkpunish = FindConVar("mp_tkpunish");
+    g_cvMP_teammates_are_enemies = FindConVar("mp_teammates_are_enemies");
+    g_cvFF_damage_reduction_bullets = FindConVar("ff_damage_reduction_bullets");
+    g_cvFF_damage_reduction_grenade = FindConVar("ff_damage_reduction_grenade");
+    g_cvFF_damage_reduction_other = FindConVar("ff_damage_reduction_other");
+    g_cvAmmo_grenade_limit_default = FindConVar("ammo_grenade_limit_default");
+    g_cvAmmo_grenade_limit_flashbang = FindConVar("ammo_grenade_limit_flashbang");
+    g_cvAmmo_grenade_limit_total = FindConVar("ammo_grenade_limit_total");
     /* Retrieve Native Console Variable Values */
-    g_iBackup_mp_startmoney = GetConVarInt(g_hMP_startmoney);
-    g_iBackup_mp_playercashawards = GetConVarInt(g_hMP_playercashawards);
-    g_iBackup_mp_teamcashawards = GetConVarInt(g_hMP_teamcashawards);
-    g_iBackup_mp_friendlyfire = GetConVarInt(g_hMP_friendlyfire);
-    g_iBackup_mp_autokick = GetConVarInt(g_hMP_autokick);
-    g_iBackup_mp_tkpunish = GetConVarInt(g_hMP_tkpunish);
-    g_iBackup_mp_teammates_are_enemies = GetConVarInt(g_hMP_teammates_are_enemies);
-    g_fBackup_ff_damage_reduction_bullets = GetConVarFloat(g_hFF_damage_reduction_bullets);
-    g_fBackup_ff_damage_reduction_grenade = GetConVarFloat(g_hFF_damage_reduction_grenade);
-    g_fBackup_ff_damage_reduction_other = GetConVarFloat(g_hFF_damage_reduction_other);
-    g_iBackup_ammo_grenade_limit_default = GetConVarInt(g_hAmmo_grenade_limit_default);
-    g_iBackup_ammo_grenade_limit_flashbang = GetConVarInt(g_hAmmo_grenade_limit_flashbang);
-    g_iBackup_ammo_grenade_limit_total = GetConVarInt(g_hAmmo_grenade_limit_total);
+    g_iBackup_mp_startmoney = g_cvMP_startmoney.IntValue;
+    g_iBackup_mp_playercashawards = g_cvMP_playercashawards.IntValue;
+    g_iBackup_mp_teamcashawards = g_cvMP_teamcashawards.IntValue;
+    g_iBackup_mp_friendlyfire = g_cvMP_friendlyfire.IntValue;
+    g_iBackup_mp_autokick = g_cvMP_autokick.IntValue;
+    g_iBackup_mp_tkpunish = g_cvMP_tkpunish.IntValue;
+    g_iBackup_mp_teammates_are_enemies = g_cvMP_teammates_are_enemies.IntValue;
+    g_fBackup_ff_damage_reduction_bullets = g_cvFF_damage_reduction_bullets.FloatValue;
+    g_fBackup_ff_damage_reduction_grenade = g_cvFF_damage_reduction_grenade.FloatValue;
+    g_fBackup_ff_damage_reduction_other = g_cvFF_damage_reduction_other.FloatValue;
+    g_iBackup_ammo_grenade_limit_default = g_cvAmmo_grenade_limit_default.IntValue;
+    g_iBackup_ammo_grenade_limit_flashbang = g_cvAmmo_grenade_limit_flashbang.IntValue;
+    g_iBackup_ammo_grenade_limit_total = g_cvAmmo_grenade_limit_total.IntValue;
 }
 
 void UpdateState()
@@ -986,7 +921,7 @@ void UpdateState()
     if (g_cvDM_gun_menu_mode.IntValue > 5) g_cvDM_gun_menu_mode.IntValue = 5;
     if (g_cvDM_los_attempts.IntValue < 0) g_cvDM_los_attempts.IntValue = 0;
     if (g_cvDM_spawn_distance.FloatValue < 0.0) g_cvDM_spawn_distance.FloatValue = 0.0;
-    if (g_cvDM_spawn_time.FloatValue < 0.0) g_cvDM_spawn_time.FloatValue = 0.0;
+    if (g_cvDM_spawn_protection_time.FloatValue < 0.0) g_cvDM_spawn_protection_time.FloatValue = 0.0;
     if (g_cvDM_hp_start.IntValue < 1) g_cvDM_hp_start.IntValue = 1;
     if (g_cvDM_hp_max.IntValue < 1) g_cvDM_hp_max.IntValue = 1;
     if (g_cvDM_hp_kill.IntValue < 0) g_cvDM_hp_kill.IntValue = 0;
@@ -1060,7 +995,9 @@ void UpdateState()
         }
         if (g_cvDM_remove_objectives.BoolValue)
             RemoveC4();
+
         SetGrenadeState();
+
         if (g_cvDM_free_for_all.BoolValue)
             EnableFFA();
         else
@@ -1070,17 +1007,18 @@ void UpdateState()
 
 void SetNoSpawnWeapons()
 {
-    SetConVarString(g_hMP_ct_default_primary, "");
-    SetConVarString(g_hMP_t_default_primary, "");
-    SetConVarString(g_hMP_ct_default_secondary, "");
-    SetConVarString(g_hMP_t_default_secondary, "");
+    g_cvMP_ct_default_primary.SetString("");
+    g_cvMP_t_default_primary.SetString("");
+    g_cvMP_ct_default_secondary.SetString("");
+    g_cvMP_t_default_secondary.SetString("");
 }
 
 void SetCashState()
 {
-    SetConVarInt(g_hMP_startmoney, 0);
-    SetConVarInt(g_hMP_playercashawards, 0);
-    SetConVarInt(g_hMP_teamcashawards, 0);
+    g_cvMP_startmoney.SetInt(0);
+    g_cvMP_playercashawards.SetInt(0);
+    g_cvMP_teamcashawards.SetInt(0);
+
     for (int i = 1; i <= MaxClients; i++)
     {
         if (IsValidClient(i))
@@ -1090,9 +1028,10 @@ void SetCashState()
 
 void RestoreCashState()
 {
-    SetConVarInt(g_hMP_startmoney, g_iBackup_mp_startmoney);
-    SetConVarInt(g_hMP_playercashawards, g_iBackup_mp_playercashawards);
-    SetConVarInt(g_hMP_teamcashawards, g_iBackup_mp_teamcashawards);
+    g_cvMP_startmoney.SetInt(g_iBackup_mp_startmoney);
+    g_cvMP_playercashawards.SetInt(g_iBackup_mp_playercashawards);
+    g_cvMP_teamcashawards.SetInt(g_iBackup_mp_teamcashawards);
+
     for (int i = 1; i <= MaxClients; i++)
     {
         if (IsValidClient(i))
@@ -1110,9 +1049,9 @@ void SetGrenadeState()
     if (g_cvDM_nades_he.IntValue > maxGrenadesSameType) maxGrenadesSameType = g_cvDM_nades_he.IntValue;
     if (g_cvDM_nades_smoke.IntValue > maxGrenadesSameType) maxGrenadesSameType = g_cvDM_nades_smoke.IntValue;
     if (g_cvDM_nades_tactical.IntValue > maxGrenadesSameType) maxGrenadesSameType = g_cvDM_nades_tactical.IntValue;
-    SetConVarInt(g_hAmmo_grenade_limit_default, maxGrenadesSameType);
-    SetConVarInt(g_hAmmo_grenade_limit_flashbang, g_cvDM_nades_flashbang.IntValue);
-    SetConVarInt(g_hAmmo_grenade_limit_total, 
+    g_cvAmmo_grenade_limit_default.SetInt(maxGrenadesSameType);
+    g_cvAmmo_grenade_limit_flashbang.SetInt(g_cvDM_nades_flashbang.IntValue);
+    g_cvAmmo_grenade_limit_total.SetInt(
         g_cvDM_nades_incendiary.IntValue + 
         g_cvDM_nades_molotov.IntValue + 
         g_cvDM_nades_decoy.IntValue + 
@@ -1124,40 +1063,76 @@ void SetGrenadeState()
 
 void RestoreGrenadeState()
 {
-    SetConVarInt(g_hAmmo_grenade_limit_default, g_iBackup_ammo_grenade_limit_default);
-    SetConVarInt(g_hAmmo_grenade_limit_flashbang, g_iBackup_ammo_grenade_limit_flashbang);
-    SetConVarInt(g_hAmmo_grenade_limit_total, g_iBackup_ammo_grenade_limit_total);
+    g_cvAmmo_grenade_limit_default.SetInt(g_iBackup_ammo_grenade_limit_default);
+    g_cvAmmo_grenade_limit_flashbang.SetInt(g_iBackup_ammo_grenade_limit_flashbang);
+    g_cvAmmo_grenade_limit_total.SetInt(g_iBackup_ammo_grenade_limit_total);
 }
 
 void EnableFFA()
 {
-    SetConVarInt(g_hMP_teammates_are_enemies, 1);
-    SetConVarInt(g_hMP_friendlyfire, 1);
-    SetConVarInt(g_hMP_autokick, 0);
-    SetConVarInt(g_hMP_tkpunish, 0);
-    SetConVarFloat(g_hFF_damage_reduction_bullets, 1.0);
-    SetConVarFloat(g_hFF_damage_reduction_grenade, 1.0);
-    SetConVarFloat(g_hFF_damage_reduction_other, 1.0);
+    g_cvMP_teammates_are_enemies.SetInt(1);
+    g_cvMP_friendlyfire.SetInt(1);
+    g_cvMP_autokick.SetInt(0);
+    g_cvMP_tkpunish.SetInt(0);
+    g_cvFF_damage_reduction_bullets.SetFloat(1.0);
+    g_cvFF_damage_reduction_grenade.SetFloat(1.0);
+    g_cvFF_damage_reduction_other.SetFloat(1.0);
 }
 
 void DisableFFA()
 {
-    SetConVarInt(g_hMP_teammates_are_enemies, g_iBackup_mp_teammates_are_enemies);
-    SetConVarInt(g_hMP_friendlyfire, g_iBackup_mp_friendlyfire);
-    SetConVarInt(g_hMP_autokick, g_iBackup_mp_autokick);
-    SetConVarInt(g_hMP_tkpunish, g_iBackup_mp_tkpunish);
-    SetConVarFloat(g_hFF_damage_reduction_bullets, g_fBackup_ff_damage_reduction_bullets);
-    SetConVarFloat(g_hFF_damage_reduction_grenade, g_fBackup_ff_damage_reduction_grenade);
-    SetConVarFloat(g_hFF_damage_reduction_other, g_fBackup_ff_damage_reduction_other);
+    g_cvMP_teammates_are_enemies.SetInt(g_iBackup_mp_teammates_are_enemies);
+    g_cvMP_friendlyfire.SetInt(g_iBackup_mp_friendlyfire);
+    g_cvMP_autokick.SetInt(g_iBackup_mp_autokick);
+    g_cvMP_tkpunish.SetInt(g_iBackup_mp_tkpunish);
+    g_cvFF_damage_reduction_bullets.SetFloat(g_fBackup_ff_damage_reduction_bullets);
+    g_cvFF_damage_reduction_grenade.SetFloat(g_fBackup_ff_damage_reduction_grenade);
+    g_cvFF_damage_reduction_other.SetFloat(g_fBackup_ff_damage_reduction_other);
+}
+
+void GetCurrentWorkshopMap(char[] map, int mapbuffer, char[] workshopID, int workshopbuffer)
+{
+    char currentmap[128]
+    char currentmapbuffer[2][64]
+
+    GetCurrentMap(currentmap, 127)
+    ReplaceString(currentmap, sizeof(currentmap), "workshop/", "", false)
+    ExplodeString(currentmap, "/", currentmapbuffer, 2, 63)
+
+    strcopy(map, mapbuffer, currentmapbuffer[1])
+    strcopy(workshopID, workshopbuffer, currentmapbuffer[0])
 }
 
 void LoadMapConfig()
 {
-    char map[64];
-    GetCurrentMap(map, sizeof(map));
-
     char path[PLATFORM_MAX_PATH];
-    BuildPath(Path_SM, path, sizeof(path), "configs/deathmatch/spawns/%s.txt", map);
+    char workshopID[PLATFORM_MAX_PATH];
+    char map[PLATFORM_MAX_PATH];
+    char workshop[PLATFORM_MAX_PATH];
+    GetCurrentMap(map, PLATFORM_MAX_PATH);
+
+    BuildPath(Path_SM, path, sizeof(path), "configs/deathmatch/spawns");
+    if (!DirExists(path))
+        if (!CreateDirectory(path, 511))
+            LogError("Failed to create directory %s", path);
+
+    BuildPath(Path_SM, path, sizeof(path), "configs/deathmatch/spawns/workshop");
+    if (!DirExists(path))
+        if (!CreateDirectory(path, 511))
+            LogError("Failed to create directory %s", path);
+
+    if (StrContains(map, "workshop", false) != -1)
+    {
+        GetCurrentWorkshopMap(workshop, PLATFORM_MAX_PATH, workshopID, sizeof(workshopID) - 1);
+        BuildPath(Path_SM, path, sizeof(path), "configs/deathmatch/spawns/workshop/%s", workshopID);
+        if (!DirExists(path))
+            if (!CreateDirectory(path, 511))
+                LogError("Failed to create directory %s", path);
+
+        BuildPath(Path_SM, path, sizeof(path), "configs/deathmatch/spawns/workshop/%s/%s.txt", workshopID, workshop);
+    }
+    else
+        BuildPath(Path_SM, path, sizeof(path), "configs/deathmatch/spawns/%s.txt", map);
 
     g_iSpawnPointCount = 0;
 
@@ -1204,6 +1179,7 @@ bool WriteMapConfig()
         WriteFileLine(file, "%f %f %f %f %f %f", g_fSpawnPositions[i][0], g_fSpawnPositions[i][1], g_fSpawnPositions[i][2], g_fSpawnAngles[i][0], g_fSpawnAngles[i][1], g_fSpawnAngles[i][2]);
     /* Close file */
     delete file;
+
     return true;
 }
 
@@ -1212,7 +1188,7 @@ public Action Event_Say(int client, const char[] command, int argc)
     static char menuTriggers[][] = { "gun", "!gun", "/gun", "guns", "!guns", "/guns", "menu", "!menu", "/menu", "weapon", "!weapon", "/weapon", "weapons", "!weapons", "/weapons" };
     static char hsOnlyTriggers[][] = { "hs", "!hs", "/hs", "headshot", "!headshot", "/headshot" };
 
-    if (g_cvDM_enabled.BoolValue && IsValidClient(client) && (GetClientTeam(client) != CS_TEAM_SPECTATOR))
+    if (g_cvDM_enabled.BoolValue && IsValidClient(client) && (GetClientTeam(client) >= CS_TEAM_T))
     {
         /* Retrieve and clean up text. */
         char text[24];
@@ -1220,7 +1196,7 @@ public Action Event_Say(int client, const char[] command, int argc)
         StripQuotes(text);
         TrimString(text);
 
-        for(int i = 0; i < sizeof(menuTriggers); i++)
+        for (int i = 0; i < sizeof(menuTriggers); i++)
         {
             if (StrEqual(text, menuTriggers[i], false))
             {
@@ -1231,14 +1207,21 @@ public Action Event_Say(int client, const char[] command, int argc)
                 return Plugin_Handled;
             }
         }
-        if (!g_cvDM_headshot_only.BoolValue && g_cvDM_headshot_only_allow_client.BoolValue)
+        if (g_cvDM_headshot_only_allow_client.BoolValue)
         {
-            for(int i = 0; i < sizeof(hsOnlyTriggers); i++)
+            for (int i = 0; i < sizeof(hsOnlyTriggers); i++)
             {
                 if (StrEqual(text, hsOnlyTriggers[i], false))
                 {
-                    g_bHSOnlyClient[client] = !g_bHSOnlyClient[client]; 
-                    CPrintToChat(client, "[\x04DM\x01] %t", "HS Only Client %s", g_bHSOnlyClient[client] ? "Enabled" : "Disabled");
+                    g_bHSOnlyClient[client] = !g_bHSOnlyClient[client];
+                    char buffer[64];
+                    char cEnable[32];
+                    char cHSOnly[16];
+                    cEnable = g_bHSOnlyClient[client] ? "Enabled" : "Disabled";
+                    cHSOnly =  g_bHSOnlyClient[client] ? "1" : "0";
+                    Format(buffer, sizeof(buffer), "HS Only Client %s", cEnable);
+                    CPrintToChat(client, "[\x04DM\x01]  %t", buffer);
+                    SetClientCookie(client, g_hHSOnly_Cookie, cHSOnly);
                     return Plugin_Handled;
                 }
             }
@@ -1249,59 +1232,59 @@ public Action Event_Say(int client, const char[] command, int argc)
 
 void BuildWeaponMenuNames()
 {
-    g_hWeaponMenuNames = CreateTrie();
+    g_smWeaponMenuNames = new StringMap();
     /* Primary weapons */
-    SetTrieString(g_hWeaponMenuNames, "weapon_ak47", "AK-47");
-    SetTrieString(g_hWeaponMenuNames, "weapon_m4a1", "M4A1");
-    SetTrieString(g_hWeaponMenuNames, "weapon_m4a1_silencer", "M4A1-S");
-    SetTrieString(g_hWeaponMenuNames, "weapon_sg556", "SG 553");
-    SetTrieString(g_hWeaponMenuNames, "weapon_aug", "AUG");
-    SetTrieString(g_hWeaponMenuNames, "weapon_galilar", "Galil AR");
-    SetTrieString(g_hWeaponMenuNames, "weapon_famas", "FAMAS");
-    SetTrieString(g_hWeaponMenuNames, "weapon_awp", "AWP");
-    SetTrieString(g_hWeaponMenuNames, "weapon_ssg08", "SSG 08");
-    SetTrieString(g_hWeaponMenuNames, "weapon_g3sg1", "G3SG1");
-    SetTrieString(g_hWeaponMenuNames, "weapon_scar20", "SCAR-20");
-    SetTrieString(g_hWeaponMenuNames, "weapon_m249", "M249");
-    SetTrieString(g_hWeaponMenuNames, "weapon_negev", "Negev");
-    SetTrieString(g_hWeaponMenuNames, "weapon_nova", "Nova");
-    SetTrieString(g_hWeaponMenuNames, "weapon_xm1014", "XM1014");
-    SetTrieString(g_hWeaponMenuNames, "weapon_sawedoff", "Sawed-Off");
-    SetTrieString(g_hWeaponMenuNames, "weapon_mag7", "MAG-7");
-    SetTrieString(g_hWeaponMenuNames, "weapon_mac10", "MAC-10");
-    SetTrieString(g_hWeaponMenuNames, "weapon_mp9", "MP9");
-    SetTrieString(g_hWeaponMenuNames, "weapon_mp7", "MP7");
-    SetTrieString(g_hWeaponMenuNames, "weapon_ump45", "UMP-45");
-    SetTrieString(g_hWeaponMenuNames, "weapon_p90", "P90");
-    SetTrieString(g_hWeaponMenuNames, "weapon_bizon", "PP-Bizon");
+    g_smWeaponMenuNames.SetString("weapon_ak47", "AK-47");
+    g_smWeaponMenuNames.SetString("weapon_m4a1", "M4A1");
+    g_smWeaponMenuNames.SetString("weapon_m4a1_silencer", "M4A1-S");
+    g_smWeaponMenuNames.SetString("weapon_sg556", "SG 553");
+    g_smWeaponMenuNames.SetString("weapon_aug", "AUG");
+    g_smWeaponMenuNames.SetString("weapon_galilar", "Galil AR");
+    g_smWeaponMenuNames.SetString("weapon_famas", "FAMAS");
+    g_smWeaponMenuNames.SetString("weapon_awp", "AWP");
+    g_smWeaponMenuNames.SetString("weapon_ssg08", "SSG 08");
+    g_smWeaponMenuNames.SetString("weapon_g3sg1", "G3SG1");
+    g_smWeaponMenuNames.SetString("weapon_scar20", "SCAR-20");
+    g_smWeaponMenuNames.SetString("weapon_m249", "M249");
+    g_smWeaponMenuNames.SetString("weapon_negev", "Negev");
+    g_smWeaponMenuNames.SetString("weapon_nova", "Nova");
+    g_smWeaponMenuNames.SetString("weapon_xm1014", "XM1014");
+    g_smWeaponMenuNames.SetString("weapon_sawedoff", "Sawed-Off");
+    g_smWeaponMenuNames.SetString("weapon_mag7", "MAG-7");
+    g_smWeaponMenuNames.SetString("weapon_mac10", "MAC-10");
+    g_smWeaponMenuNames.SetString("weapon_mp9", "MP9");
+    g_smWeaponMenuNames.SetString("weapon_mp7", "MP7");
+    g_smWeaponMenuNames.SetString("weapon_ump45", "UMP-45");
+    g_smWeaponMenuNames.SetString("weapon_p90", "P90");
+    g_smWeaponMenuNames.SetString("weapon_bizon", "PP-Bizon");
     /* Secondary weapons */
-    SetTrieString(g_hWeaponMenuNames, "weapon_glock", "Glock-18");
-    SetTrieString(g_hWeaponMenuNames, "weapon_p250", "P250");
-    SetTrieString(g_hWeaponMenuNames, "weapon_cz75a", "CZ75-A");
-    SetTrieString(g_hWeaponMenuNames, "weapon_usp_silencer", "USP-S");
-    SetTrieString(g_hWeaponMenuNames, "weapon_fiveseven", "Five-SeveN");
-    SetTrieString(g_hWeaponMenuNames, "weapon_deagle", "Desert Eagle");
-    SetTrieString(g_hWeaponMenuNames, "weapon_revolver", "R8");
-    SetTrieString(g_hWeaponMenuNames, "weapon_elite", "Dual Berettas");
-    SetTrieString(g_hWeaponMenuNames, "weapon_tec9", "Tec-9");
-    SetTrieString(g_hWeaponMenuNames, "weapon_hkp2000", "P2000");
+    g_smWeaponMenuNames.SetString("weapon_glock", "Glock-18");
+    g_smWeaponMenuNames.SetString("weapon_p250", "P250");
+    g_smWeaponMenuNames.SetString("weapon_cz75a", "CZ75-A");
+    g_smWeaponMenuNames.SetString("weapon_usp_silencer", "USP-S");
+    g_smWeaponMenuNames.SetString("weapon_fiveseven", "Five-SeveN");
+    g_smWeaponMenuNames.SetString("weapon_deagle", "Desert Eagle");
+    g_smWeaponMenuNames.SetString("weapon_revolver", "R8");
+    g_smWeaponMenuNames.SetString("weapon_elite", "Dual Berettas");
+    g_smWeaponMenuNames.SetString("weapon_tec9", "Tec-9");
+    g_smWeaponMenuNames.SetString("weapon_hkp2000", "P2000");
     /* Random */
-    SetTrieString(g_hWeaponMenuNames, "random", "Random");
+    g_smWeaponMenuNames.SetString("random", "Random");
 }
 
 void InitialiseWeaponCounts()
 {
-    for (int i = 0; i < GetArraySize(g_hPrimaryWeaponsAvailable); i++)
+    for (int i = 0; i < g_aPrimaryWeaponsAvailable.Length; i++)
     {
         char weapon[24];
-        GetArrayString(g_hPrimaryWeaponsAvailable, i, weapon, sizeof(weapon));
-        SetTrieValue(g_hWeaponCounts, weapon, 0);
+        g_aPrimaryWeaponsAvailable.GetString(i, weapon, sizeof(weapon));
+        g_smWeaponCounts.SetValue(weapon, 0);
     }
-    for (int i = 0; i < GetArraySize(g_hSecondaryWeaponsAvailable); i++)
+    for (int i = 0; i < g_aSecondaryWeaponsAvailable.Length; i++)
     {
         char weapon[24];
-        GetArrayString(g_hSecondaryWeaponsAvailable, i, weapon, sizeof(weapon));
-        SetTrieValue(g_hWeaponCounts, weapon, 0);
+        g_aSecondaryWeaponsAvailable.GetString(i, weapon, sizeof(weapon));
+        g_smWeaponCounts.SetValue(weapon, 0);
     }
 }
 
@@ -1319,16 +1302,18 @@ void DisplayOptionsMenu(int client)
 
 public void Event_PlayerTeam(Event event, const char[] name, bool dontBroadcast)
 {
-    int client = GetClientOfUserId(event.GetInt("userid"));
-
-    /* If the player joins spectator, close any open menu, and remove their ragdoll. */
-    if ((client != 0) && (GetClientTeam(client) == CS_TEAM_SPECTATOR))
+    if (g_cvDM_enabled.BoolValue)
     {
-        CancelClientMenu(client);
-        RemoveRagdoll(client);
+        int client = GetClientOfUserId(event.GetInt("userid"));
+        /* If the player joins spectator, close any open menu, and remove their ragdoll. */
+        if ((client != 0) && (GetClientTeam(client) == CS_TEAM_SPECTATOR))
+        {
+            CancelClientMenu(client);
+            RemoveRagdoll(client);
+        }
+        if (g_cvDM_enabled.BoolValue && g_cvDM_respawning.BoolValue)
+            CreateTimer(g_cvDM_respawn_time.FloatValue, Timer_Respawn, GetClientSerial(client));
     }
-    if (g_cvDM_enabled.BoolValue && g_cvDM_respawning.BoolValue)
-        CreateTimer(g_cvDM_respawn_time.FloatValue, Respawn, GetClientSerial(client));
 }
 
 public Action Event_RoundPrestart(Event event, const char[] name, bool dontBroadcast)
@@ -1342,6 +1327,7 @@ public Action Event_RoundStart(Event event, const char[] name, bool dontBroadcas
     {
         if (g_cvDM_remove_objectives.BoolValue)
             RemoveHostages();
+
         if (g_cvDM_remove_weapons.BoolValue)
             RemoveGroundWeapons(INVALID_HANDLE);
     }
@@ -1357,18 +1343,14 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
     if (g_cvDM_enabled.BoolValue)
     {
         int client = GetClientOfUserId(event.GetInt("userid"));
-        if (IsValidClient(client) && GetClientTeam(client) != CS_TEAM_SPECTATOR)
+        if (IsValidClient(client) && GetClientTeam(client) >= CS_TEAM_T)
         {
             if (!IsFakeClient(client))
             {
-                if (g_cvDM_welcomemsg.BoolValue && g_iInfoMessageCount[client] > 0)
+                if (g_cvDM_welcomemsg.BoolValue && !g_bInfoMessage[client])
                 {
                     PrintHintText(client, "This server is running:\n <font color='#00FF00'>Deathmatch</font> v%s", PLUGIN_VERSION);
                     CPrintToChat(client, "[\x04DM\x01] This server is running \x04Deathmatch \x01v%s", PLUGIN_VERSION);
-                    if (!g_cvDM_headshot_only.BoolValue)
-                    {
-                        CPrintToChat(client, "[\x04DM\x01] %t", "HS Hint");
-                    }
                 }
                 /* Hide radar. */
                 if (g_cvDM_free_for_all.BoolValue || g_cvDM_hide_radar.BoolValue)
@@ -1376,47 +1358,47 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
                     RequestFrame(Frame_RemoveRadar, GetClientSerial(client));
                 }
                 /* Display help message. */
-                if ((g_cvDM_gun_menu_mode.IntValue <= 3) && g_iInfoMessageCount[client] > 0)
+                if (!g_bInfoMessage[client])
                 {
-                    CPrintToChat(client, "[\x04DM\x01] %t", "Guns Menu");
-                    g_iInfoMessageCount[client]--;
+                    if (g_cvDM_headshot_only.BoolValue)
+                        CPrintToChat(client, "[\x04DM\x01] %t", "HS Only");
+
+                    if (g_cvDM_headshot_only_allow_client.BoolValue)
+                        CPrintToChat(client, "[\x04DM\x01] %t", "HS Only Client");
+
+                    if (g_cvDM_gun_menu_mode.IntValue <= 3)
+                        CPrintToChat(client, "[\x04DM\x01] %t", "Guns Menu");
+
+                    g_bInfoMessage[client] = true;
                 }
                 /* Display the panel for attacker information. */
                 if (g_cvDM_display_panel.BoolValue)
-                {
-                    g_hDamageDisplay[client] = CreateTimer(1.0, PanelDisplay, GetClientSerial(client), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-                }
+                    g_hDamageDisplay[client] = CreateTimer(1.0, Timer_PanelDisplay, GetClientSerial(client), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
             }
             /* Teleport player to custom spawn point. */
             if (g_iSpawnPointCount > 0)
-            {
                 MovePlayer(client);
-            }
             /* Enable player spawn protection. */
-            if (g_cvDM_spawn_time.FloatValue > 0.0)
-            {
+            if (g_cvDM_spawn_protection_time.FloatValue > 0.0)
                 EnableSpawnProtection(client);
-            }
             /* Set health. */
             if (g_cvDM_hp_start.IntValue != 100)
-            {
                 SetEntityHealth(client, g_cvDM_hp_start.IntValue);
-            }
             /* Give equipment */
             if (g_cvDM_armor.BoolValue)
             {
-                SetEntData(client, g_iArmorOffset, 100);
-                SetEntData(client, g_iHelmetOffset, 0);
+                SetEntProp(client, Prop_Send, "m_ArmorValue", 100);
+                SetEntProp(client, Prop_Send, "m_bHasHelmet", 0);
             }
             else if (g_cvDM_armor_full.BoolValue)
             {
-                SetEntData(client, g_iArmorOffset, 100);
-                SetEntData(client, g_iHelmetOffset, 1);
+                SetEntProp(client, Prop_Send, "m_ArmorValue", 100);
+                SetEntProp(client, Prop_Send, "m_bHasHelmet", 1);
             }
             else if (!g_cvDM_armor_full.BoolValue || !g_cvDM_armor.BoolValue)
             {
-                SetEntData(client, g_iArmorOffset, 0);
-                SetEntData(client, g_iHelmetOffset, 0);
+                SetEntProp(client, Prop_Send, "m_ArmorValue", 0);
+                SetEntProp(client, Prop_Send, "m_bHasHelmet", 0);
             }
             /* Give weapons or display menu. */
             g_bWeaponsGivenThisRound[client] = false;
@@ -1430,34 +1412,24 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
             if (g_bRememberChoice[client] || IsFakeClient(client))
             {
                 if (g_cvDM_gun_menu_mode.IntValue == 1 || g_cvDM_gun_menu_mode.IntValue == 4)
-                {
                     GiveSavedWeapons(client, true, true);
-                }
                 /* Give only primary weapons if remembered. */
                 else if (g_cvDM_gun_menu_mode.IntValue == 2)
-                {
                     GiveSavedWeapons(client, true, false)
-                }
                 /* Give only secondary weapons if remembered. */
                 else if (g_cvDM_gun_menu_mode.IntValue == 3)
-                {
                     GiveSavedWeapons(client, false, true);
-                }
             }
             /* Display the gun menu to new users. */
             else if (!IsFakeClient(client))
             {
                 /* All weapons menu. */
                 if (g_cvDM_gun_menu_mode.IntValue <= 3)
-                {
                     DisplayOptionsMenu(client);
-                }
             }
             /* Remove C4. */
             if (g_cvDM_remove_objectives.BoolValue)
-            {
                 StripC4(client);
-            }
         }
     }
 }
@@ -1466,64 +1438,65 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
 {
     if (g_cvDM_enabled.BoolValue)
     {
-        int client = GetClientOfUserId(event.GetInt("userid"));
-        int attackerIndex = GetClientOfUserId(event.GetInt("attacker"));
-        char weapon[6];
-        char hegrenade[16];
-        char decoygrenade[16];
-        GetEventString(event, "weapon", weapon, sizeof(weapon));
-        GetEventString(event, "weapon", hegrenade, sizeof(hegrenade));
-        GetEventString(event, "weapon", decoygrenade, sizeof(decoygrenade));
+        int victim = GetClientOfUserId(event.GetInt("userid"));
+        int attacker = GetClientOfUserId(event.GetInt("attacker"));
 
-        bool validAttacker = (attackerIndex != 0) && IsPlayerAlive(attackerIndex);
+        char weapon[32];
+        event.GetString("weapon", weapon, sizeof(weapon));
+
+        bool validAttacker = IsValidClient(attacker) && IsPlayerAlive(attacker);
 
         /* Reward the attacker with ammo. */
-        if (validAttacker && (g_cvDM_replenish_ammo_clip.BoolValue || g_cvDM_replenish_ammo_reserve.BoolValue))
-        {
-            RequestFrame(Frame_GiveAmmo, GetClientSerial(attackerIndex));
-        }
+        if (validAttacker && g_cvDM_replenish_ammo_kill.BoolValue)
+            RequestFrame(Frame_GiveAmmo, GetClientSerial(attacker));
 
         /* Reward attacker with HP. */
         if (validAttacker)
         {
             bool knifed = StrEqual(weapon, "knife");
-            bool nades = StrEqual(hegrenade, "hegrenade");
-            bool decoys = StrEqual(decoygrenade, "decoy");
-            bool headshot = GetEventBool(event, "headshot");
+            bool naded = StrEqual(weapon, "hegrenade");
+            bool decoy = StrEqual(weapon, "decoy");
+            bool inferno = StrEqual(weapon, "inferno");
+            bool tactical = StrEqual(weapon, "tagrenade_projectile");
+            bool headshot = event.GetBool("headshot");
 
             if ((knifed && (g_cvDM_hp_knife.IntValue > 0)) || (!knifed && (g_cvDM_hp_kill.IntValue > 0)) || (headshot && (g_cvDM_hp_headshot.IntValue > 0)) || (!headshot && (g_cvDM_hp_kill.IntValue > 0)))
             {
-                int attackerHP = GetClientHealth(attackerIndex);
+                int attackerHP = GetClientHealth(attacker);
 
                 if (attackerHP < g_cvDM_hp_max.IntValue)
                 {
                     int addHP;
+
                     if (knifed)
                         addHP = g_cvDM_hp_knife.IntValue;
                     else if (headshot)
                         addHP = g_cvDM_hp_headshot.IntValue;
-                    else if (nades)
+                    else if (naded || decoy || inferno)
                         addHP = g_cvDM_hp_nade.IntValue;
                     else
                         addHP = g_cvDM_hp_kill.IntValue;
+
                     int newHP = attackerHP + addHP;
+
                     if (newHP > g_cvDM_hp_max.IntValue)
                         newHP = g_cvDM_hp_max.IntValue;
-                    SetEntProp(attackerIndex, Prop_Send, "m_iHealth", newHP, 1);
+
+                    SetEntProp(attacker, Prop_Send, "m_iHealth", newHP, 1);
                 }
 
                 if (g_cvDM_hp_messages.BoolValue && !g_cvDM_ap_messages.BoolValue)
                 {
-                    if(attackerHP < g_cvDM_hp_max.IntValue)
+                    if (attackerHP < g_cvDM_hp_max.IntValue)
                     {
                         if (knifed)
-                            CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 %t", g_cvDM_hp_knife.IntValue, "HP Knife Kill");
+                            CPrintToChat(attacker, "[\x04DM\x01] \x04+%i HP\x01 %t", g_cvDM_hp_knife.IntValue, "HP Knife Kill");
                         else if (headshot)
-                            CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 %t", g_cvDM_hp_headshot.IntValue, "HP Headshot Kill");
-                        else if (nades)
-                            CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 %t", g_cvDM_hp_nade.IntValue, "HP Nade Kill");
+                            CPrintToChat(attacker, "[\x04DM\x01] \x04+%i HP\x01 %t", g_cvDM_hp_headshot.IntValue, "HP Headshot Kill");
+                        else if (naded || decoy || inferno)
+                            CPrintToChat(attacker, "[\x04DM\x01] \x04+%i HP\x01 %t", g_cvDM_hp_nade.IntValue, "HP Nade Kill");
                         else 
-                            CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 %t", g_cvDM_hp_kill.IntValue, "HP Kill");
+                            CPrintToChat(attacker, "[\x04DM\x01] \x04+%i HP\x01 %t", g_cvDM_hp_kill.IntValue, "HP Kill");
                     }
                 }
             }
@@ -1531,23 +1504,27 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
             /* Reward attacker with AP. */
             if ((knifed && (g_cvDM_ap_knife.IntValue > 0)) || (!knifed && (g_cvDM_ap_kill.IntValue > 0)) || (headshot && (g_cvDM_ap_headshot.IntValue > 0)) || (!headshot && (g_cvDM_ap_kill.IntValue > 0)))
             {
-                int attackerAP = GetClientArmor(attackerIndex);
+                int attackerAP = GetClientArmor(attacker);
 
                 if (attackerAP < g_cvDM_ap_max.IntValue)
                 {
                     int addAP;
+
                     if (knifed)
                         addAP = g_cvDM_ap_knife.IntValue;
                     else if (headshot)
                         addAP = g_cvDM_ap_headshot.IntValue;
-                    else if (nades)
+                    else if (naded || decoy || inferno)
                         addAP = g_cvDM_ap_nade.IntValue;
                     else
                         addAP = g_cvDM_ap_kill.IntValue;
+
                     int newAP = attackerAP + addAP;
+
                     if (newAP > g_cvDM_ap_max.IntValue)
                         newAP = g_cvDM_ap_max.IntValue;
-                    SetEntProp(attackerIndex, Prop_Send, "m_ArmorValue", newAP, 1);
+
+                    SetEntProp(attacker, Prop_Send, "m_ArmorValue", newAP, 1);
                 }
 
                 if (g_cvDM_ap_messages.BoolValue && !g_cvDM_hp_messages.BoolValue)
@@ -1555,187 +1532,183 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
                     if (attackerAP < g_cvDM_ap_max.IntValue)
                     {
                         if (knifed)
-                            CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i AP\x01 %t", g_cvDM_ap_knife.IntValue, "AP Knife Kill");
+                            CPrintToChat(attacker, "[\x04DM\x01] \x04+%i AP\x01 %t", g_cvDM_ap_knife.IntValue, "AP Knife Kill");
                         else if (headshot)
-                            CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i AP\x01 %t", g_cvDM_ap_headshot.IntValue, "AP Headshot Kill");
-                        else if (nades)
-                            CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i AP\x01 %t", g_cvDM_ap_nade.IntValue, "AP Nade Kill");
+                            CPrintToChat(attacker, "[\x04DM\x01] \x04+%i AP\x01 %t", g_cvDM_ap_headshot.IntValue, "AP Headshot Kill");
+                        else if (naded || decoy || inferno)
+                            CPrintToChat(attacker, "[\x04DM\x01] \x04+%i AP\x01 %t", g_cvDM_ap_nade.IntValue, "AP Nade Kill");
                         else
-                            CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i AP\x01 %t", g_cvDM_ap_kill.IntValue, "AP Kill");
+                            CPrintToChat(attacker, "[\x04DM\x01] \x04+%i AP\x01 %t", g_cvDM_ap_kill.IntValue, "AP Kill");
                     }
                 }
             }
 
             if ((g_cvDM_hp_messages.BoolValue && g_cvDM_ap_messages.BoolValue))
             {
-                int attackerAP = GetClientArmor(attackerIndex);
-                int attackerHP = GetClientHealth(attackerIndex);
+                int attackerAP = GetClientArmor(attacker);
+                int attackerHP = GetClientHealth(attacker);
                 bool bchanged = true;
 
                 if (attackerAP < g_cvDM_ap_max.IntValue && attackerHP < g_cvDM_hp_max.IntValue)
                 {
                     if (knifed)
-                        CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 & \x04+%i AP\x01 %t", g_cvDM_hp_knife.IntValue, g_cvDM_ap_knife.IntValue, "HP Knife Kill", "AP Knife Kill");
+                        CPrintToChat(attacker, "[\x04DM\x01] \x04+%i HP\x01 & \x04+%i AP\x01 %t", g_cvDM_hp_knife.IntValue, g_cvDM_ap_knife.IntValue, "HP Knife Kill", "AP Knife Kill");
                     else if (headshot)
-                        CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 & \x04+%i AP\x01 %t", g_cvDM_hp_headshot.IntValue, g_cvDM_ap_headshot.IntValue, "HP Headshot Kill", "AP Headshot Kill");
-                    else if (nades)
-                        CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 & \x04+%i AP\x01 %t", g_cvDM_hp_nade.IntValue, g_cvDM_ap_nade.IntValue, "HP Nade Kill", "AP Nade Kill");
+                        CPrintToChat(attacker, "[\x04DM\x01] \x04+%i HP\x01 & \x04+%i AP\x01 %t", g_cvDM_hp_headshot.IntValue, g_cvDM_ap_headshot.IntValue, "HP Headshot Kill", "AP Headshot Kill");
+                    else if (naded || decoy || inferno)
+                        CPrintToChat(attacker, "[\x04DM\x01] \x04+%i HP\x01 & \x04+%i AP\x01 %t", g_cvDM_hp_nade.IntValue, g_cvDM_ap_nade.IntValue, "HP Nade Kill", "AP Nade Kill");
                     else
-                        CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 & \x04+%i AP\x01 %t", g_cvDM_hp_kill.IntValue, g_cvDM_ap_kill.IntValue, "HP Kill", "AP Kill");
+                        CPrintToChat(attacker, "[\x04DM\x01] \x04+%i HP\x01 & \x04+%i AP\x01 %t", g_cvDM_hp_kill.IntValue, g_cvDM_ap_kill.IntValue, "HP Kill", "AP Kill");
 
                     bchanged = false;
                 }
                 else if (bchanged && attackerHP < g_cvDM_hp_max.IntValue)
                 {
                     if (knifed)
-                        CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 %t", g_cvDM_hp_knife.IntValue, "HP Knife Kill");
+                        CPrintToChat(attacker, "[\x04DM\x01] \x04+%i HP\x01 %t", g_cvDM_hp_knife.IntValue, "HP Knife Kill");
                     else if (headshot)
-                        CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 %t", g_cvDM_hp_headshot.IntValue, "HP Headshot Kill");
-                    else if (nades)
-                        CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 %t", g_cvDM_hp_nade.IntValue, "HP Nade Kill");
+                        CPrintToChat(attacker, "[\x04DM\x01] \x04+%i HP\x01 %t", g_cvDM_hp_headshot.IntValue, "HP Headshot Kill");
+                    else if (naded || decoy || inferno)
+                        CPrintToChat(attacker, "[\x04DM\x01] \x04+%i HP\x01 %t", g_cvDM_hp_nade.IntValue, "HP Nade Kill");
                     else 
-                        CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i HP\x01 %t", g_cvDM_hp_kill.IntValue, "HP Kill");
+                        CPrintToChat(attacker, "[\x04DM\x01] \x04+%i HP\x01 %t", g_cvDM_hp_kill.IntValue, "HP Kill");
 
                     bchanged = false;
                 }
                 else if (bchanged && attackerAP < g_cvDM_ap_max.IntValue)
                 {
                     if (knifed)
-                        CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i AP\x01 %t", g_cvDM_ap_knife.IntValue, "AP Knife Kill");
+                        CPrintToChat(attacker, "[\x04DM\x01] \x04+%i AP\x01 %t", g_cvDM_ap_knife.IntValue, "AP Knife Kill");
                     else if (headshot)
-                        CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i AP\x01 %t", g_cvDM_ap_headshot.IntValue, "AP Headshot Kill");
-                    else if (nades)
-                        CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i AP\x01 %t", g_cvDM_ap_nade.IntValue, "AP Nade Kill");
+                        CPrintToChat(attacker, "[\x04DM\x01] \x04+%i AP\x01 %t", g_cvDM_ap_headshot.IntValue, "AP Headshot Kill");
+                    else if (naded || decoy || inferno)
+                        CPrintToChat(attacker, "[\x04DM\x01] \x04+%i AP\x01 %t", g_cvDM_ap_nade.IntValue, "AP Nade Kill");
                     else
-                        CPrintToChat(attackerIndex, "[\x04DM\x01] \x04+%i AP\x01 %t", g_cvDM_ap_kill.IntValue, "AP Kill");
+                        CPrintToChat(attacker, "[\x04DM\x01] \x04+%i AP\x01 %t", g_cvDM_ap_kill.IntValue, "AP Kill");
                 }
             }
 
-            if (g_cvDM_replenish_grenade.BoolValue)
+            if (g_cvDM_replenish_grenade_kill.BoolValue)
             {
-                if (IsClientInGame(attackerIndex) && IsPlayerAlive(attackerIndex))
+                if (IsClientInGame(attacker) && IsPlayerAlive(attacker))
                 {
-                    if (nades)
-                        GivePlayerItem(attackerIndex, "weapon_hegrenade");
-                    if (decoys)
-                        GivePlayerItem(attackerIndex, "weapon_decoy");
+                    if (naded)
+                        GivePlayerItem(attacker, "weapon_hegrenade");
+
+                    if (inferno)
+                    {
+                        int clientTeam = GetClientTeam(attacker);
+                        if (clientTeam == CS_TEAM_CT)
+                            GivePlayerItem(attacker, "weapon_incgrenade");
+
+                        if (clientTeam == CS_TEAM_T)
+                            GivePlayerItem(attacker, "weapon_molotov");
+                    }
+
+                    if (decoy)
+                        GivePlayerItem(attacker, "weapon_decoy");
+
+                    if (tactical)
+                        GivePlayerItem(attacker, "weapon_tagrenade");
                 }
             }
         }
 
         if (g_cvDM_respawning.BoolValue)
-        {
-            CreateTimer(g_cvDM_respawn_time.FloatValue, Respawn, GetClientSerial(client));
-        }
+            CreateTimer(g_cvDM_respawn_time.FloatValue, Timer_Respawn, GetClientSerial(victim));
     }
 }
 
 public Action Event_PlayerHurt(Event event, const char[] name, bool dontBroadcast)
 {
-    if (g_cvDM_display_panel.BoolValue)
+    if (g_cvDM_enabled.BoolValue)
     {
-        int victim = GetClientOfUserId(event.GetInt("userid"));
-        int attacker = GetClientOfUserId(event.GetInt("attacker"));
-        int health = event.GetInt("health");
-
-        if (IsValidClient(attacker) && attacker != victim && victim != 0)
+        if (g_cvDM_display_panel.BoolValue)
         {
-            if (0 < health)
+            int victim = GetClientOfUserId(event.GetInt("userid"));
+            int attacker = GetClientOfUserId(event.GetInt("attacker"));
+            int health = event.GetInt("health");
+
+            if (IsValidClient(attacker) && attacker != victim && victim != 0)
             {
-                if (g_cvDM_display_panel_damage.BoolValue)
+                if (0 < health)
                 {
-                    PrintHintText(attacker, "%t <font color='#FF0000'>%i</font> %t <font color='#00FF00'>%N</font>\n %t <font color='#00FF00'>%i</font>", "Panel Damage Giver", event.GetInt("dmg_health"), "Panel Damage Taker", victim, "Panel Health Remaining", health);
+                    if (g_cvDM_display_panel_damage.BoolValue)
+                        PrintHintText(attacker, "%t <font color='#FF0000'>%i</font> %t <font color='#00FF00'>%N</font>\n %t <font color='#00FF00'>%i</font>", "Panel Damage Giver", event.GetInt("dmg_health"), "Panel Damage Taker", victim, "Panel Health Remaining", health);
+                    else
+                        PrintHintText(attacker, "%t <font color='#FF0000'>%i</font>", "Panel Health Remaining", health);
                 }
                 else
-                {
-                    PrintHintText(attacker, "%t <font color='#FF0000'>%i</font>", "Panel Health Remaining", health);
-                }
-            }
-            else
-            {
-                PrintHintText(attacker, "\n   %t", "Panel Kill Confirmed");
+                    PrintHintText(attacker, "\n   %t", "Panel Kill Confirmed");
             }
         }
-    }
 
-    int attacker = GetClientOfUserId(event.GetInt("attacker"));
-    if (g_cvDM_headshot_only.BoolValue || (g_bHSOnlyClient[attacker] && g_cvDM_headshot_only_allow_client.BoolValue))
-    {
-        int victim = GetClientOfUserId(event.GetInt("userid"));
-        int dhealth = event.GetInt("dmg_health");
-        int darmor = event.GetInt("dmg_iArmor");
-        int health = event.GetInt("health");
-        int armor = event.GetInt("armor");
-        char weapon[32];
-        char grenade[16];
-        GetEventString(event, "weapon", weapon, sizeof(weapon));
-        GetEventString(event, "weapon", grenade, sizeof(grenade));
-
-        if (!g_cvDM_headshot_only_allow_nade.BoolValue)
+        int attacker = GetClientOfUserId(event.GetInt("attacker"));
+        if (g_cvDM_headshot_only.BoolValue || (g_bHSOnlyClient[attacker] && g_cvDM_headshot_only_allow_client.BoolValue))
         {
-            if (StrEqual(grenade, "hegrenade", false))
+            int victim = GetClientOfUserId(event.GetInt("userid"));
+            int dhealth = event.GetInt("dmg_health");
+            int darmor = event.GetInt("dmg_iArmor");
+            int health = event.GetInt("health");
+            int armor = event.GetInt("armor");
+            char weapon[32];
+            event.GetString("weapon", weapon, sizeof(weapon));
+
+            if (!g_cvDM_headshot_only_allow_nade.BoolValue)
             {
-                if (attacker != victim && victim != 0)
+                if (StrEqual(weapon, "hegrenade", false))
+                {
+                    if (attacker != victim && victim != 0)
+                    {
+                        if (dhealth > 0)
+                            SetEntProp(victim, Prop_Send, "m_iHealth", (health + dhealth));
+
+                        if (darmor > 0)
+                            SetEntProp(victim, Prop_Send, "m_ArmorValue", (armor + darmor));
+
+                    }
+                }
+            }
+
+            if (!g_cvDM_headshot_only_allow_taser.BoolValue)
+            {
+                if (StrEqual(weapon, "taser", false))
+                {
+                    if (attacker != victim && victim != 0)
+                    {
+                        if (dhealth > 0)
+                            SetEntProp(victim, Prop_Send, "m_iHealth", (health + dhealth));
+
+                        if (darmor > 0)
+                            SetEntProp(victim, Prop_Send, "m_ArmorValue", (armor + darmor));
+                    }
+                }
+            }
+
+            if (!g_cvDM_headshot_only_allow_knife.BoolValue)
+            {
+                if (StrEqual(weapon, "knife", false))
+                {
+                    if (attacker != victim && victim != 0)
+                    {
+                        if (dhealth > 0)
+                            SetEntProp(victim, Prop_Send, "m_iHealth", (health + dhealth));
+
+                        if (darmor > 0)
+                            SetEntProp(victim, Prop_Send, "m_ArmorValue", (armor + darmor));
+                    }
+                }
+            }
+
+            if (!g_cvDM_headshot_only_allow_world.BoolValue)
+            {
+                if (victim !=0 && attacker == 0)
                 {
                     if (dhealth > 0)
-                    {
-                        SetEntData(victim, g_iHealthOffset, (health + dhealth), 4, true);
-                    }
-                    if (darmor > 0)
-                    {
-                        SetEntData(victim, g_iArmorOffset, (armor + darmor), 4, true);
-                    }
-                }
-            }
-        }
+                        SetEntProp(victim, Prop_Send, "m_iHealth", (health + dhealth));
 
-        if (!g_cvDM_headshot_only_allow_taser.BoolValue)
-        {
-            if (StrEqual(weapon, "taser", false))
-            {
-                if (attacker != victim && victim != 0)
-                {
-                    if (dhealth > 0)
-                    {
-                        SetEntData(victim, g_iHealthOffset, (health + dhealth), 4, true);
-                    }
                     if (darmor > 0)
-                    {
-                        SetEntData(victim, g_iArmorOffset, (armor + darmor), 4, true);
-                    }
-                }
-            }
-        }
-
-        if (!g_cvDM_headshot_only_allow_knife.BoolValue)
-        {
-            if (StrEqual(weapon, "knife", false))
-            {
-                if (attacker != victim && victim != 0)
-                {
-                    if (dhealth > 0)
-                    {
-                        SetEntData(victim, g_iHealthOffset, (health + dhealth), 4, true);
-                    }
-                    if (darmor > 0)
-                    {
-                        SetEntData(victim, g_iArmorOffset, (armor + darmor), 4, true);
-                    }
-                }
-            }
-        }
-
-        if (!g_cvDM_headshot_only_allow_world.BoolValue)
-        {
-            if (victim !=0 && attacker == 0)
-            {
-                if (dhealth > 0)
-                {
-                    SetEntData(victim, g_iHealthOffset, (health + dhealth), 4, true);
-                }
-                if (darmor > 0)
-                {
-                    SetEntData(victim, g_iArmorOffset, (armor + darmor), 4, true);
+                        SetEntProp(victim, Prop_Send, "m_ArmorValue", (armor + darmor));
                 }
             }
         }
@@ -1745,23 +1718,20 @@ public Action Event_PlayerHurt(Event event, const char[] name, bool dontBroadcas
 
 public Action Event_WeaponFireOnEmpty(Event event, const char[] name, bool dontBroadcast)
 {
-    int client = GetClientOfUserId(event.GetInt("userid"));
-
-    if (g_cvDM_replenish_ammo.BoolValue)
+    if (g_cvDM_enabled.BoolValue && g_cvDM_replenish_ammo_empty.BoolValue)
     {
+        int client = GetClientOfUserId(event.GetInt("userid"));
         RequestFrame(Frame_GiveAmmo, GetClientSerial(client));
     }
 }
 
 public Action Event_HegrenadeDetonate(Event event, const char[] name, bool dontBroadcast)
 {
-    if (g_cvDM_replenish_grenade.BoolValue || g_cvDM_replenish_hegrenade.BoolValue)
+    if (g_cvDM_enabled.BoolValue && (g_cvDM_replenish_grenade.BoolValue || g_cvDM_replenish_hegrenade.BoolValue))
     {
         int client = GetClientOfUserId(event.GetInt("userid"));
         if (IsValidClient(client) && IsPlayerAlive(client))
-        {
             GivePlayerItem(client, "weapon_hegrenade");
-        }
     }
 
     return Plugin_Continue;
@@ -1769,13 +1739,11 @@ public Action Event_HegrenadeDetonate(Event event, const char[] name, bool dontB
 
 public Action Event_SmokegrenadeDetonate(Event event, const char[] name, bool dontBroadcast)
 {
-    if (g_cvDM_replenish_grenade.BoolValue)
+    if (g_cvDM_enabled.BoolValue && g_cvDM_replenish_grenade.BoolValue)
     {
         int client = GetClientOfUserId(event.GetInt("userid"));
         if (IsValidClient(client) && IsPlayerAlive(client))
-        {
             GivePlayerItem(client, "weapon_smokegrenade");
-        }
     }
 
     return Plugin_Continue;
@@ -1783,19 +1751,11 @@ public Action Event_SmokegrenadeDetonate(Event event, const char[] name, bool do
 
 public Action Event_FlashbangDetonate(Event event, const char[] name, bool dontBroadcast)
 {
-    if (!g_cvDM_replenish_grenade.BoolValue)
+    if (g_cvDM_enabled.BoolValue && g_cvDM_replenish_grenade.BoolValue)
     {
-        return Plugin_Continue;
-    }
-
-    int client = GetClientOfUserId(event.GetInt("userid"));
-
-    if (g_cvDM_replenish_grenade.BoolValue)
-    {
+        int client = GetClientOfUserId(event.GetInt("userid"));
         if (IsValidClient(client) && IsPlayerAlive(client))
-        {
             GivePlayerItem(client, "weapon_flashbang");
-        }
     }
 
     return Plugin_Continue;
@@ -1803,14 +1763,11 @@ public Action Event_FlashbangDetonate(Event event, const char[] name, bool dontB
 
 public Action Event_DecoyStarted(Event event, const char[] name, bool dontBroadcast)
 {
-    if (g_cvDM_replenish_grenade.BoolValue)
+    if (g_cvDM_enabled.BoolValue && g_cvDM_replenish_grenade.BoolValue)
     {
         int client = GetClientOfUserId(event.GetInt("userid"));
-
         if (IsValidClient(client) && IsPlayerAlive(client))
-        {
             GivePlayerItem(client, "weapon_decoy");
-        }
     }
 
     return Plugin_Continue;
@@ -1818,14 +1775,11 @@ public Action Event_DecoyStarted(Event event, const char[] name, bool dontBroadc
 
 public Action Event_MolotovDetonate(Event event, const char[] name, bool dontBroadcast)
 {
-    if (g_cvDM_replenish_grenade.BoolValue)
+    if (g_cvDM_enabled.BoolValue && g_cvDM_replenish_grenade.BoolValue)
     {
         int client = GetClientOfUserId(event.GetInt("userid"));
-
         if (IsValidClient(client) && IsPlayerAlive(client))
-        {
             GivePlayerItem(client, "weapon_molotov");
-        }
     }
 
     return Plugin_Continue;
@@ -1833,14 +1787,11 @@ public Action Event_MolotovDetonate(Event event, const char[] name, bool dontBro
 
 public Action Event_InfernoStartburn(Event event, const char[] name, bool dontBroadcast)
 {
-    if (g_cvDM_replenish_grenade.BoolValue)
+    if (g_cvDM_enabled.BoolValue && g_cvDM_replenish_grenade.BoolValue)
     {
         int client = GetClientOfUserId(event.GetInt("userid"));
-
         if (IsValidClient(client) && IsPlayerAlive(client))
-        {
             GivePlayerItem(client, "weapon_incgrenade");
-        }
     }
 
     return Plugin_Continue;
@@ -1848,14 +1799,15 @@ public Action Event_InfernoStartburn(Event event, const char[] name, bool dontBr
 
 public Action OnTraceAttack(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &ammotype, int hitbox, int hitgroup)
 {
+    if (!g_cvDM_enabled.BoolValue)
+        return Plugin_Continue;
+
     if (g_cvDM_no_knife_damage.BoolValue)
     {
         char knife[32];
         GetClientWeapon(attacker, knife, sizeof(knife));
         if (StrEqual(knife, "weapon_knife") || StrEqual(knife, "weapon_bayonet"))
-        {
             return Plugin_Handled;
-        }
     }
 
     if (g_cvDM_headshot_only.BoolValue || (g_bHSOnlyClient[attacker] && g_cvDM_headshot_only_allow_client.BoolValue))
@@ -1866,25 +1818,16 @@ public Action OnTraceAttack(int victim, int &attacker, int &inflictor, float &da
         GetClientWeapon(attacker, weapon, sizeof(weapon));
 
         if (hitgroup == 1)
-        {
             return Plugin_Continue;
-        }
         else if (g_cvDM_headshot_only_allow_knife.BoolValue && (StrEqual(weapon, "weapon_knife") || StrEqual(weapon, "weapon_bayonet")))
-        {
             return Plugin_Continue;
-        }
-        else if (g_cvDM_headshot_only_allow_nade.BoolValue && (StrEqual(grenade, "hegrenade_projectile") || StrEqual(grenade, "decoy_projectile") || StrEqual(grenade, "molotov_projectile")))
-        {
+        else if (g_cvDM_headshot_only_allow_nade.BoolValue && (StrEqual(grenade, "hegrenade_projectile") || StrEqual(grenade, "decoy_projectile") || StrEqual(grenade, "molotov_projectile") || StrEqual(grenade, "tagrenade_projectile")))
             return Plugin_Continue;
-        }
         else if (g_cvDM_headshot_only_allow_taser.BoolValue && StrEqual(weapon, "weapon_taser"))
-        {
             return Plugin_Continue;
-        }
         else
-        {
             return Plugin_Handled;
-        }
+
     }
 
     return Plugin_Continue;
@@ -1892,6 +1835,9 @@ public Action OnTraceAttack(int victim, int &attacker, int &inflictor, float &da
 
 public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
 {
+    if (!g_cvDM_enabled.BoolValue)
+        return Plugin_Continue;
+
     if (g_cvDM_no_knife_damage.BoolValue)
     {
         if (IsValidClient(attacker))
@@ -1900,9 +1846,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
             GetClientWeapon(attacker, knife, sizeof(knife));
 
             if (StrEqual(knife, "weapon_knife") || StrEqual(knife, "weapon_bayonet"))
-            {
                 return Plugin_Handled;
-            }
         }
     }
 
@@ -1916,13 +1860,9 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
             if (damagetype & DMG_FALL || attacker == 0)
             {
                 if (g_cvDM_headshot_only_allow_world.BoolValue)
-                {
                     return Plugin_Continue;
-                }
                 else
-                {
                     return Plugin_Handled;
-                }
             }
 
             if (IsValidClient(attacker))
@@ -1931,44 +1871,58 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
                 GetClientWeapon(attacker, weapon, sizeof(weapon));
 
                 if (damagetype & DMG_HEADSHOT)
-                {
                     return Plugin_Continue;
-                }
                 else
                 {
                     if (g_cvDM_headshot_only_allow_knife.BoolValue && (StrEqual(weapon, "weapon_knife") || StrEqual(weapon, "weapon_bayonet")))
-                    {
                         return Plugin_Continue;
-                    }
-                    else if (g_cvDM_headshot_only_allow_nade.BoolValue && (StrEqual(grenade, "hegrenade_projectile") || StrEqual(grenade, "decoy_projectile") || StrEqual(grenade, "molotov_projectile")))
-                    {
+                    else if (g_cvDM_headshot_only_allow_nade.BoolValue && (StrEqual(grenade, "hegrenade_projectile") || StrEqual(grenade, "decoy_projectile") || StrEqual(grenade, "molotov_projectile") || StrEqual(grenade, "tagrenade_projectile")))
                         return Plugin_Continue;
-                    }
                     else if (g_cvDM_headshot_only_allow_taser.BoolValue && StrEqual(weapon, "weapon_taser"))
-                    {
                         return Plugin_Continue;
-                    }
                     return Plugin_Handled;
                 }
             }
             else
-            {
                 return Plugin_Handled;
-            }
         }
         else
-        {
             return Plugin_Handled;
-        }
     }
 
     return Plugin_Continue;
 }
 
-public Action PanelDisplay(Handle timer, any serial)
+public void OnReloadPost(int weapon, bool bSuccessful)
+{
+    if (g_cvDM_enabled.BoolValue && g_cvDM_replenish_ammo_reload.BoolValue)
+    {
+        int client = GetEntPropEnt(weapon, Prop_Send, "m_hOwnerEntity");
+        if (IsValidEntity(client) && IsValidClient(client))
+            RequestFrame(Frame_GiveAmmo, GetClientSerial(client));
+    }
+}
+
+void RespawnAll()
+{
+    for (int i = 1; i <= MaxClients; i++)
+        Timer_Respawn(INVALID_HANDLE, i);
+}
+
+public Action Timer_Respawn(Handle timer, any serial)
 {
     int client = GetClientFromSerial(serial);
+    if (!g_bRoundEnded && IsValidClient(client) && (GetClientTeam(client) != CS_TEAM_SPECTATOR) && !IsPlayerAlive(client))
+    {
+        /* We set this here rather than in Event_PlayerSpawn to catch the spawn sounds which occur before Event_PlayerSpawn is called (even with EventHookMode_Pre). */
+        g_bPlayerMoved[client] = false;
+        CS_RespawnPlayer(client);
+    }
+}
 
+public Action Timer_PanelDisplay(Handle timer, any serial)
+{
+    int client = GetClientFromSerial(serial);
     if (IsValidClient(client) && IsPlayerAlive(client))
     {
         int aim = GetClientAimTarget(client, true);
@@ -1982,73 +1936,72 @@ public Action PanelDisplay(Handle timer, any serial)
     return Plugin_Stop;
 }
 
+public void Frame_FastSwitch(any serial)
+{
+    int client = GetClientFromSerial(serial);
+    if (!IsValidClient(client) || !IsPlayerAlive(client))
+        return;
+
+    int sequence = 0;
+    SetEntPropFloat(client, Prop_Send, "m_flNextAttack", GetGameTime());
+    int viewModel = GetEntPropEnt(client, Prop_Send, "m_hViewModel");
+
+    if (IsValidEntity(viewModel))
+        SetEntProp(viewModel, Prop_Send, "m_nSequence", sequence);
+}
+
 public void Frame_RemoveRadar(any serial)
 {
     int client = GetClientFromSerial(serial);
-
     if (IsValidClient(client) && IsPlayerAlive(client))
-    {
         SetEntProp(client, Prop_Send, "m_iHideHUD", HIDEHUD_RADAR);
-    }
 }
 
 public void Frame_GiveAmmo(any serial)
 {
-    int client = GetClientFromSerial(serial);
-
-    if (g_cvDM_enabled.BoolValue && (g_cvDM_replenish_ammo.BoolValue || g_cvDM_replenish_ammo_reserve.BoolValue || g_cvDM_replenish_ammo_clip.BoolValue))
-    {
-        if (IsValidClient(client) && !IsFakeClient(client) && IsPlayerAlive(client))
-        {
-            RequestFrame(Frame_RefillWeapons, GetClientSerial(client));
-        }
-    }
-}
-
-public void Frame_RefillWeapons(any serial)
-{
-    int client = GetClientFromSerial(serial);
     int weaponEntity;
-
-    if(IsValidClient(client) && !IsFakeClient(client) && IsPlayerAlive(client))
+    int client = GetClientFromSerial(serial)
+    if (IsValidClient(client) && !IsFakeClient(client) && IsPlayerAlive(client))
     {
-        if (g_cvDM_replenish_ammo.BoolValue || (g_cvDM_replenish_ammo_reserve.BoolValue && g_cvDM_replenish_ammo_clip.BoolValue))
+        switch (g_cvDM_replenish_ammo_type.IntValue)
         {
-            weaponEntity = GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
-            if (weaponEntity != -1)
-                DoFullRefillAmmo(EntIndexToEntRef(weaponEntity), client);
+            case 1: 
+            {
+                weaponEntity = GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
+                if (weaponEntity != -1)
+                    Ammo_ClipRefill(EntIndexToEntRef(weaponEntity), client);
 
-            weaponEntity = GetPlayerWeaponSlot(client, CS_SLOT_SECONDARY);
-            if (weaponEntity != -1)
-                DoFullRefillAmmo(EntIndexToEntRef(weaponEntity), client);
-        }
-        else if (g_cvDM_replenish_ammo_clip.BoolValue)
-        {
-            weaponEntity = GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
-            if (weaponEntity != -1)
-                DoClipRefillAmmo(EntIndexToEntRef(weaponEntity), client);
+                weaponEntity = GetPlayerWeaponSlot(client, CS_SLOT_SECONDARY);
+                if (weaponEntity != -1)
+                    Ammo_ClipRefill(EntIndexToEntRef(weaponEntity), client);
+            }
+            case 2: 
+            {
+                weaponEntity = GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
+                if (weaponEntity != -1)
+                    Ammo_ResRefill(EntIndexToEntRef(weaponEntity), client);
 
-            weaponEntity = GetPlayerWeaponSlot(client, CS_SLOT_SECONDARY);
-            if (weaponEntity != -1)
-                DoClipRefillAmmo(EntIndexToEntRef(weaponEntity), client);
-        }
-        else if (g_cvDM_replenish_ammo_reserve.BoolValue)
-        {
-            weaponEntity = GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
-            if (weaponEntity != -1)
-                DoResRefillAmmo(EntIndexToEntRef(weaponEntity), client);
+                weaponEntity = GetPlayerWeaponSlot(client, CS_SLOT_SECONDARY);
+                if (weaponEntity != -1)
+                    Ammo_ResRefill(EntIndexToEntRef(weaponEntity), client);
+            }
+            case 3: 
+            {
+                weaponEntity = GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
+                if (weaponEntity != -1)
+                    Ammo_FullRefill(EntIndexToEntRef(weaponEntity), client);
 
-            weaponEntity = GetPlayerWeaponSlot(client, CS_SLOT_SECONDARY);
-            if (weaponEntity != -1)
-                DoResRefillAmmo(EntIndexToEntRef(weaponEntity), client);
+                weaponEntity = GetPlayerWeaponSlot(client, CS_SLOT_SECONDARY);
+                if (weaponEntity != -1)
+                    Ammo_FullRefill(EntIndexToEntRef(weaponEntity), client);
+            }
         }
     }
 }
 
-void DoClipRefillAmmo(int weaponRef, any client)
+void Ammo_ClipRefill(int weaponRef, any client)
 {
     int weaponEntity = EntRefToEntIndex(weaponRef);
-
     if (IsValidEdict(weaponEntity))
     {
         char weaponName[64];
@@ -2068,20 +2021,19 @@ void DoClipRefillAmmo(int weaponRef, any client)
             }
         }
 
-        SetEntData(client, g_iAmmoOffset, maxAmmoCount, true);
-        SetEntData(weaponEntity, g_iWeapons_Clip1Offset, clipSize, 4, true);
+        SetEntProp(client, Prop_Send, "m_iAmmo", maxAmmoCount);
+        SetEntProp(weaponEntity, Prop_Send, "m_iClip1", clipSize);
     }
 }
 
-void DoResRefillAmmo(int weaponRef, any client)
+void Ammo_ResRefill(int weaponRef, any client)
 {
     int weaponEntity = EntRefToEntIndex(weaponRef);
-
     if (IsValidEdict(weaponEntity))
     {
         char weaponName[64];
         char maxAmmoCount;
-        int ammoType = GetEntData(weaponEntity, g_iAmmoTypeOffset);
+        int ammoType = GetEntProp(weaponEntity, Prop_Send, "m_iPrimaryAmmoType", 1) * 4;
 
         if (GetEntityClassname(weaponEntity, weaponName, sizeof(weaponName)))
         {
@@ -2095,20 +2047,19 @@ void DoResRefillAmmo(int weaponRef, any client)
             }
         }
 
-        SetEntData(client, g_iAmmoOffset + (ammoType * 4), maxAmmoCount, true);
+        SetEntData(client, g_iAmmoOffset + ammoType, maxAmmoCount, true);
     }
 }
 
-void DoFullRefillAmmo(int weaponRef, any client)
+void Ammo_FullRefill(int weaponRef, any client)
 {
     int weaponEntity = EntRefToEntIndex(weaponRef);
-
     if (IsValidEdict(weaponEntity))
     {
         char weaponName[35];
         char clipSize;
-        char maxAmmoCount;
-        int ammoType = GetEntData(weaponEntity, g_iAmmoTypeOffset);
+        int maxAmmoCount;
+        int ammoType = GetEntProp(weaponEntity, Prop_Send, "m_iPrimaryAmmoType", 1) * 4;
 
         if (GetEntityClassname(weaponEntity, weaponName, sizeof(weaponName)))
         {
@@ -2116,26 +2067,26 @@ void DoFullRefillAmmo(int weaponRef, any client)
             maxAmmoCount = GetWeaponAmmoCount(weaponName, false);
             switch (GetEntProp(weaponRef, Prop_Send, "m_iItemDefinitionIndex"))
             {
-                case 60: { clipSize = 20;maxAmmoCount = 40; }
+                case 60: { clipSize = 20;maxAmmoCount = 60; }
                 case 61: { clipSize = 12;maxAmmoCount = 24; }
                 case 63: { clipSize = 12;maxAmmoCount = 12; }
                 case 64: { clipSize = 8;maxAmmoCount = 8; }
             }
         }
 
-        SetEntData(client, g_iAmmoOffset + (ammoType * 4), maxAmmoCount, true);
-        SetEntData(weaponEntity, g_iWeapons_Clip1Offset, clipSize, 4, true);
+        SetEntData(client, g_iAmmoOffset + ammoType, maxAmmoCount, true);
+        SetEntProp(weaponEntity, Prop_Send, "m_iClip1", clipSize);
     }
 }
 
-stock int GetWeaponAmmoCount(char[] weaponName, bool currentClip)
+int GetWeaponAmmoCount(char[] weaponName, bool currentClip)
 {
     if (StrEqual(weaponName,  "weapon_ak47"))
         return currentClip ? 30 : 90;
     else if (StrEqual(weaponName,  "weapon_m4a1"))
         return currentClip ? 30 : 90;
     else if (StrEqual(weaponName,  "weapon_m4a1_silencer"))
-        return currentClip ? 20 : 40;
+        return currentClip ? 20 : 60;
     else if (StrEqual(weaponName,  "weapon_awp"))
         return currentClip ? 10 : 30;
     else if (StrEqual(weaponName,  "weapon_sg552"))
@@ -2208,23 +2159,6 @@ public void Event_BombPickup(Event event, const char[] name, bool dontBroadcast)
     }
 }
 
-public Action Respawn(Handle timer, any serial)
-{
-    int client = GetClientFromSerial(serial);
-    if (!g_bRoundEnded && IsValidClient(client) && (GetClientTeam(client) != CS_TEAM_SPECTATOR) && !IsPlayerAlive(client))
-    {
-        /* We set this here rather than in Event_PlayerSpawn to catch the spawn sounds which occur before Event_PlayerSpawn is called (even with EventHookMode_Pre). */
-        g_bPlayerMoved[client] = false;
-        CS_RespawnPlayer(client);
-    }
-}
-
-void RespawnAll()
-{
-    for (int i = 1; i <= MaxClients; i++)
-        Respawn(INVALID_HANDLE, i);
-}
-
 public int MenuHandler(Menu menu, MenuAction action, int param1, int param2)
 {
     if (action == MenuAction_End)
@@ -2240,39 +2174,36 @@ public int MenuHandler(Menu menu, MenuAction action, int param1, int param2)
 
         if (StrEqual(info, "New"))
         {
+            if (g_cvDM_loadout_style.IntValue <= 1)
+            {
+                if (g_bWeaponsGivenThisRound[param1])
+                    CPrintToChat(param1, "[\x04DM\x01] %t", "Guns New Spawn");
+            }
             if (g_cvDM_gun_menu_mode.IntValue == 1 || g_cvDM_gun_menu_mode.IntValue == 2)
-            {
                 BuildDisplayWeaponMenu(param1, true);
-            }
             else if (g_cvDM_gun_menu_mode.IntValue == 3)
-            {
                 BuildDisplayWeaponMenu(param1, false);
-            }
         }
         else if (StrEqual(info, "Same"))
         {
-            if (g_bWeaponsGivenThisRound[param1])
+            if (g_cvDM_loadout_style.IntValue <= 1)
             {
-                CPrintToChat(param1, "[\x04DM\x01] %t", "Guns Same Spawn");
+                if (g_bWeaponsGivenThisRound[param1])
+                    CPrintToChat(param1, "[\x04DM\x01] %t", "Guns Same Spawn");
             }
             if (g_cvDM_gun_menu_mode.IntValue == 1 || g_cvDM_gun_menu_mode.IntValue == 4)
-            {
                 GiveSavedWeapons(param1, true, true);
-            }
             else if (g_cvDM_gun_menu_mode.IntValue == 2)
-            {
                 GiveSavedWeapons(param1, true, false);
-            }
             else if (g_cvDM_gun_menu_mode.IntValue == 3)
-            {
                 GiveSavedWeapons(param1, false, true);
-            }
         }
         else if (StrEqual(info, "Random"))
         {
-            if (g_bWeaponsGivenThisRound[param1])
+            if (g_cvDM_loadout_style.IntValue <= 1)
             {
-                CPrintToChat(param1, "[\x04DM\x01] %t", "Guns Random Spawn");
+                if (g_bWeaponsGivenThisRound[param1])
+                    CPrintToChat(param1, "[\x04DM\x01] %t", "Guns Random Spawn");
             }
             if (g_cvDM_gun_menu_mode.IntValue == 1 || g_cvDM_gun_menu_mode.IntValue == 4)
             {
@@ -2303,9 +2234,9 @@ public int MenuPrimary(Menu menu, MenuAction action, int param1, int param2)
         char info[24];
         GetMenuItem(menu, param2, info, sizeof(info));
         int weaponCount;
-        GetTrieValue(g_hWeaponCounts, info, weaponCount);
+        g_smWeaponCounts.GetValue(info, weaponCount);
         int weaponLimit;
-        GetTrieValue(g_hWeaponLimits, info, weaponLimit);
+        g_smWeaponLimits.GetValue(info, weaponLimit);
 
         if ((weaponLimit == -1) || (weaponCount < weaponLimit))
         {
@@ -2314,15 +2245,12 @@ public int MenuPrimary(Menu menu, MenuAction action, int param1, int param2)
             g_cPrimaryWeapon[param1] = info;
             GiveSavedWeapons(param1, true, false);
             if (g_cvDM_gun_menu_mode.IntValue != 2)
-            {
-                BuildDisplayWeaponMenu(param1, false);
-            }
+                BuildDisplayWeaponMenu(param1, false)
             else
             {
                 DecrementWeaponCount(g_cSecondaryWeapon[param1]);
                 g_cSecondaryWeapon[param1] = "none";
                 GiveSavedWeapons(param1, false, true);
-                CPrintToChat(param1, "[\x04DM\x01] %t", "Guns New Spawn");
                 SetClientCookie(param1, g_hWeapon_First_Cookie, "0");
                 g_bFirstWeaponSelection[param1] = false;
             }
@@ -2333,15 +2261,12 @@ public int MenuPrimary(Menu menu, MenuAction action, int param1, int param2)
             g_cPrimaryWeapon[param1] = "none";
             GiveSavedWeapons(param1, true, false);
             if (g_cvDM_gun_menu_mode.IntValue != 2)
-            {
                 BuildDisplayWeaponMenu(param1, false);
-            }
             else
             {
                 DecrementWeaponCount(g_cSecondaryWeapon[param1]);
                 g_cSecondaryWeapon[param1] = "none";
                 GiveSavedWeapons(param1, false, true);
-                CPrintToChat(param1, "[\x04DM\x01] %t", "Guns New Spawn");
                 SetClientCookie(param1, g_hWeapon_First_Cookie, "0");
                 g_bFirstWeaponSelection[param1] = false;
             }
@@ -2355,9 +2280,7 @@ public int MenuPrimary(Menu menu, MenuAction action, int param1, int param2)
             g_cPrimaryWeapon[param1] = "none";
             GiveSavedWeapons(param1, true, false);
             if (g_cvDM_gun_menu_mode.IntValue != 2)
-            {
                 BuildDisplayWeaponMenu(param1, false);
-            }
         }
     }
 }
@@ -2372,7 +2295,6 @@ public int MenuSecondary(Menu menu, MenuAction action, int param1, int param2)
         DecrementWeaponCount(g_cSecondaryWeapon[param1]);
         g_cSecondaryWeapon[param1] = info;
         GiveSavedWeapons(param1, false, true);
-        CPrintToChat(param1, "[\x04DM\x01] %t", "Guns New Spawn");
         SetClientCookie(param1, g_hWeapon_First_Cookie, "0");
         g_bFirstWeaponSelection[param1] = false;
     }
@@ -2385,7 +2307,6 @@ public int MenuSecondary(Menu menu, MenuAction action, int param1, int param2)
                 DecrementWeaponCount(g_cSecondaryWeapon[param1]);
                 g_cSecondaryWeapon[param1] = "none";
                 GiveSavedWeapons(param1, false, true);
-                CPrintToChat(param1, "[\x04DM\x01] %t", "Guns New Spawn");
                 SetClientCookie(param1, g_hWeapon_First_Cookie, "0");
                 g_bFirstWeaponSelection[param1] = false;
             }
@@ -2393,29 +2314,26 @@ public int MenuSecondary(Menu menu, MenuAction action, int param1, int param2)
     }
 }
 
-public Action Command_Guns(int client, int args)
-{
-    if (g_cvDM_enabled.BoolValue && (g_cvDM_gun_menu_mode.IntValue <= 3))
-        DisplayOptionsMenu(client);
-    return Plugin_Handled;
-}
-
 void GiveSavedWeapons(int client, bool primary, bool secondary)
 {
+    if (g_cvDM_loadout_style.IntValue >= 2 && IsPlayerAlive(client))
+        RemoveClientWeapons(client, primary, secondary);
     if (IsFakeClient(client))
-    {
         SetClientGunModeSettings(client);
-    }
-    if (!g_bWeaponsGivenThisRound[client] && IsPlayerAlive(client))
+
+    if (g_cvDM_loadout_style.IntValue >= 2)
+        g_bWeaponsGivenThisRound[client] = false;
+
+    if (!g_bWeaponsGivenThisRound[client])
     {
         if (primary && !StrEqual(g_cPrimaryWeapon[client], "none"))
         {
             if (StrEqual(g_cPrimaryWeapon[client], "random"))
             {
                 /* Select random menu item (excluding "Random" option) */
-                int random = GetRandomInt(0, GetArraySize(g_hPrimaryWeaponsAvailable) - 2);
+                int random = GetRandomInt(0, g_aPrimaryWeaponsAvailable.Length - 2);
                 char randomWeapon[24];
-                GetArrayString(g_hPrimaryWeaponsAvailable, random, randomWeapon, sizeof(randomWeapon));
+                g_aPrimaryWeaponsAvailable.GetString(random, randomWeapon, sizeof(randomWeapon));
                 GiveSkinnedWeapon(client, randomWeapon);
                 if (!IsFakeClient(client))
                     SetClientCookie(client, g_hWeapon_Primary_Cookie, "random");
@@ -2440,9 +2358,9 @@ void GiveSavedWeapons(int client, bool primary, bool secondary)
                 if (StrEqual(g_cSecondaryWeapon[client], "random"))
                 {
                     /* Select random menu item (excluding "Random" option) */
-                    int random = GetRandomInt(0, GetArraySize(g_hSecondaryWeaponsAvailable) - 2);
+                    int random = GetRandomInt(0, g_aSecondaryWeaponsAvailable.Length - 2);
                     char randomWeapon[24];
-                    GetArrayString(g_hSecondaryWeaponsAvailable, random, randomWeapon, sizeof(randomWeapon));
+                    g_aSecondaryWeaponsAvailable.GetString(random, randomWeapon, sizeof(randomWeapon));
                     GiveSkinnedWeapon(client, randomWeapon);
                     if (!IsFakeClient(client))
                         SetClientCookie(client, g_hWeapon_Secondary_Cookie, "random");
@@ -2478,20 +2396,42 @@ void GiveSavedWeapons(int client, bool primary, bool secondary)
                 GivePlayerItem(client, "weapon_smokegrenade");
             for (int i = 0; i < g_cvDM_nades_tactical.IntValue; i++)
                 GivePlayerItem(client, "weapon_tagrenade");
-            g_bWeaponsGivenThisRound[client] = true;
+            if (g_cvDM_loadout_style.IntValue <= 1)
+                g_bWeaponsGivenThisRound[client] = true;
+            else if (g_cvDM_loadout_style.IntValue >= 2)
+                g_bWeaponsGivenThisRound[client] = false;
             g_bRememberChoice[client] = true;
             if (!IsFakeClient(client))
+            {
+                int iPrimary = GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
+                int iSecondary = GetPlayerWeaponSlot(client, CS_SLOT_SECONDARY);
+
+                if (iPrimary != -1)
+                        SDKHook(iPrimary, SDKHook_ReloadPost, OnReloadPost);
+
+                if (iSecondary != -1)
+                        SDKHook(iSecondary, SDKHook_ReloadPost, OnReloadPost);
+
                 SetClientCookie(client, g_hWeapon_Remember_Cookie, "1");
+            }
         }
     }
 }
 
-void RemoveClientWeapons(int client)
+void RemoveClientWeapons(int client, bool primary = true, bool secondary = false)
 {
     if (IsValidClient(client) && IsPlayerAlive(client))
     {
+        int weapon;
+        if (primary)
+            weapon = 0;
+        else if (secondary)
+            weapon = 1;
+        else
+            weapon = 1;
+
         FakeClientCommand(client, "use weapon_knife");
-        for (int i = 0; i < 4; i++)
+        for (int i = weapon; i < 4; i++)
         {
             if (i == 2) continue; /* Keep knife. */
             int entityIndex;
@@ -2513,7 +2453,7 @@ public Action RemoveGroundWeapons(Handle timer)
 
         for (int i = MaxClients + 1; i < maxEntities; i++)
         {
-            if (IsValidEdict(i) && (GetEntDataEnt2(i, g_iOwnerOffset) == -1))
+            if (IsValidEdict(i) && HasEntProp(i, Prop_Send, "m_hOwnerEntity") && (GetEntPropEnt(i, Prop_Send, "m_hOwnerEntity") == -1))
             {
                 GetEdictClassname(i, class, sizeof(class));
                 if ((StrContains(class, "weapon_") != -1) || (StrContains(class, "item_") != -1))
@@ -2574,7 +2514,7 @@ void RemoveC4()
 
 bool StripC4(int client)
 {
-    if (IsClientInGame(client) && (GetClientTeam(client) == CS_TEAM_T) && IsPlayerAlive(client))
+    if (IsValidClient(client) && IsPlayerAlive(client))
     {
         int c4Index = GetPlayerWeaponSlot(client, CS_SLOT_C4);
         if (c4Index != -1)
@@ -2590,7 +2530,6 @@ bool StripC4(int client)
                     ClientCommand(client, "slot2");
                 else
                     ClientCommand(client, "slot3");
-
             }
             RemovePlayerItem(client, c4Index);
             AcceptEntityInput(c4Index, "Kill");
@@ -2627,7 +2566,7 @@ void EnableSpawnProtection(int client)
     else if (clientTeam == CS_TEAM_CT)
         SetPlayerColor(client, g_iColorCT);
     /* Create timer to remove spawn protection */
-    CreateTimer(g_cvDM_spawn_time.FloatValue, DisableSpawnProtection, client);
+    CreateTimer(g_cvDM_spawn_protection_time.FloatValue, DisableSpawnProtection, client);
 }
 
 public Action DisableSpawnProtection(Handle timer, any client)
@@ -2649,13 +2588,21 @@ void SetPlayerColor(int client, const int color[4])
 
 public Action Command_RespawnAll(int client, int args)
 {
+    if (client == 0)
+    {
+        RespawnAll();
+        ReplyToCommand(client, "[DM] All players have been respawned.");
+        return Plugin_Handled;
+    }
+
     RespawnAll();
+    CPrintToChat(client, "[\x04DM\x01] All players have been respawned.");
     return Plugin_Handled;
 }
 
-Handle BuildSpawnEditorMenu()
+void BuildSpawnEditorMenu(int client)
 {
-    Menu menu = CreateMenu(MenuSpawnEditor);
+    Menu menu = new Menu(MenuSpawnEditor);
     menu.SetTitle("Spawn Point Editor:");
     menu.ExitButton = true
     char editModeItem[24];
@@ -2669,12 +2616,18 @@ Handle BuildSpawnEditorMenu()
     menu.AddItem("Delete", "Delete nearest");
     menu.AddItem("Delete All", "Delete all");
     menu.AddItem("Save", "Save Configuration");
-    return menu;
+    menu.Display(client, MENU_TIME_FOREVER);
 }
 
 public Action Command_SpawnMenu(int client, int args)
 {
-    DisplayMenu(BuildSpawnEditorMenu(), client, MENU_TIME_FOREVER);
+    if (client == 0)
+    {
+        ReplyToCommand(client, "[SM] %t", "Command is in-game only");
+        return Plugin_Handled;
+    }
+
+    BuildSpawnEditorMenu(client);
     return Plugin_Handled;
 }
 
@@ -2715,6 +2668,7 @@ public int MenuSpawnEditor(Menu menu, MenuAction action, int param1, int param2)
                 int spawnPoint = g_iLastEditorSpawnPoint[param1] - 1;
                 if (spawnPoint < 0)
                     spawnPoint = g_iSpawnPointCount - 1;
+
                 TeleportEntity(param1, g_fSpawnPositions[spawnPoint], g_fSpawnAngles[spawnPoint], NULL_VECTOR);
                 g_iLastEditorSpawnPoint[param1] = spawnPoint;
                 CPrintToChat(param1, "[\x04DM\x01] %t #%i (%i total).", "Spawn Editor Teleported", spawnPoint + 1, g_iSpawnPointCount);
@@ -2729,6 +2683,7 @@ public int MenuSpawnEditor(Menu menu, MenuAction action, int param1, int param2)
                 int spawnPoint = g_iLastEditorSpawnPoint[param1] + 1;
                 if (spawnPoint >= g_iSpawnPointCount)
                     spawnPoint = 0;
+
                 TeleportEntity(param1, g_fSpawnPositions[spawnPoint], g_fSpawnAngles[spawnPoint], NULL_VECTOR);
                 g_iLastEditorSpawnPoint[param1] = spawnPoint;
                 CPrintToChat(param1, "[\x04DM\x01] %t #%i (%i total).", "Spawn Editor Teleported", spawnPoint + 1, g_iSpawnPointCount);
@@ -2753,12 +2708,12 @@ public int MenuSpawnEditor(Menu menu, MenuAction action, int param1, int param2)
         }
         else if (StrEqual(info, "Delete All"))
         {
-            Handle panel = CreatePanel();
-            SetPanelTitle(panel, "Delete all spawn points?");
-            DrawPanelItem(panel, "Yes");
-            DrawPanelItem(panel, "No");
-            SendPanelToClient(panel, param1, PanelConfirmDeleteAllSpawns, MENU_TIME_FOREVER);
-            CloseHandle(panel);
+            Panel panel = new Panel();
+            panel.SetTitle("Delete all spawn points?");
+            panel.DrawItem("Yes");
+            panel.DrawItem("No");
+            panel.Send(param1, PanelConfirmDeleteAllSpawns, MENU_TIME_FOREVER);
+            delete panel;
         }
         else if (StrEqual(info, "Save"))
         {
@@ -2768,10 +2723,10 @@ public int MenuSpawnEditor(Menu menu, MenuAction action, int param1, int param2)
                 CPrintToChat(param1, "[\x04DM\x01] %t", "Spawn Editor Config Not Saved");
         }
         if (!StrEqual(info, "Delete All"))
-            DisplayMenu(BuildSpawnEditorMenu(), param1, MENU_TIME_FOREVER);
+            BuildSpawnEditorMenu(param1);
     }
     else if (action == MenuAction_End)
-        CloseHandle(menu);
+        delete menu;
 }
 
 public int PanelConfirmDeleteAllSpawns(Menu menu, MenuAction action, int param1, int param2)
@@ -2783,7 +2738,7 @@ public int PanelConfirmDeleteAllSpawns(Menu menu, MenuAction action, int param1,
             g_iSpawnPointCount = 0;
             CPrintToChat(param1, "[\x04DM\x01] %t", "Spawn Editor Deleted All");
         }
-        DisplayMenu(BuildSpawnEditorMenu(), param1, MENU_TIME_FOREVER);
+        BuildSpawnEditorMenu(param1);
     }
 }
 
@@ -3056,12 +3011,25 @@ public bool TraceEntityFilterPlayer(int entity, int contentsMask)
 
 public Action Command_Stats(int client, int args)
 {
-    DisplaySpawnStats(client);
+    if (client == 0)
+    {
+        DisplaySpawnStats(client, true);
+        return Plugin_Handled;
+    }
+
+    DisplaySpawnStats(client, false);
     return Plugin_Handled;
 }
 
 public Action Command_ResetStats(int client, int args)
 {
+    if (client == 0)
+    {
+        ResetSpawnStats();
+        ReplyToCommand(client, "[DM] Spawn statistics have been reset.");
+        return Plugin_Handled;
+    }
+
     ResetSpawnStats();
     CPrintToChat(client, "[\x04DM\x01] Spawn statistics have been reset.");
     return Plugin_Handled;
@@ -3079,25 +3047,48 @@ void ResetSpawnStats()
     g_iSpawnPointSearchFailures = 0;
 }
 
-void DisplaySpawnStats(int client)
+void DisplaySpawnStats(int client, bool console)
 {
     char text[64];
-    Handle panel = CreatePanel();
-    SetPanelTitle(panel, "Spawn Stats:");
-    Format(text, sizeof(text), "Number of player spawns: %i", g_iNumberOfPlayerSpawns);
-    DrawPanelText(panel, text);
-    Format(text, sizeof(text), "LoS search success rate: %.2f\%", (float(g_iLosSearchSuccesses) / float(g_iLosSearchAttempts)) * 100);
-    DrawPanelItem(panel, text);
-    Format(text, sizeof(text), "LoS search failure rate: %.2f\%", (float(g_iLosSearchFailures) / float(g_iLosSearchAttempts)) * 100);
-    DrawPanelItem(panel, text);
-    Format(text, sizeof(text), "Distance search success rate: %.2f\%", (float(g_iDistanceSearchSuccesses) / float(g_iDistanceSearchAttempts)) * 100);
-    DrawPanelItem(panel, text);
-    Format(text, sizeof(text), "Distance search failure rate: %.2f\%", (float(g_iDistanceSearchFailures) / float(g_iDistanceSearchAttempts)) * 100);
-    DrawPanelItem(panel, text);
-    Format(text, sizeof(text), "Spawn point search failures: %i", g_iSpawnPointSearchFailures);
-    DrawPanelItem(panel, text);
-    SendPanelToClient(panel, client, PanelSpawnStats, MENU_TIME_FOREVER);
-    CloseHandle(panel);
+    if (console)
+    {
+        PrintToServer("////////////////////////////////////////////////////////////////");
+        PrintToServer("Spawn Stats:");
+        Format(text, sizeof(text), "- Number of player spawns: %i", g_iNumberOfPlayerSpawns);
+        PrintToServer("%s", text);
+        Format(text, sizeof(text), "- LoS search success rate: %.2f\%", (float(g_iLosSearchSuccesses) / float(g_iLosSearchAttempts)) * 100);
+        PrintToServer("%s", text);
+        Format(text, sizeof(text), "- LoS search failure rate: %.2f\%", (float(g_iLosSearchFailures) / float(g_iLosSearchAttempts)) * 100);
+        PrintToServer("%s", text);
+        Format(text, sizeof(text), "- Distance search success rate: %.2f\%", (float(g_iDistanceSearchSuccesses) / float(g_iDistanceSearchAttempts)) * 100);
+        PrintToServer("%s", text);
+        Format(text, sizeof(text), "- Distance search failure rate: %.2f\%", (float(g_iDistanceSearchFailures) / float(g_iDistanceSearchAttempts)) * 100);
+        PrintToServer("%s", text);
+        Format(text, sizeof(text), "- Spawn point search failures: %i", g_iSpawnPointSearchFailures);
+        PrintToServer("%s", text);
+        PrintToServer("////////////////////////////////////////////////////////////////");
+    }
+    else
+    {
+        Panel panel = new Panel();
+        panel.SetTitle("Spawn Stats:");
+        Format(text, sizeof(text), "- Number of player spawns: %i", g_iNumberOfPlayerSpawns);
+        panel.DrawText(text);
+        Format(text, sizeof(text), "- LoS search success rate: %.2f\%", (float(g_iLosSearchSuccesses) / float(g_iLosSearchAttempts)) * 100);
+        panel.DrawText(text);
+        Format(text, sizeof(text), "- LoS search failure rate: %.2f\%", (float(g_iLosSearchFailures) / float(g_iLosSearchAttempts)) * 100);
+        panel.DrawText(text);
+        Format(text, sizeof(text), "- Distance search success rate: %.2f\%", (float(g_iDistanceSearchSuccesses) / float(g_iDistanceSearchAttempts)) * 100);
+        panel.DrawText(text);
+        Format(text, sizeof(text), "- Distance search failure rate: %.2f\%", (float(g_iDistanceSearchFailures) / float(g_iDistanceSearchAttempts)) * 100);
+        panel.DrawText(text);
+        Format(text, sizeof(text), "- Spawn point search failures: %i", g_iSpawnPointSearchFailures);
+        panel.DrawText(text);
+        panel.CurrentKey = GetMaxPageItems(panel.Style);
+        panel.DrawItem("Exit", ITEMDRAW_CONTROL);
+        panel.Send(client, PanelSpawnStats, MENU_TIME_FOREVER);
+        delete panel;
+    }
 }
 
 public int PanelSpawnStats(Menu menu, MenuAction action, int param1, int param2) { }
@@ -3112,7 +3103,7 @@ public Action Event_Sound(int clients[64], int &numClients, char sample[PLATFORM
             if ((entity > 0) && (entity <= MaxClients))
                 client = entity;
             else
-                client = GetEntDataEnt2(entity, g_iOwnerOffset);
+                client = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
 
             /* Block ammo pickup sounds. */
             if (StrContains(sample, "pickup") != -1)
@@ -3184,36 +3175,34 @@ void BuildDisplayWeaponMenu(int client, bool primary)
         menu.SetTitle("Secondary Weapon:");
     }
 
-    Handle weapons = (primary) ? g_hPrimaryWeaponsAvailable : g_hSecondaryWeaponsAvailable;
+    ArrayList weapons;
+    weapons = new ArrayList();
+    weapons = (primary) ? g_aPrimaryWeaponsAvailable : g_aSecondaryWeaponsAvailable;
 
     char currentWeapon[24];
     currentWeapon = (primary) ? g_cPrimaryWeapon[client] : g_cSecondaryWeapon[client];
 
-    for (int i = 0; i < GetArraySize(weapons); i++)
+    for (int i = 0; i < weapons.Length; i++)
     {
         char weapon[24];
-        GetArrayString(weapons, i, weapon, sizeof(weapon));
+        weapons.GetString(i, weapon, sizeof(weapon));
 
         char weaponMenuName[24];
-        GetTrieString(g_hWeaponMenuNames, weapon, weaponMenuName, sizeof(weaponMenuName));
+        g_smWeaponMenuNames.GetString(weapon, weaponMenuName, sizeof(weaponMenuName));
 
         int weaponCount;
-        GetTrieValue(g_hWeaponCounts, weapon, weaponCount);
+        g_smWeaponCounts.GetValue(weapon, weaponCount);
 
         int weaponLimit;
-        GetTrieValue(g_hWeaponLimits, weapon, weaponLimit);
+        g_smWeaponLimits.GetValue(weapon, weaponLimit);
 
         /* If the client already has the weapon, then the limit does not apply. */
         if (StrEqual(currentWeapon, weapon))
-        {
             menu.AddItem(weapon, weaponMenuName);
-        }
         else
         {
             if ((weaponLimit == -1) || (weaponCount < weaponLimit))
-            {
                 menu.AddItem(weapon, weaponMenuName);
-            }
             else
             {
                 char text[64];
@@ -3237,8 +3226,8 @@ void BuildDisplayWeaponMenu(int client, bool primary)
 void IncrementWeaponCount(char[] weapon)
 {
     int weaponCount;
-    GetTrieValue(g_hWeaponCounts, weapon, weaponCount);
-    SetTrieValue(g_hWeaponCounts, weapon, weaponCount + 1);
+    g_smWeaponCounts.GetValue(weapon, weaponCount);
+    g_smWeaponCounts.SetValue(weapon, weaponCount + 1);
 }
 
 void DecrementWeaponCount(char[] weapon)
@@ -3246,8 +3235,8 @@ void DecrementWeaponCount(char[] weapon)
     if (!StrEqual(weapon, "none"))
     {
         int weaponCount;
-        GetTrieValue(g_hWeaponCounts, weapon, weaponCount);
-        SetTrieValue(g_hWeaponCounts, weapon, weaponCount - 1);
+        g_smWeaponCounts.GetValue(weapon, weaponCount);
+        g_smWeaponCounts.SetValue(weapon, weaponCount - 1);
     }
 }
 
@@ -3395,7 +3384,7 @@ void RemoveRagdoll(int client)
 {
     if (IsValidEdict(client))
     {
-        int ragdoll = GetEntDataEnt2(client, g_iRagdollOffset);
+        int ragdoll = GetEntPropEnt(client, Prop_Send, "m_hRagdoll");
         if (ragdoll != -1)
             AcceptEntityInput(ragdoll, "Kill");
     }
@@ -3404,7 +3393,7 @@ void RemoveRagdoll(int client)
 public int GetWeaponTeam(const char[] weapon)
 {
     int team = 0;
-    g_smWeaponTeams.GetValue(weapon, team);
+    g_smWeaponSkinsTeam.GetValue(weapon, team);
     return team;
 }
 
@@ -3412,10 +3401,13 @@ public void GiveSkinnedWeapon(int client, const char[] weapon)
 {
     int playerTeam = GetEntProp(client, Prop_Data, "m_iTeamNum");
     int weaponTeam = GetWeaponTeam(weapon);
-    if (weaponTeam > 0) {
+
+    if (weaponTeam > 0)
         SetEntProp(client, Prop_Data, "m_iTeamNum", weaponTeam);
-    }
 
     GivePlayerItem(client, weapon);
-    SetEntProp(client, Prop_Data, "m_iTeamNum", playerTeam)
+    SetEntProp(client, Prop_Data, "m_iTeamNum", playerTeam);
+
+    if (g_cvDM_fast_equip.BoolValue)
+        RequestFrame(Frame_FastSwitch, GetClientSerial(client));
 }

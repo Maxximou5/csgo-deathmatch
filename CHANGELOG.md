@@ -1,6 +1,34 @@
+v2.0.9:
+- Updated: deathmatch.ini file with new changes
+- Updated: dm_spawn_time is now dm_spawn_protection_time
+- Updated: Some more old syntax to new syntax
+- Updated: Replaced EntData with EntProp (what is this 2009?!)
+- Updated: dm_headshot_only_allow_client now uses clientprefs
+- Updated: New HS Only translations (translators please help)
+- Updated: M4A1-S ammo reserve from 40 to 60 (v1.36.3.8 update)
+- Added: dm_replenish_ammo_empty - Replenish ammo when weapon is empty
+- Added: dm_replenish_ammo_reload - Replenish ammo on reload action
+- Added: dm_replenish_ammo_kill - Replenish ammo clip on kill
+- Added: dm_replenish_ammo_type - Replenish type: 1) Clip only 2) Reserve only 3) Both
+- Added: dm_loadout_style - When players can receive weapons
+- Added: dm_fast_equip - Enable fast weapon equipping
+- Added: Workshop map support for spawns
+- Added: Tactical, molotov, and incendiary rewards on kill
+- Fixed: Grenades not being rewarded after kill
+- Fixed: Incorrect HP & AP not being rewarded after kill
+- Fixed: Spawn information being sent more than once
+- Fixed: dm_headshot_only_allow_client not used properly
+- Fixed: Commands not being displayed to proper clients
+- Fixed: HS Client Only chat triggers not working
+- Fixed: Ammo replenish reserve and clip being used incorrectly
+- Fixed: Secondary weapon arraylist incorrectly set
+- Removed: Auto-Updater, security risk and no longer useful
+- Removed: FindSendPropInfo and other unnecessary code
+- Removed: dm_replenish_ammo_clip & dm_replenish_ammo_reserve
+
 v2.0.8:
 - Updated: Syntax and naming convention
-- Updated: Compiled for SM 110+ & MM 111+
+- Updated: Compiled for SM 1.10+ & MM 1.11+
 - Updated: Consistency checks when not needed for validity
 - Updated: Load-out improvements for bots and players
 - Updated: Many performance improvements to general code and structure
