@@ -1,9 +1,29 @@
-<h1 align="center">
-    <a href="https://www.maxximou5.com/"><img src="https://www.maxximou5.com/sourcemod/assests/img/deathmatch_csgo.png" alt="csgo deathmatch plugin" width="600" /></a>
-</h1>
+<p align="center">
+	<a href="https://www.maxximou5.com/">
+		<img src="https://www.maxximou5.com/sourcemod/assests/img/deathmatch_csgo.png" alt="csgo deathmatch plugin" width="600" alt="csgo-deathmatch-logo">
+	</a>
+    <br>
+    <a href="https://github.com/Maxximou5/csgo-deathmatch/releases">
+        <img src="https://img.shields.io/github/release/Maxximou5/csgo-deathmatch.svg?style=flat-square" alt="Version">
+    </a>
+    <a href="https://github.com/Maxximou5/csgo-deathmatch/stargazers">
+        <img src="https://img.shields.io/github/stars/Maxximou5/csgo-deathmatch.svg?style=flat-square" alt="Stars">
+    </a>
+    <a href="https://github.com/Maxximou5/csgo-deathmatch/network">
+        <img src="https://img.shields.io/github/forks/Maxximou5/csgo-deathmatch.svg?style=flat-square" alt="Forks">
+    </a>
+    <a href="https://raw.githubusercontent.com/Maxximou5/csgo-deathmatch/master/LICENSE">
+        <img src="https://img.shields.io/badge/license-GPLv3-blue.svg?style=flat-square" alt="License">
+    </a>
+    <a href="https://github.com/Maxximou5/csgo-deathmatch/issues">
+        <img src="https://img.shields.io/github/issues/Maxximou5/csgo-deathmatch.svg?style=flat-square" alt="Issues">
+    </a>
+    <a href="https://travis-ci.org/Maxximou5/csgo-deathmatch">
+        <img src="https://img.shields.io/travis/Maxximou5/csgo-deathmatch.svg?style=flat-square" alt="Issues">
+    </a>
+</p>
 
-### [![GitHub release](https://img.shields.io/github/release/Maxximou5/csgo-deathmatch.svg?style=flat-square)](https://github.com/Maxximou5/csgo-deathmatch/releases) [![GitHub license](https://img.shields.io/badge/license-GPLv3-blue.svg?style=flat-square)](https://raw.githubusercontent.com/Maxximou5/csgo-deathmatch/master/LICENSE) [![GitHub forks](https://img.shields.io/github/forks/Maxximou5/csgo-deathmatch.svg?style=flat-square)](https://github.com/Maxximou5/csgo-deathmatch/network) [![GitHub stars](https://img.shields.io/github/stars/Maxximou5/csgo-deathmatch.svg?style=flat-square)](https://github.com/Maxximou5/csgo-deathmatch/stargazers) [![GitHub issues](https://img.shields.io/github/issues/Maxximou5/csgo-deathmatch.svg?style=flat-square)](https://github.com/Maxximou5/csgo-deathmatch/issues) [![Travis](https://img.shields.io/travis/Maxximou5/csgo-deathmatch.svg?style=flat-square)](https://travis-ci.org/Maxximou5/csgo-deathmatch)
-**[CS:GO] Deathmatch** - Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc).
+#### **[CS:GO] Deathmatch** - Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc).
 
 ### Main Features
 
