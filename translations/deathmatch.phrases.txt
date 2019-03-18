@@ -9,7 +9,7 @@
         "fr"    "Tapez {green}guns{default} pour ouvrir le menu des armes."
         "pl"    "Napisz {green}guns{default} aby otworzyć menu broni."
         "ru"    "Напечатайте {green}guns{default} что бы открыть меню оружия."
-	"jp"	"チャットで{green}guns{default}をタイプすると武器メニューが開きます。"
+	"jp"    "チャットで{green}guns{default}をタイプすると武器メニューが開きます。"
     }
 
     "Guns Disabled"
@@ -21,7 +21,7 @@
         "fr"    "Le menu des armes a été {red}désactivé{default}."
         "pl"    "Menu broni zostało {red}wyłączone{default}."
         "ru"    "Меню оружия было {red}отключено{default}."
-	"jp"	"武器メニューが{red}無効{default}になっています。"
+        "jp"    "武器メニューが{red}無効{default}になっています。"
     }
     "HS Only"
     {
@@ -114,7 +114,7 @@
         "fr"    "Restant Santé:"
         "pl"    "Pozostałe zdrowie:"
         "ru"    "Оставшееся здоровье:"
-	"jp"    "残りの体力:"
+        "jp"    "残りの体力:"
     }
 
     "Panel Damage Giver"
@@ -126,7 +126,7 @@
         "fr"    "Vous avez"
         "pl"    "Zadałeś"
         "ru"    "Вы совершили"
-	"jp"    "あなたがキルしました。"
+        "jp"    "あなたがキルしました。"
     }
 
     "Panel Damage Taker"
@@ -138,7 +138,7 @@
         "fr"    "dommages à"
         "pl"    "obrażeń graczowi"
         "ru"    "урон по"
-	"jp"    "与えたダメージ"
+        "jp"    "与えたダメージ"
     }
 
     "Panel Kill Confirmed"
@@ -150,7 +150,7 @@
         "fr"    "Vous l'avez tué."
         "pl"    "Zabiłeś go."
         "ru"    "Вы убили его."
-	"jp"    "あなたは今の敵をキルしました。"
+        "jp"    "あなたは今の敵をキルしました。"
     }
 
     "HP Knife Kill"
@@ -162,7 +162,7 @@
         "fr"    "pour avoir frag ({green}couteau{default})."
         "pl"    "za zabicie przeciwnika ({green}nożem{default})."
         "ru"    "за убийство противника ({green}ножом{default})."
-	"jp"    "敵を{green}ナイフ{default}でキルした。"
+        "jp"    "敵を{green}ナイフ{default}でキルした。"
     }
 
     "HP Headshot Kill"
@@ -174,7 +174,7 @@
         "fr"    "pour avoir frag ({green}à la tête{default})."
         "pl"    "za zabicie przeciwnika ({green}headshotem{default})."
         "ru"    "за убийство противника ({green}в голову{default})."
-	"jp"    "敵を{green}ヘッドショット{default}でキルした。"
+        "jp"    "敵を{green}ヘッドショット{default}でキルした。"
     }
 
     "HP Nade Kill"
@@ -186,7 +186,7 @@
         "fr"    "pour avoir frag ({green}grenade{default})."
         "pl"    "za zabicie przeciwnika ({green}granatem{default})."
         "ru"    "за убийство противника ({green}гранатой{default})."
-	"jp"    "敵を{green}グレネード{default}でキルした。"
+        "jp"    "敵を{green}グレネード{default}でキルした。"
     }
 
     "HP Kill"
@@ -198,7 +198,7 @@
         "fr"    "pour avoir frag."
         "pl"    "za zabicie przeciwnika."
         "ru"    "за убийство противника."
-	"jp"    "敵をキルした。"
+        "jp"    "敵をキルした。"
     }
 
     "AP Knife Kill"
@@ -210,7 +210,7 @@
         "fr"    "pour avoir frag ({green}couteau{default})."
         "pl"    "za zabicie przeciwnika ({green}nożem{default})."
         "ru"    "за убийство противника ({green}ножом{default})."
-	"jp"    "敵を{green}ナイフ{default}でキルした。"
+        "jp"    "敵を{green}ナイフ{default}でキルした。"
     }
 
     "AP Headshot Kill"
@@ -222,7 +222,7 @@
         "fr"    "pour avoir frag ({green}à la tête{default})."
         "pl"    "za zabicie przeciwnika ({green}headshotem{default})."
         "ru"    "за убийство противника ({green}в голову{default})."
-	"jp"    "敵を{green}ヘッドショット{default}でキルした。"
+        "jp"    "敵を{green}ヘッドショット{default}でキルした。"
     }
 
     "AP Nade Kill"
@@ -234,7 +234,7 @@
         "fr"    "pour avoir frag ({green}grenade{default})."
         "pl"    "za zabicie przeciwnika ({green}granatem{default})."
         "ru"    "за убийство противника ({green}гранатой{default})."
-	"jp"    "敵を{green}グレネード{default}でキルした。"
+        "jp"    "敵を{green}グレネード{default}でキルした。"
     }
 
     "AP Kill"
@@ -246,7 +246,7 @@
         "fr"    "pour avoir frag."
         "pl"    "za zabicie przeciwnika."
         "ru"    "за убийство противника."
-	"jp"    "敵をキルした。"
+        "jp"    "敵をキルした。"
     }
 
     "Spawn Editor Enabled"
@@ -258,7 +258,7 @@
         "fr"    "Modifier le mode {green}activé{default}."
         "pl"    "Tryb edycji {green}włączony{default}."
         "ru"    "Режим редактирования {green}включен{default}."
-	"jp"    "編集モードが{green}有効{default}になりました。"
+        "jp"    "編集モードが{green}有効{default}になりました。"
     }
 
     "Spawn Editor Disabled"
@@ -270,7 +270,7 @@
         "fr"    "Modifier le mode {red}désactivé{default}."
         "pl"    "Tryb edycji {red}wyłączony{default}."
         "ru"    "Режим редактирования {red}отключен{default}."
-	"jp"    "編集モードが{red}無効{default}になりました。"
+        "jp"    "編集モードが{red}無効{default}になりました。"
     }
 
     "Spawn Editor Teleported"
@@ -282,7 +282,7 @@
         "fr"    "Téléporté pour frayer le point"
         "pl"    "Przeteleportowany do punktu respawnu"
         "ru"    "Телепортирован к точке возрождения"
-	"jp"    "スポーン位置にテレポートしました。"
+        "jp"    "スポーン位置にテレポートしました。"
     }
 
     "Spawn Editor No Spawn"
@@ -294,7 +294,7 @@
         "fr"    "Il n'y a pas de points de spawn."
         "pl"    "Brak punktów respawnu."
         "ru"    "Точек возрождения здесь нет."
-	"jp"    "そこにはスポーン位置がありません。"
+        "jp"    "そこにはスポーン位置がありません。"
     }
 
     "Spawn Editor Deleted Spawn"
@@ -306,7 +306,7 @@
         "fr"    "Point de spawn supprimé"
         "pl"    "Usunięto punkt respawnu"
         "ru"    "Точка возрождения удалена"
-	"jp"    "スポーン位置を削除しました。"
+        "jp"    "スポーン位置を削除しました。"
     }
 
     "Spawn Editor Deleted All"
@@ -318,7 +318,7 @@
         "fr"    "Tous les points spawn ont été supprimés."
         "pl"    "Wszystkie punkty respawnu zostały usunięte."
         "ru"    "Все точки возрождения были удалены."
-	"jp"    "全てのスポーン位置を削除しました。"
+        "jp"    "全てのスポーン位置を削除しました。"
     }
 
     "Spawn Editor Spawn Added"
@@ -330,7 +330,7 @@
         "fr"    "Point de spawn Ajouté"
         "pl"    "Dodano punkt respawnu"
         "ru"    "Точка возрождения добавлена"
-	"jp"    "スポーン位置を追加しました。"
+        "jp"    "スポーン位置を追加しました。"
     }
 
     "Spawn Editor Spawn Not Added"
@@ -342,7 +342,7 @@
         "fr"    "Impossible d'ajouter le point spawn (limite maximale atteinte)."
         "pl"    "Nie można dodać punktu respawnu (maksymalny limit osiągnięty)."
         "ru"    "Не удалось добавить точки возрождения (превышен их предел)."
-		"jp"    "スポーン位置を追加することができませんでした。（上限に達したため）"
+        "jp"    "スポーン位置を追加することができませんでした。（上限に達したため）"
     }
 
     "Spawn Editor Spawn Inserted"
@@ -354,7 +354,7 @@
         "fr"    "Point de spawn inséré à"
         "pl"    "Ustawiono punkt respawnu na"
         "ru"    "Вставить точку возрождения в"
-	"jp"    "追加したスポーン位置:"
+        "jp"    "追加したスポーン位置:"
     }
 
     "Spawn Editor Config Saved"
@@ -366,7 +366,7 @@
         "fr"    "Configuration a été enregistrée."
         "pl"    "Konfiguracja została zapisana."
         "ru"    "Конфигурация была сохранена."
-	"jp"    "設定が保存されました。"
+        "jp"    "設定が保存されました。"
     }
 
     "Spawn Editor Config Not Saved"
@@ -378,6 +378,6 @@
         "fr"    "Configuration n'a pas pu être sauvé."
         "pl"    "Konfigurcja nie może zostać zapisana."
         "ru"    "Конфигурация не может быть сохранена."
-	"jp"    "設定を保存することができませんでした。"
+        "jp"    "設定を保存することができませんでした。"
     }
 }
