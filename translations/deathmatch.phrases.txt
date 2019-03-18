@@ -9,7 +9,7 @@
         "fr"    "Tapez {green}guns{default} pour ouvrir le menu des armes."
         "pl"    "Napisz {green}guns{default} aby otworzyć menu broni."
         "ru"    "Напечатайте {green}guns{default} что бы открыть меню оружия."
-	"jp"    "チャットで{green}guns{default}をタイプすると武器メニューが開きます。"
+        "jp"    "チャットで{green}guns{default}をタイプすると武器メニューが開きます。"
     }
 
     "Guns Disabled"
