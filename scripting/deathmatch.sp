@@ -7,7 +7,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION          "2.0.9"
+#define PLUGIN_VERSION          "2.1.0"
 #define PLUGIN_NAME             "[CS:GO] Deathmatch"
 #define PLUGIN_AUTHOR           "Maxximou5"
 #define PLUGIN_DESCRIPTION      "Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc)."
@@ -128,6 +128,7 @@ ConVar g_cvDM_nades_flashbang;
 ConVar g_cvDM_nades_he;
 ConVar g_cvDM_nades_smoke;
 ConVar g_cvDM_nades_tactical;
+ConVar g_cvDM_blockweapondrops;
 
 /* Plugin Variables */
 bool g_bHSOnlyClient[MAXPLAYERS + 1];
@@ -185,6 +186,18 @@ int g_iDistanceSearchAttempts = 0;
 int g_iDistanceSearchSuccesses = 0;
 int g_iDistanceSearchFailures = 0;
 int g_iSpawnPointSearchFailures = 0;
+
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+	RegPluginLibrary("deathmatch");
+	
+	CreateNative("Deathmatch_DisplayOptionsMenu", Native_DisplayOptionsMenu);
+	CreateNative("Deathmatch_GiveSavedWeapons", Native_GiveSavedWeapons);
+	CreateNative("Deathmatch_UpdateSetting_Primary", Native_UpdateSetting_Primary);
+	CreateNative("Deathmatch_UpdateSetting_Secondary", Native_UpdateSetting_Secondary);
+	
+	return APLRes_Success;
+}
 
 public void OnPluginStart()
 {
@@ -273,6 +286,7 @@ public void OnPluginStart()
     g_cvDM_nades_he = CreateConVar("dm_nades_he", "0", "Number of HE grenades to give each player.");
     g_cvDM_nades_smoke = CreateConVar("dm_nades_smoke", "0", "Number of smoke grenades to give each player.");
     g_cvDM_nades_tactical = CreateConVar("dm_nades_tactical", "0", "Number of tactical grenades to give each player.");
+    g_cvDM_blockweapondrops = CreateConVar("dm_blockweapondrops", "1", "Blocks weapons from being dropped.");
 
     /* Load DM Config */
     LoadConfig();
@@ -343,6 +357,7 @@ public void OnPluginStart()
     g_cvDM_nades_he.AddChangeHook(Event_CvarChange);
     g_cvDM_nades_smoke.AddChangeHook(Event_CvarChange);
     g_cvDM_nades_tactical.AddChangeHook(Event_CvarChange);
+    g_cvDM_blockweapondrops.AddChangeHook(Event_CvarChange);
 
     /* Listen For Client Commands */
     AddCommandListener(Event_Say, "say");
@@ -375,7 +390,7 @@ public void OnPluginStart()
 
     /* Create Global Timers */
     CreateTimer(0.5, UpdateSpawnPointStatus, INVALID_HANDLE, TIMER_REPEAT);
-    CreateTimer(1.0, RemoveGroundWeapons, INVALID_HANDLE, TIMER_REPEAT);
+    CreateTimer(0.5, RemoveGroundWeapons, INVALID_HANDLE, TIMER_REPEAT);
 
     /* Baked Cookies */
     g_hWeapon_Primary_Cookie = RegClientCookie("dm_weapon_primary", "Primary Weapon Selection", CookieAccess_Protected);
@@ -1254,6 +1269,7 @@ void BuildWeaponMenuNames()
     g_smWeaponMenuNames.SetString("weapon_mac10", "MAC-10");
     g_smWeaponMenuNames.SetString("weapon_mp9", "MP9");
     g_smWeaponMenuNames.SetString("weapon_mp7", "MP7");
+    g_smWeaponMenuNames.SetString("weapon_mp5sd", "MP5SD"); 
     g_smWeaponMenuNames.SetString("weapon_ump45", "UMP-45");
     g_smWeaponMenuNames.SetString("weapon_p90", "P90");
     g_smWeaponMenuNames.SetString("weapon_bizon", "PP-Bizon");
@@ -1893,6 +1909,14 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
     return Plugin_Continue;
 }
 
+public Action CS_OnCSWeaponDrop(int client, int weaponIndex)
+{
+	if (g_cvDM_blockweapondrops.BoolValue)
+		return Plugin_Handled;
+	
+	return Plugin_Continue;
+}
+
 public void OnReloadPost(int weapon, bool bSuccessful)
 {
     if (g_cvDM_enabled.BoolValue && g_cvDM_replenish_ammo_reload.BoolValue)
@@ -2125,6 +2149,8 @@ int GetWeaponAmmoCount(char[] weaponName, bool currentClip)
         return currentClip ? 30 : 120;
     else if (StrEqual(weaponName,  "weapon_ump45"))
         return currentClip ? 25 : 100;
+    else if (StrEqual(weaponName,  "weapon_mp5sd"))
+        return currentClip ? 30 : 120; 
     else if (StrEqual(weaponName,  "weapon_bizon"))
         return currentClip ? 64 : 120;
     else if (StrEqual(weaponName,  "weapon_glock"))
@@ -2314,11 +2340,11 @@ public int MenuSecondary(Menu menu, MenuAction action, int param1, int param2)
     }
 }
 
-void GiveSavedWeapons(int client, bool primary, bool secondary)
+void GiveSavedWeapons(int client, bool primary, bool secondary, bool reset_bot = true)
 {
     if (g_cvDM_loadout_style.IntValue >= 2 && IsPlayerAlive(client))
         RemoveClientWeapons(client, primary, secondary);
-    if (IsFakeClient(client))
+    if (reset_bot && IsFakeClient(client))
         SetClientGunModeSettings(client);
 
     if (g_cvDM_loadout_style.IntValue >= 2)
@@ -3410,4 +3436,52 @@ public void GiveSkinnedWeapon(int client, const char[] weapon)
 
     if (g_cvDM_fast_equip.BoolValue)
         RequestFrame(Frame_FastSwitch, GetClientSerial(client));
+}
+
+public int Native_DisplayOptionsMenu(Handle plugin, int numParams)
+{
+	int client = GetNativeCell(1);
+	
+	if (client < 1 || client > MaxClients || !IsClientInGame(client))
+		ThrowNativeError(SP_ERROR_NATIVE, "Client is invalid.");
+	
+	if (g_cvDM_gun_menu_mode.IntValue != 1 && g_cvDM_gun_menu_mode.IntValue != 2 && g_cvDM_gun_menu_mode.IntValue != 3)
+		ThrowNativeError(SP_ERROR_NATIVE, "Native is disabled.");
+	
+	DisplayOptionsMenu(client);
+}
+
+public int Native_GiveSavedWeapons(Handle plugin, int numParams)
+{
+    int client = GetNativeCell(1);
+    
+    if (client < 1 || client > MaxClients || !IsClientInGame(client))
+        ThrowNativeError(SP_ERROR_NATIVE, "Client is invalid.");
+    
+    if (g_cvDM_gun_menu_mode.IntValue == 1 || g_cvDM_gun_menu_mode.IntValue == 4)
+        GiveSavedWeapons(client, true, true, false);
+    else if (g_cvDM_gun_menu_mode.IntValue == 2)
+        GiveSavedWeapons(client, true, false, false);
+    else if (g_cvDM_gun_menu_mode.IntValue == 3)
+        GiveSavedWeapons(client, false, true, false);
+}
+
+public int Native_UpdateSetting_Primary(Handle plugin, int numParams)
+{
+	int client = GetNativeCell(1);
+	
+	if (client < 1 || client > MaxClients || !IsClientInGame(client))
+		ThrowNativeError(SP_ERROR_NATIVE, "Client is invalid.");
+	
+	GetNativeString(2, g_cPrimaryWeapon[client], sizeof(g_cPrimaryWeapon[]));
+}
+
+public int Native_UpdateSetting_Secondary(Handle plugin, int numParams)
+{
+	int client = GetNativeCell(1);
+	
+	if (client < 1 || client > MaxClients || !IsClientInGame(client))
+		ThrowNativeError(SP_ERROR_NATIVE, "Client is invalid.");
+	
+	GetNativeString(2, g_cSecondaryWeapon[client], sizeof(g_cSecondaryWeapon[]));
 }
