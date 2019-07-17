@@ -1965,8 +1965,12 @@ public void Frame_FastSwitch(any serial)
     int client = GetClientFromSerial(serial);
     if (!IsValidClient(client) || !IsPlayerAlive(client))
         return;
+    
+    char weapon[64];
+    GetClientWeapon(client, weapon, sizeof(weapon));
+    CSWeaponID weaponId = CS_AliasToWeaponID(weapon);
 
-    int sequence = 0;
+    int sequence = weaponId == CSWeapon_M4A1_SILENCER ? 1 : 0;
     SetEntPropFloat(client, Prop_Send, "m_flNextAttack", GetGameTime());
     int viewModel = GetEntPropEnt(client, Prop_Send, "m_hViewModel");
 
