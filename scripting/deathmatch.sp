@@ -2038,7 +2038,7 @@ void Ammo_ClipRefill(int weaponRef, any client)
             maxAmmoCount = GetWeaponAmmoCount(weaponName, false);
             switch (GetEntProp(weaponRef, Prop_Send, "m_iItemDefinitionIndex"))
             {
-                case 60: clipSize = 20;
+                case 60: clipSize = 25;
                 case 61: clipSize = 12;
                 case 63: clipSize = 12;
                 case 64: clipSize = 8;
@@ -2064,7 +2064,7 @@ void Ammo_ResRefill(int weaponRef, any client)
             maxAmmoCount = GetWeaponAmmoCount(weaponName, false);
             switch (GetEntProp(weaponRef, Prop_Send, "m_iItemDefinitionIndex"))
             {
-                case 60: maxAmmoCount = 40;
+                case 60: maxAmmoCount = 75;
                 case 61: maxAmmoCount = 24;
                 case 63: maxAmmoCount = 12;
                 case 64: maxAmmoCount = 8;
@@ -2091,7 +2091,7 @@ void Ammo_FullRefill(int weaponRef, any client)
             maxAmmoCount = GetWeaponAmmoCount(weaponName, false);
             switch (GetEntProp(weaponRef, Prop_Send, "m_iItemDefinitionIndex"))
             {
-                case 60: { clipSize = 20;maxAmmoCount = 60; }
+                case 60: { clipSize = 25;maxAmmoCount = 75; }
                 case 61: { clipSize = 12;maxAmmoCount = 24; }
                 case 63: { clipSize = 12;maxAmmoCount = 12; }
                 case 64: { clipSize = 8;maxAmmoCount = 8; }
