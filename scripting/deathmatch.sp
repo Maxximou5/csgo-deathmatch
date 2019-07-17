@@ -2110,7 +2110,7 @@ int GetWeaponAmmoCount(char[] weaponName, bool currentClip)
     else if (StrEqual(weaponName,  "weapon_m4a1"))
         return currentClip ? 30 : 90;
     else if (StrEqual(weaponName,  "weapon_m4a1_silencer"))
-        return currentClip ? 20 : 60;
+        return currentClip ? 25 : 75;
     else if (StrEqual(weaponName,  "weapon_awp"))
         return currentClip ? 10 : 30;
     else if (StrEqual(weaponName,  "weapon_sg552"))
