@@ -8,9 +8,8 @@ addons:
 matrix:
   allow_failures:
     - env: SMVERSION=1.10
-    
+
 env:
-  - SMVERSION=1.8
   - SMVERSION=1.9
   - SMVERSION=1.10
 
@@ -24,3 +23,4 @@ before_script:
 
 script:
 - ./compile.sh deathmatch.sp
+- ./compile.sh deathmatch_loader.sp

@@ -1,3 +1,6 @@
+v3.0.0
+- A LOT
+
 v2.0.9:
 - Updated: deathmatch.ini file with new changes
 - Updated: dm_spawn_time is now dm_spawn_protection_time
