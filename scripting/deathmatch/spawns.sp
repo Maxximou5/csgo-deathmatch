@@ -136,7 +136,6 @@ int GetNearestSpawn(int client)
             nearestPointDistance = distance;
         }
     }
-    PrintToServer("Distance: %f | Point: %i", nearestPointDistance, nearestPoint);
     return nearestPoint;
 }
 
@@ -214,7 +213,6 @@ void UpdateSpawnPoints()
             for (int j = 0; j < numberOfAlivePlayers; j++)
             {
                 float distance = GetVectorDistance(g_fSpawnPositions[i], playerPositions[j], true);
-
                 if (distance < 10000.0)
                 {
                     g_bSpawnPointOccupied[i] = true;
@@ -232,25 +230,7 @@ void MovePlayer(int client)
     int spawnPoint;
     bool spawnPointFound = false;
 
-    float enemyEyePositions[MAXPLAYERS+1][3];
-    int numberOfEnemies = 0;
-
     /* Retrieve enemy positions if required by LoS/distance spawning (at eye level for LoS checking). */
-    if (g_cvDM_los_spawning.BoolValue || (g_cvDM_spawn_distance.FloatValue > 0.0))
-    {
-        for (int i = 1; i <= MaxClients; i++)
-        {
-            if (IsClientInGame(i) && GetClientTeam(i) > CS_TEAM_SPECTATOR && IsPlayerAlive(i))
-            {
-                if (g_cvDM_free_for_all.BoolValue || GetClientTeam(i) != GetClientTeam(client))
-                {
-                    GetClientEyePosition(i, enemyEyePositions[numberOfEnemies]);
-                    numberOfEnemies++;
-                }
-            }
-        }
-    }
-
     if (g_cvDM_los_spawning.BoolValue)
     {
         g_iLosSearchAttempts++; /* Stats */
@@ -263,29 +243,9 @@ void MovePlayer(int client)
             if (g_bSpawnPointOccupied[spawnPoint])
                 continue;
 
-            if (g_cvDM_spawn_distance.FloatValue > 0.0)
-            {
-                if (!IsPointSuitableDistance(spawnPoint, enemyEyePositions, numberOfEnemies))
-                    continue;
-            }
-
-            bool hasClearLineOfSight = true;
-            float spawnPointEyePosition[3];
-            AddVectors(g_fSpawnPositions[spawnPoint], g_fEyeOffset, spawnPointEyePosition);
-
-            for (int j = 0; j < numberOfEnemies; j++)
-            {
-                Handle trace = TR_TraceRayFilterEx(spawnPointEyePosition, enemyEyePositions[j], MASK_PLAYERSOLID_BRUSHONLY, RayType_EndPoint, TraceEntityFilterPlayer);
-                if (!TR_DidHit(trace))
-                {
-                    hasClearLineOfSight = false;
-                    delete trace;
-                    break;
-                }
-                delete trace;
-            }
-
-            if (hasClearLineOfSight)
+            if (!IsSpawnPointSuitable(spawnPoint, client, true))
+                continue;
+            else
             {
                 spawnPointFound = true;
                 break;
@@ -299,21 +259,23 @@ void MovePlayer(int client)
     }
 
     /* First fallback. Find a random unccupied spawn point at a suitable distance. */
-    if (!spawnPointFound && g_cvDM_spawn_distance.FloatValue > 0.0)
+    if (!spawnPointFound || !g_cvDM_los_spawning.BoolValue)
     {
         g_iDistanceSearchAttempts++; /* Stats */
 
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < g_iSpawnPointCount; i++)
         {
             spawnPoint = GetRandomInt(0, g_iSpawnPointCount - 1);
             if (g_bSpawnPointOccupied[spawnPoint])
                 continue;
 
-            if (!IsPointSuitableDistance(spawnPoint, enemyEyePositions, numberOfEnemies))
+            if (!IsSpawnPointSuitable(spawnPoint, client, false))
                 continue;
-
-            spawnPointFound = true;
-            break;
+            else
+            {
+                spawnPointFound = true;
+                break;
+            }
         }
         /* Stats */
         if (spawnPointFound)
@@ -346,14 +308,48 @@ void MovePlayer(int client)
         g_iSpawnPointSearchFailures++; /* Stats */
 }
 
-bool IsPointSuitableDistance(int spawnPoint, float[][3] enemyEyePositions, int numberOfEnemies)
+bool IsSpawnPointSuitable(int spawnPoint, int client, bool lineofsight)
 {
-    for (int i = 0; i < numberOfEnemies; i++)
+    bool hasClearLineOfSight = true;
+    float enemyEyePositions[MAXPLAYERS+1][3];
+
+    for (int i = 1; i <= MaxClients; i++)
     {
-        if (GetVectorDistance(g_fSpawnPositions[spawnPoint], enemyEyePositions[i], true) < g_cvDM_spawn_distance.FloatValue)
+        if (IsClientInGame(i) && !IsClientSourceTV(i) && GetClientTeam(i) > CS_TEAM_SPECTATOR && IsPlayerAlive(i) && i != client)
+        {
+            if (g_cvDM_free_for_all.BoolValue || GetClientTeam(i) != GetClientTeam(client))
+                GetClientEyePosition(i, enemyEyePositions[i]);
+
+            float distance = GetVectorDistance(g_fSpawnPositions[spawnPoint], enemyEyePositions[i], true);
+            if (distance < g_cvDM_spawn_distance.FloatValue)
+                return false;
+        }
+    }
+
+    if (lineofsight)
+    {
+        float spawnPointEyePosition[3];
+        AddVectors(g_fSpawnPositions[spawnPoint], g_fEyeOffset, spawnPointEyePosition);
+
+        for (int j = 1; j <= MaxClients; j++)
+        {
+            Handle trace = TR_TraceRayFilterEx(spawnPointEyePosition, enemyEyePositions[j], MASK_PLAYERSOLID_BRUSHONLY, RayType_EndPoint, TraceEntityFilterPlayer);
+            if (!TR_DidHit(trace))
+            {
+                hasClearLineOfSight = false;
+                delete trace;
+                break;
+            }
+            delete trace;
+        }
+
+        if (hasClearLineOfSight)
+            return true;
+        else
             return false;
     }
-    return true;
+    else
+        return true;
 }
 
 public bool TraceEntityFilterPlayer(int entity, int contentsMask)

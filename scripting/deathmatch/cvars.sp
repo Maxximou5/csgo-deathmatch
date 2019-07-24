@@ -25,7 +25,7 @@ void LoadCvars()
     g_cvDM_respawn_time = CreateConVar("dm_respawn_time", "1.0", "Respawn time.");
     g_cvDM_los_spawning = CreateConVar("dm_los_spawning", "1", "Enable line of sight spawning. If enabled, players will be spawned at a point where they cannot see enemies, and enemies cannot see them.");
     g_cvDM_los_attempts = CreateConVar("dm_los_attempts", "10", "Maximum number of attempts to find a suitable line of sight spawn point.");
-    g_cvDM_spawn_distance = CreateConVar("dm_spawn_distance", "50000.0", "Minimum distance from enemies at which a player can spawn.");
+    g_cvDM_spawn_distance = CreateConVar("dm_spawn_distance", "500000.0", "Minimum distance from enemies at which a player can spawn.");
     g_cvDM_spawn_protection_time = CreateConVar("dm_spawn_protection_time", "1.0", "Spawn protection time.");
     g_cvDM_remove_blood = CreateConVar("dm_remove_blood", "1", "Remove blood from map.");
     g_cvDM_remove_cash = CreateConVar("dm_remove_cash", "1", "Remove client cash.");
