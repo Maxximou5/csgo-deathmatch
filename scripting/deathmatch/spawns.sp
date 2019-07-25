@@ -231,12 +231,12 @@ void MovePlayer(int client)
     bool spawnPointFound = false;
 
     /* Retrieve enemy positions if required by LoS/distance spawning (at eye level for LoS checking). */
-    if (g_cvDM_los_spawning.BoolValue)
+    if (g_cvDM_spawn_los.BoolValue)
     {
         g_iLosSearchAttempts++; /* Stats */
 
         /* Try to find a suitable spawn point with a clear line of sight. */
-        for (int i = 0; i < g_cvDM_los_attempts.IntValue; i++)
+        for (int i = 0; i < g_cvDM_spawn_los_attempts.IntValue; i++)
         {
             spawnPoint = GetRandomInt(0, g_iSpawnPointCount - 1);
 
@@ -259,11 +259,11 @@ void MovePlayer(int client)
     }
 
     /* First fallback. Find a random unccupied spawn point at a suitable distance. */
-    if (!spawnPointFound || !g_cvDM_los_spawning.BoolValue)
+    if (!spawnPointFound || !g_cvDM_spawn_los.BoolValue)
     {
         g_iDistanceSearchAttempts++; /* Stats */
 
-        for (int i = 0; i < g_iSpawnPointCount; i++)
+        for (int i = 0; i < g_cvDM_spawn_distance_attempts.IntValue; i++)
         {
             spawnPoint = GetRandomInt(0, g_iSpawnPointCount - 1);
             if (g_bSpawnPointOccupied[spawnPoint])

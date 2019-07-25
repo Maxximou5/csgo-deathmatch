@@ -138,22 +138,29 @@ bool LoadConfig(char[] config)
     value = (StrEqual(value, "yes")) ? "1" : "0";
     g_cvDM_remove_objectives.SetString(value);
 
-    kv.GetString("dm_respawning", value, sizeof(value), "yes");
+    kv.GetString("dm_respawn", value, sizeof(value), "yes");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    g_cvDM_respawning.SetString(value);
+    g_cvDM_respawn.SetString(value);
 
     kv.GetString("dm_respawn_time", value, sizeof(value), "2.0");
     g_cvDM_respawn_time.SetString(value);
 
-    kv.GetString("dm_los_spawning", value, sizeof(value), "yes");
+    kv.GetString("dm_respawn_valve", value, sizeof(value), "no");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    g_cvDM_los_spawning.SetString(value);
+    g_cvDM_respawn_valve.SetString(value);
 
-    kv.GetString("dm_los_attempts", value, sizeof(value), "10");
-    g_cvDM_los_attempts.SetString(value);
+    kv.GetString("dm_spawn_los", value, sizeof(value), "yes");
+    value = (StrEqual(value, "yes")) ? "1" : "0";
+    g_cvDM_spawn_los.SetString(value);
+
+    kv.GetString("dm_spawn_los_attempts", value, sizeof(value), "10");
+    g_cvDM_spawn_los_attempts.SetString(value);
 
     kv.GetString("dm_spawn_distance", value, sizeof(value), "0.0");
     g_cvDM_spawn_distance.SetString(value);
+
+    kv.GetString("dm_spawn_distance_attempts", value, sizeof(value), "10");
+    g_cvDM_spawn_distance_attempts.SetString(value);
 
     kv.GetString("dm_spawn_protection_time", value, sizeof(value), "1.0");
     g_cvDM_spawn_protection_time.SetString(value);

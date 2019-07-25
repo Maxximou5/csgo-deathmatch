@@ -567,9 +567,13 @@ void DisplaySpawnStats(int client, bool console)
         PrintToServer("Spawn Stats:");
         Format(text, sizeof(text), "- Number of player spawns: %i", g_iNumberOfPlayerSpawns);
         PrintToServer("%s", text);
+        Format(text, sizeof(text), "- LoS Attempts: %i", g_iLosSearchAttempts);
+        PrintToServer("%s", text);
         Format(text, sizeof(text), "- LoS search success rate: %.2f\%", (float(g_iLosSearchSuccesses) / float(g_iLosSearchAttempts)) * 100);
         PrintToServer("%s", text);
         Format(text, sizeof(text), "- LoS search failure rate: %.2f\%", (float(g_iLosSearchFailures) / float(g_iLosSearchAttempts)) * 100);
+        PrintToServer("%s", text);
+        Format(text, sizeof(text), "- Distance Attempts: %i", g_iDistanceSearchAttempts);
         PrintToServer("%s", text);
         Format(text, sizeof(text), "- Distance search success rate: %.2f\%", (float(g_iDistanceSearchSuccesses) / float(g_iDistanceSearchAttempts)) * 100);
         PrintToServer("%s", text);
@@ -585,9 +589,13 @@ void DisplaySpawnStats(int client, bool console)
         panel.SetTitle("Spawn Stats:");
         Format(text, sizeof(text), "- Number of player spawns: %i", g_iNumberOfPlayerSpawns);
         panel.DrawText(text);
+        Format(text, sizeof(text), "- LoS Attempts: %i", g_iLosSearchAttempts);
+        panel.DrawText(text);
         Format(text, sizeof(text), "- LoS search success rate: %.2f\%", (float(g_iLosSearchSuccesses) / float(g_iLosSearchAttempts)) * 100);
         panel.DrawText(text);
         Format(text, sizeof(text), "- LoS search failure rate: %.2f\%", (float(g_iLosSearchFailures) / float(g_iLosSearchAttempts)) * 100);
+        panel.DrawText(text);
+        Format(text, sizeof(text), "- Distance Attempts: %i", g_iDistanceSearchAttempts);
         panel.DrawText(text);
         Format(text, sizeof(text), "- Distance search success rate: %.2f\%", (float(g_iDistanceSearchSuccesses) / float(g_iDistanceSearchAttempts)) * 100);
         panel.DrawText(text);

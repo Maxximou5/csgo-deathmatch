@@ -12,8 +12,10 @@ void State_Validate()
     if (g_cvDM_respawn_time.FloatValue < 0.0) g_cvDM_respawn_time.FloatValue = 0.0;
     if (g_cvDM_gun_menu_mode.IntValue < 1) g_cvDM_gun_menu_mode.IntValue = 1;
     if (g_cvDM_gun_menu_mode.IntValue > 6) g_cvDM_gun_menu_mode.IntValue = 6;
-    if (g_cvDM_los_attempts.IntValue < 0) g_cvDM_los_attempts.IntValue = 0;
+    if (g_cvDM_spawn_los.IntValue < 0) g_cvDM_spawn_los.IntValue = 0;
+    if (g_cvDM_spawn_los_attempts.IntValue < 0) g_cvDM_spawn_los_attempts.IntValue = 0;
     if (g_cvDM_spawn_distance.FloatValue < 0.0) g_cvDM_spawn_distance.FloatValue = 0.0;
+    if (g_cvDM_spawn_distance_attempts.IntValue < 0) g_cvDM_spawn_distance_attempts.IntValue = 0;
     if (g_cvDM_spawn_protection_time.FloatValue < 0.0) g_cvDM_spawn_protection_time.FloatValue = 0.0;
     if (g_cvDM_hp_start.IntValue < 1) g_cvDM_hp_start.IntValue = 1;
     if (g_cvDM_hp_max.IntValue < 1) g_cvDM_hp_max.IntValue = 1;
@@ -229,7 +231,7 @@ void State_SetSpawnPoints()
 {
     g_cvMP_randomspawn.SetInt(1);
     g_cvMP_randomspawn_dist.SetInt(1);
-    g_cvMP_randomspawn_los.SetInt(g_cvDM_los_spawning.IntValue);
+    g_cvMP_randomspawn_los.SetInt(1);
 }
 
 void State_RestoreSpawnPoints()

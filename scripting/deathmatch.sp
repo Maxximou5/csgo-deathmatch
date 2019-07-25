@@ -49,11 +49,13 @@ ConVar g_cvDM_headshot_only_allow_world;
 ConVar g_cvDM_headshot_only_allow_knife;
 ConVar g_cvDM_headshot_only_allow_taser;
 ConVar g_cvDM_headshot_only_allow_nade;
-ConVar g_cvDM_respawning;
+ConVar g_cvDM_respawn;
 ConVar g_cvDM_respawn_time;
-ConVar g_cvDM_los_spawning;
-ConVar g_cvDM_los_attempts;
+ConVar g_cvDM_respawn_valve;
+ConVar g_cvDM_spawn_los;
+ConVar g_cvDM_spawn_los_attempts;
 ConVar g_cvDM_spawn_distance;
+ConVar g_cvDM_spawn_distance_attempts;
 ConVar g_cvDM_spawn_protection_time;
 ConVar g_cvDM_remove_knife_damage;
 ConVar g_cvDM_remove_blood;
@@ -356,7 +358,7 @@ public void OnMapStart()
         if (IsClientConnected(i))
             Client_ResetClientSettings(i);
     }
-    if (LoadMapConfig())
+    if (!g_cvDM_respawn_valve.BoolValue && LoadMapConfig())
     {
         if (g_iSpawnPointCount > 0)
         {
@@ -472,7 +474,7 @@ public void OnClientCookiesCached(int client)
 
 public Action CS_OnTerminateRound(float &delay, CSRoundEndReason &reason)
 {
-    if (g_cvDM_enabled.BoolValue && g_cvDM_respawning.BoolValue && !g_cvDM_enable_valve_deathmatch.BoolValue)
+    if (g_cvDM_enabled.BoolValue && g_cvDM_respawn.BoolValue && !g_cvDM_enable_valve_deathmatch.BoolValue)
     {
         if ((reason == CSRoundEnd_CTWin) || (reason == CSRoundEnd_TerroristWin))
             return Plugin_Handled;

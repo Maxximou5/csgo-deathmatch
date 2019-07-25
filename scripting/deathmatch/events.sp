@@ -146,7 +146,7 @@ public void Event_PlayerTeam(Event event, const char[] name, bool dontBroadcast)
         {
             if (event.GetInt("team") > CS_TEAM_SPECTATOR)
             {
-                if (g_cvDM_respawning.BoolValue)
+                if (g_cvDM_respawn.BoolValue)
                     CreateTimer(g_cvDM_respawn_time.FloatValue, Timer_Respawn, GetClientSerial(client));
             }
         }
@@ -431,7 +431,7 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
         }
         /* Remove and respawn victim. */
         UpdateSpawnPoints();
-        if (g_cvDM_respawning.BoolValue)
+        if (g_cvDM_respawn.BoolValue)
             CreateTimer(g_cvDM_respawn_time.FloatValue, Timer_Respawn, GetClientSerial(victim));
         if (g_cvDM_remove_ragdoll.BoolValue)
             CreateTimer(g_cvDM_remove_ragdoll_time.FloatValue, Timer_Ragdoll, GetClientSerial(victim));
