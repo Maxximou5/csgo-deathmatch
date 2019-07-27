@@ -1112,7 +1112,7 @@ public void SetEntFlags(int entity)
 
 public Action TE_OnEffectDispatch(const char[] te_name, const Players[], int numClients, float delay)
 {
-    if (!g_cvDM_remove_blood.BoolValue)
+    if (!g_cvDM_remove_blood_player.BoolValue)
         return Plugin_Continue;
 
     int iEffectIndex = TE_ReadNum("m_iEffectName");
@@ -1136,7 +1136,7 @@ public Action TE_OnEffectDispatch(const char[] te_name, const Players[], int num
 
 public Action TE_OnWorldDecal(const char[] te_name, const Players[], int numClients, float delay)
 {
-    if (!g_cvDM_remove_blood.BoolValue)
+    if (!g_cvDM_remove_blood_walls.BoolValue)
         return Plugin_Continue;
 
     float vecOrigin[3];

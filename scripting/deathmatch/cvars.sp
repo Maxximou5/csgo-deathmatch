@@ -29,7 +29,8 @@ void LoadCvars()
     g_cvDM_spawn_distance = CreateConVar("dm_spawn_distance", "500000.0", "Minimum distance from enemies at which a player can spawn.");
     g_cvDM_spawn_distance_attempts = CreateConVar("dm_spawn_distance_attempts", "64", "Maximum number of attempts to find a suitable distance spawn point.");
     g_cvDM_spawn_protection_time = CreateConVar("dm_spawn_protection_time", "1.0", "Spawn protection time.");
-    g_cvDM_remove_blood = CreateConVar("dm_remove_blood", "1", "Remove blood from map.");
+    g_cvDM_remove_blood_player = CreateConVar("dm_remove_blood_player", "1", "Remove blood splatter from player.");
+    g_cvDM_remove_blood_walls = CreateConVar("dm_remove_blood_walls", "1", "Remove blood splatter from walls.");
     g_cvDM_remove_cash = CreateConVar("dm_remove_cash", "1", "Remove client cash.");
     g_cvDM_remove_chickens = CreateConVar("dm_remove_chickens", "1", "Remove chickens from the map and from spawning.");
     g_cvDM_remove_buyzones = CreateConVar("dm_remove_buyzones", "1", "Remove buyzones from map.");

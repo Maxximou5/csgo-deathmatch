@@ -58,7 +58,8 @@ ConVar g_cvDM_spawn_distance;
 ConVar g_cvDM_spawn_distance_attempts;
 ConVar g_cvDM_spawn_protection_time;
 ConVar g_cvDM_remove_knife_damage;
-ConVar g_cvDM_remove_blood;
+ConVar g_cvDM_remove_blood_player;
+ConVar g_cvDM_remove_blood_walls;
 ConVar g_cvDM_remove_cash;
 ConVar g_cvDM_remove_chickens;
 ConVar g_cvDM_remove_buyzones;
@@ -231,6 +232,9 @@ int g_iHaloSprite = 0;
 
 /* Spawn Variables */
 int g_iNumberOfPlayerSpawns = 0;
+int g_iLosDisSearchAttempts = 0;
+int g_iLosDisSearchSuccesses = 0;
+int g_iLosDisSearchFailures = 0;
 int g_iLosSearchAttempts = 0;
 int g_iLosSearchSuccesses = 0;
 int g_iLosSearchFailures = 0;

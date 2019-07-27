@@ -129,11 +129,11 @@ int GetNearestSpawn(int client)
 
     for (int i = 1; i < g_iSpawnPointCount; i++)
     {
-        float distance = GetVectorDistance(g_fSpawnPositions[i], clientPosition, true);
-        if (distance < nearestPointDistance)
+        float fDistance = GetVectorDistance(g_fSpawnPositions[i], clientPosition, true);
+        if (fDistance < nearestPointDistance)
         {
             nearestPoint = i;
-            nearestPointDistance = distance;
+            nearestPointDistance = fDistance;
         }
     }
     return nearestPoint;
@@ -212,8 +212,8 @@ void UpdateSpawnPoints()
             g_bSpawnPointOccupied[i] = false;
             for (int j = 0; j < numberOfAlivePlayers; j++)
             {
-                float distance = GetVectorDistance(g_fSpawnPositions[i], playerPositions[j], true);
-                if (distance < 10000.0)
+                float fDistance = GetVectorDistance(g_fSpawnPositions[i], playerPositions[j], true);
+                if (fDistance < 10000.0)
                 {
                     g_bSpawnPointOccupied[i] = true;
                     break;
@@ -233,9 +233,36 @@ void MovePlayer(int client)
     /* Retrieve enemy positions if required by LoS/distance spawning (at eye level for LoS checking). */
     if (g_cvDM_spawn_los.BoolValue)
     {
+        g_iLosDisSearchAttempts++; /* Stats */
+
+        /* Try to find a suitable spawn point with a clear line of sight within distance. */
+        for (int i = 0; i < g_cvDM_spawn_los_attempts.IntValue; i++)
+        {
+            spawnPoint = GetRandomInt(0, g_iSpawnPointCount - 1);
+
+            if (g_bSpawnPointOccupied[spawnPoint])
+                continue;
+
+            if (!IsSpawnPointSuitable(spawnPoint, client, true))
+                continue;
+            else
+            {
+                spawnPointFound = true;
+                break;
+            }
+        }
+        /* Stats */
+        if (spawnPointFound)
+            g_iLosDisSearchSuccesses++;
+        else
+            g_iLosDisSearchFailures++;
+    }
+
+    /* First fallback. Find a random unoccupied spawn point with a clear LoS. */
+    if (!spawnPointFound && g_cvDM_spawn_los.BoolValue)
+    {
         g_iLosSearchAttempts++; /* Stats */
 
-        /* Try to find a suitable spawn point with a clear line of sight. */
         for (int i = 0; i < g_cvDM_spawn_los_attempts.IntValue; i++)
         {
             spawnPoint = GetRandomInt(0, g_iSpawnPointCount - 1);
@@ -258,8 +285,8 @@ void MovePlayer(int client)
             g_iLosSearchFailures++;
     }
 
-    /* First fallback. Find a random unccupied spawn point at a suitable distance. */
-    if (!spawnPointFound || !g_cvDM_spawn_los.BoolValue)
+    /* Second fallback. Find a random unoccupied spawn point at a suitable distance. */
+    if (!spawnPointFound && g_cvDM_spawn_distance.FloatValue > 0.0)
     {
         g_iDistanceSearchAttempts++; /* Stats */
 
@@ -320,8 +347,8 @@ bool IsSpawnPointSuitable(int spawnPoint, int client, bool lineofsight)
             if (g_cvDM_free_for_all.BoolValue || GetClientTeam(i) != GetClientTeam(client))
                 GetClientEyePosition(i, enemyEyePositions[i]);
 
-            float distance = GetVectorDistance(g_fSpawnPositions[spawnPoint], enemyEyePositions[i], true);
-            if (distance < g_cvDM_spawn_distance.FloatValue)
+            float fDistance = GetVectorDistance(g_fSpawnPositions[spawnPoint], enemyEyePositions[i], true);
+            if (fDistance < g_cvDM_spawn_distance.FloatValue)
                 return false;
         }
     }
@@ -361,6 +388,9 @@ public bool TraceEntityFilterPlayer(int entity, int contentsMask)
 void ResetSpawnStats()
 {
     g_iNumberOfPlayerSpawns = 0;
+    g_iLosDisSearchAttempts = 0;
+    g_iLosDisSearchSuccesses = 0;
+    g_iLosDisSearchFailures = 0;
     g_iLosSearchAttempts = 0;
     g_iLosSearchSuccesses = 0;
     g_iLosSearchFailures = 0;

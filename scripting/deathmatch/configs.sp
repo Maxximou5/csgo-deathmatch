@@ -165,9 +165,13 @@ bool LoadConfig(char[] config)
     kv.GetString("dm_spawn_protection_time", value, sizeof(value), "1.0");
     g_cvDM_spawn_protection_time.SetString(value);
 
-    kv.GetString("dm_remove_blood", value, sizeof(value), "yes");
+    kv.GetString("dm_remove_blood_player", value, sizeof(value), "yes");
     value = (StrEqual(value, "yes")) ? "1" : "0";
-    g_cvDM_remove_blood.SetString(value);
+    g_cvDM_remove_blood_player.SetString(value);
+
+    kv.GetString("dm_remove_blood_walls", value, sizeof(value), "yes");
+    value = (StrEqual(value, "yes")) ? "1" : "0";
+    g_cvDM_remove_blood_walls.SetString(value);
 
     kv.GetString("dm_remove_cash", value, sizeof(value), "yes");
     value = (StrEqual(value, "yes")) ? "1" : "0";
