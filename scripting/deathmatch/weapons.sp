@@ -15,11 +15,10 @@ void LoadWeapons()
     BuildWeaponMenuNames();
 }
 
-void SetClientGunSettings(int client, char[] primary, char[] secondary, bool firstweapon)
+void SetClientGunSettings(int client, char[] primary, char[] secondary)
 {
     strcopy(g_cPrimaryWeapon[client], sizeof(g_cPrimaryWeapon[]), primary);
     strcopy(g_cSecondaryWeapon[client], sizeof(g_cSecondaryWeapon[]), secondary);
-    g_bFirstWeaponSelection[client] = firstweapon;
 }
 
 void SetClientGunModeSettings(int client)
@@ -29,26 +28,26 @@ void SetClientGunModeSettings(int client)
         case 1:
         {
             if (IsFakeClient(client))
-                SetClientGunSettings(client, "random", "random", false);
+                SetClientGunSettings(client, "random", "random");
         }
         case 2:
         {
             if (IsFakeClient(client))
-                SetClientGunSettings(client, "random", "none", false);
+                SetClientGunSettings(client, "random", "none");
         }
         case 3:
         {
             if (IsFakeClient(client))
-                SetClientGunSettings(client, "none", "random", false);
+                SetClientGunSettings(client, "none", "random");
         }
         case 4:
         {
             if (IsFakeClient(client))
-                SetClientGunSettings(client, "none", "none", false);
+                SetClientGunSettings(client, "none", "none");
         }
         case 5:
         {
-            SetClientGunSettings(client, "random", "random", false);
+            SetClientGunSettings(client, "random", "random");
             if (!IsFakeClient(client))
             {
                 SetClientCookie(client, g_hWeapon_Primary_Cookie, "random");
@@ -60,7 +59,7 @@ void SetClientGunModeSettings(int client)
         {
             if (IsFakeClient(client))
             {
-                SetClientGunSettings(client, "random", "random", false);
+                SetClientGunSettings(client, "random", "random");
                 g_bRememberChoice[client] = true;
             }
         }

@@ -149,6 +149,10 @@ bool LoadConfig(char[] config)
     value = (StrEqual(value, "yes")) ? "1" : "0";
     g_cvDM_respawn_valve.SetString(value);
 
+    kv.GetString("dm_spawn_default", value, sizeof(value), "no");
+    value = (StrEqual(value, "yes")) ? "1" : "0";
+    g_cvDM_spawn_default.SetString(value);
+
     kv.GetString("dm_spawn_los", value, sizeof(value), "yes");
     value = (StrEqual(value, "yes")) ? "1" : "0";
     g_cvDM_spawn_los.SetString(value);

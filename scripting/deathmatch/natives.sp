@@ -30,6 +30,7 @@ public int Native_GiveSavedWeapons(Handle plugin, int numParams)
     if (client < 1 || client > MaxClients || !IsClientInGame(client))
         ThrowNativeError(SP_ERROR_NATIVE, "Client is invalid.");
 
+    /* Give normal loadout if remembered. */
     if (g_cvDM_gun_menu_mode.IntValue == 1 || g_cvDM_gun_menu_mode.IntValue == 5)
         GiveSavedWeapons(client, true, true);
     /* Give only primary weapons if remembered. */
@@ -61,4 +62,4 @@ public int Native_UpdateSetting_Secondary(Handle plugin, int numParams)
         ThrowNativeError(SP_ERROR_NATIVE, "Client is invalid.");
 
     GetNativeString(2, g_cSecondaryWeapon[client], sizeof(g_cSecondaryWeapon[]));
-} 
+}

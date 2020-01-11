@@ -9,7 +9,7 @@
 
 #pragma newdecls required
 
-#define PLUGIN_VERSION          "3.0.0 ALPHA"
+#define PLUGIN_VERSION          "3.0.0 BETA"
 #define PLUGIN_NAME             "[CS:GO] Deathmatch"
 #define PLUGIN_AUTHOR           "Maxximou5"
 #define PLUGIN_DESCRIPTION      "Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc)."
@@ -52,6 +52,7 @@ ConVar g_cvDM_headshot_only_allow_nade;
 ConVar g_cvDM_respawn;
 ConVar g_cvDM_respawn_time;
 ConVar g_cvDM_respawn_valve;
+ConVar g_cvDM_spawn_default;
 ConVar g_cvDM_spawn_los;
 ConVar g_cvDM_spawn_los_attempts;
 ConVar g_cvDM_spawn_distance;
@@ -200,8 +201,8 @@ char g_cPrimaryWeapon[MAXPLAYERS+1][24];
 char g_cSecondaryWeapon[MAXPLAYERS+1][24];
 bool g_bInEditMode = false;
 bool g_bInEditModeClient[MAXPLAYERS+1] = {false, ...};
-bool g_bFirstWeaponSelection[MAXPLAYERS+1] = {true, ...};
 bool g_bWeaponsGivenThisRound[MAXPLAYERS+1] = {false, ...};
+bool g_bGiveFullLoadout[MAXPLAYERS+1] = {false, ...};
 bool g_bRememberChoice[MAXPLAYERS+1] = {false, ...};
 bool g_bInfoMessage[MAXPLAYERS+1] = {false, ... };
 bool g_bPlayerMoved[MAXPLAYERS+1] = {false, ...};
@@ -362,7 +363,7 @@ public void OnMapStart()
         if (IsClientConnected(i))
             Client_ResetClientSettings(i);
     }
-    if (!g_cvDM_respawn_valve.BoolValue && LoadMapConfig())
+    if (LoadMapConfig())
     {
         if (g_iSpawnPointCount > 0)
         {
@@ -370,7 +371,7 @@ public void OnMapStart()
                 g_bSpawnPointOccupied[i] = false;
         }
     }
-    else
+    else if (!g_cvDM_spawn_default.BoolValue)
         State_SetSpawnPoints();
 }
 
@@ -456,24 +457,85 @@ public void OnClientCookiesCached(int client)
     GetClientCookie(client, g_hKillFeed_Cookie, cKillFeed, sizeof(cKillFeed));
     GetClientCookie(client, g_hHSOnly_Cookie, cHSOnly, sizeof(cHSOnly));
 
-    if (!StrEqual(cPrimary, "")) g_cPrimaryWeapon[client] = cPrimary;
-    else g_cPrimaryWeapon[client] = "none";
-    if (!StrEqual(cSecondary, "")) g_cSecondaryWeapon[client] = cSecondary;
-    else g_cSecondaryWeapon[client] = "none";
-    if (!StrEqual(cRemember, "")) g_bRememberChoice[client] = view_as<bool>(StringToInt(cRemember));
-    else g_bRememberChoice[client] = false;
-    if (!StrEqual(cFirst, "")) g_bFirstWeaponSelection[client] = view_as<bool>(StringToInt(cFirst));
-    else g_bFirstWeaponSelection[client] = false;
-    if (!StrEqual(cDPanel, "")) g_bDamagePanel[client] = view_as<bool>(StringToInt(cDPanel));
-    else g_bDamagePanel[client] = true;
-    if (!StrEqual(cDPopup, ""))  g_bDamagePopup[client] = view_as<bool>(StringToInt(cDPopup));
-    else g_bDamagePopup[client] = true;
-    if (!StrEqual(cDText, "")) g_bDamageText[client] = view_as<bool>(StringToInt(cDText));
-    else g_bDamageText[client] = true;
-    if (!StrEqual(cKillFeed, "")) g_bKillFeed[client] = view_as<bool>(StringToInt(cKillFeed));
-    else g_bKillFeed[client] = true;
-    if (!StrEqual(cHSOnly, "")) g_bHSOnlyClient[client] = view_as<bool>(StringToInt(cHSOnly));
-    else g_bHSOnlyClient[client] = false;
+    if (!StrEqual(cPrimary, ""))
+    {
+        g_cPrimaryWeapon[client] = cPrimary;
+    }
+    else
+    {
+        g_cPrimaryWeapon[client] = "none";
+        SetClientCookie(client, g_hWeapon_Primary_Cookie, "none");
+    }
+
+    if (!StrEqual(cSecondary, ""))
+    {
+        g_cSecondaryWeapon[client] = cSecondary;
+    }
+    else
+    {
+        g_cSecondaryWeapon[client] = "none";
+        SetClientCookie(client, g_hWeapon_Secondary_Cookie, "none");
+    }
+
+    if (!StrEqual(cRemember, ""))
+    {
+        g_bRememberChoice[client] = view_as<bool>(StringToInt(cRemember));
+    }
+    else
+    {
+        g_bRememberChoice[client] = false;
+        SetClientCookie(client, g_hWeapon_Remember_Cookie, "0");
+    }
+
+    if (!StrEqual(cDPanel, ""))
+    {
+        g_bDamagePanel[client] = view_as<bool>(StringToInt(cDPanel));
+    }
+    else
+    {
+        g_bDamagePanel[client] = true;
+        SetClientCookie(client, g_hDamage_Panel_Cookie, "1");
+    }
+
+    if (!StrEqual(cDPopup, ""))
+    {
+        g_bDamagePopup[client] = view_as<bool>(StringToInt(cDPopup));
+    }
+    else
+    {
+        g_bDamagePopup[client] = true;
+        SetClientCookie(client, g_hDamage_Popup_Cookie, "1");
+    }
+
+    if (!StrEqual(cDText, ""))
+    {
+        g_bDamageText[client] = view_as<bool>(StringToInt(cDText));
+    }
+    else
+    {
+        g_bDamageText[client] = true;
+        SetClientCookie(client, g_hDamage_Text_Cookie, "1");
+    }
+
+    if (!StrEqual(cKillFeed, ""))
+    {
+        g_bKillFeed[client] = view_as<bool>(StringToInt(cKillFeed));
+    }
+    else
+    {
+        g_bKillFeed[client] = true;
+        SetClientCookie(client, g_hKillFeed_Cookie, "1");
+    }
+
+    if (!StrEqual(cHSOnly, ""))
+    {
+        g_bHSOnlyClient[client] = view_as<bool>(StringToInt(cHSOnly));
+    }
+    else
+    {
+        g_bHSOnlyClient[client] = false;
+        SetClientCookie(client, g_hHSOnly_Cookie, "0");
+    }
 }
 
 public Action CS_OnTerminateRound(float &delay, CSRoundEndReason &reason)

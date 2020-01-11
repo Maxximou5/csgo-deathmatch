@@ -210,7 +210,7 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
                 {
                     char config[256];
                     g_cvDM_config_name.GetString(config, sizeof(config));
-                    PrintHintText(client, "This server is running:\n<font color='#00FF00'>Deathmatch</font> v%s\nMode: <font color='#FF00FF'>%s</font>", PLUGIN_VERSION, config);
+                    PrintHintText(client, "This server is running:\nDeathmatch v%s\nMode: %s", PLUGIN_VERSION, config);
                     CPrintToChat(client, "%t This server is running {green}Deathmatch {default}v%s with mode: {purple}%s", "Chat Tag", PLUGIN_VERSION, config);
                 }
                 /* Hide radar. */
@@ -234,7 +234,7 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
                 g_bRememberChoice[client] = view_as<bool>(StringToInt(cRemember));
             }
             /* Teleport player to custom spawn point. */
-            if (g_iSpawnPointCount > 0)
+            if (g_iSpawnPointCount > 0 && !g_cvDM_spawn_default.BoolValue)
             {
                 UpdateSpawnPoints();
                 MovePlayer(client);
@@ -267,6 +267,7 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
                 }
             }
             g_bWeaponsGivenThisRound[client] = false;
+            g_bGiveFullLoadout[client] = false;
              /* Remove weapons. */
             RemoveClientWeapons(client);
             if (g_cvDM_remove_objectives.BoolValue)
@@ -274,6 +275,7 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
             /* Give weapons or display menu. */
             if (g_bRememberChoice[client] || IsFakeClient(client))
             {
+                /* Give normal loadout if remembered. */
                 if (g_cvDM_gun_menu_mode.IntValue == 1 || g_cvDM_gun_menu_mode.IntValue == 5)
                     GiveSavedWeapons(client, true, true);
                 /* Give only primary weapons if remembered. */
@@ -362,13 +364,13 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
                 if ((g_cvDM_hp_messages.BoolValue && g_cvDM_ap_messages.BoolValue) && attackerAP < g_cvDM_ap_max.IntValue && attackerHP < g_cvDM_hp_max.IntValue)
                 {
                     if (knifed)
-                        CPrintToChat(attacker, "%t \x04+%i HP\x01 & \x04+%i AP\x01 %t", "Chat Tag", g_cvDM_hp_knife.IntValue, g_cvDM_ap_knife.IntValue, "HP Knife Kill", "AP Knife Kill");
+                        CPrintToChat(attacker, "%t \x04+%i HP\x01 & \x04+%i AP\x01 %t", "Chat Tag", g_cvDM_hp_knife.IntValue, g_cvDM_ap_knife.IntValue, "Knife Kill");
                     else if (headshot)
-                        CPrintToChat(attacker, "%t \x04+%i HP\x01 & \x04+%i AP\x01 %t", "Chat Tag", g_cvDM_hp_headshot.IntValue, g_cvDM_ap_headshot.IntValue, "HP Headshot Kill", "AP Headshot Kill");
+                        CPrintToChat(attacker, "%t \x04+%i HP\x01 & \x04+%i AP\x01 %t", "Chat Tag", g_cvDM_hp_headshot.IntValue, g_cvDM_ap_headshot.IntValue, "Headshot Kill");
                     else if (naded || decoy || inferno)
-                        CPrintToChat(attacker, "%t \x04+%i HP\x01 & \x04+%i AP\x01 %t", "Chat Tag", g_cvDM_hp_nade.IntValue, g_cvDM_ap_nade.IntValue, "HP Nade Kill", "AP Nade Kill");
+                        CPrintToChat(attacker, "%t \x04+%i HP\x01 & \x04+%i AP\x01 %t", "Chat Tag", g_cvDM_hp_nade.IntValue, g_cvDM_ap_nade.IntValue, "Nade Kill");
                     else
-                        CPrintToChat(attacker, "%t \x04+%i HP\x01 & \x04+%i AP\x01 %t", "Chat Tag", g_cvDM_hp_kill.IntValue, g_cvDM_ap_kill.IntValue, "HP Kill", "AP Kill");
+                        CPrintToChat(attacker, "%t \x04+%i HP\x01 & \x04+%i AP\x01 %t", "Chat Tag", g_cvDM_hp_kill.IntValue, g_cvDM_ap_kill.IntValue, "Kill");
 
                     SetEntProp(attacker, Prop_Send, "m_iHealth", AddHealthToPlayer(attackerHP, knifed, headshot, naded, decoy, inferno), 1);
                     SetEntProp(attacker, Prop_Send, "m_ArmorValue", AddArmorToPlayer(attackerAP, knifed, headshot, naded, decoy, inferno), 1);
@@ -378,13 +380,13 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
                 else if (g_cvDM_hp_messages.BoolValue && !bchanged && attackerHP < g_cvDM_hp_max.IntValue)
                 {
                     if (knifed)
-                        CPrintToChat(attacker, "%t \x04+%i HP\x01 %t", "Chat Tag", g_cvDM_hp_knife.IntValue, "HP Knife Kill");
+                        CPrintToChat(attacker, "%t \x04+%i HP\x01 %t", "Chat Tag", g_cvDM_hp_knife.IntValue, "Knife Kill");
                     else if (headshot)
-                        CPrintToChat(attacker, "%t \x04+%i HP\x01 %t", "Chat Tag", g_cvDM_hp_headshot.IntValue, "HP Headshot Kill");
+                        CPrintToChat(attacker, "%t \x04+%i HP\x01 %t", "Chat Tag", g_cvDM_hp_headshot.IntValue, "Headshot Kill");
                     else if (naded || decoy || inferno)
-                        CPrintToChat(attacker, "%t \x04+%i HP\x01 %t", "Chat Tag", g_cvDM_hp_nade.IntValue, "HP Nade Kill");
+                        CPrintToChat(attacker, "%t \x04+%i HP\x01 %t", "Chat Tag", g_cvDM_hp_nade.IntValue, "Nade Kill");
                     else
-                        CPrintToChat(attacker, "%t \x04+%i HP\x01 %t", "Chat Tag", g_cvDM_hp_kill.IntValue, "HP Kill");
+                        CPrintToChat(attacker, "%t \x04+%i HP\x01 %t", "Chat Tag", g_cvDM_hp_kill.IntValue, "Kill");
 
                     SetEntProp(attacker, Prop_Send, "m_iHealth", AddHealthToPlayer(attackerHP, knifed, headshot, naded, decoy, inferno), 1);
 
@@ -393,13 +395,13 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
                 else if (g_cvDM_ap_messages.BoolValue && !bchanged && attackerAP < g_cvDM_ap_max.IntValue)
                 {
                     if (knifed)
-                        CPrintToChat(attacker, "%t \x04+%i AP\x01 %t", "Chat Tag", g_cvDM_ap_knife.IntValue, "AP Knife Kill");
+                        CPrintToChat(attacker, "%t \x04+%i AP\x01 %t", "Chat Tag", g_cvDM_ap_knife.IntValue, "Knife Kill");
                     else if (headshot)
-                        CPrintToChat(attacker, "%t \x04+%i AP\x01 %t", "Chat Tag", g_cvDM_ap_headshot.IntValue, "AP Headshot Kill");
+                        CPrintToChat(attacker, "%t \x04+%i AP\x01 %t", "Chat Tag", g_cvDM_ap_headshot.IntValue, "Headshot Kill");
                     else if (naded || decoy || inferno)
-                        CPrintToChat(attacker, "%t \x04+%i AP\x01 %t", "Chat Tag", g_cvDM_ap_nade.IntValue, "AP Nade Kill");
+                        CPrintToChat(attacker, "%t \x04+%i AP\x01 %t", "Chat Tag", g_cvDM_ap_nade.IntValue, "Nade Kill");
                     else
-                        CPrintToChat(attacker, "%t \x04+%i AP\x01 %t", "Chat Tag", g_cvDM_ap_kill.IntValue, "AP Kill");
+                        CPrintToChat(attacker, "%t \x04+%i AP\x01 %t", "Chat Tag", g_cvDM_ap_kill.IntValue, "Kill");
 
                     SetEntProp(attacker, Prop_Send, "m_ArmorValue", AddArmorToPlayer(attackerAP, knifed, headshot, naded, decoy, inferno), 1);
                 }
@@ -505,9 +507,9 @@ public Action Event_PlayerHurt(Event event, const char[] name, bool dontBroadcas
             if (g_cvDM_display_damage_panel.BoolValue && g_bDamagePanel[attacker])
             {
                 if (health > 0)
-                    PrintHintText(attacker, "%t <font color='#FF0000'>%i</font> %t <font color='#00FF00'>%N</font>\n%t <font color='#00FF00'>%i</font>", "Display Damage Giver", dhealth, "Display Damage Taker", victim, "Display Health Remaining", health);
+                    PrintHintText(attacker, "%t %i %t %N\n%t %i", "Display Damage Giver", dhealth, "Display Damage Taker", victim, "Display Health Remaining", health);
                 else if (health <= 0)
-                    PrintHintText(attacker, "%t <font color='#FF0000'>%i</font> %t <font color='#00FF00'>%N</font>\n%t <font color='#00FF00'>%i</font>\n%t", "Display Damage Giver", dhealth, "Display Damage Taker", victim, "Display Health Remaining", health, "Display Kill Confirmed");
+                    PrintHintText(attacker, "%t %i %t %N\n%t %i\n%t", "Display Damage Giver", dhealth, "Display Damage Taker", victim, "Display Health Remaining", health, "Display Kill Confirmed");
             }
 
             if (g_cvDM_display_damage_popup.BoolValue && g_bDamagePopup[attacker])

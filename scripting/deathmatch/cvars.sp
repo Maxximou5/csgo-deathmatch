@@ -23,7 +23,8 @@ void LoadCvars()
     g_cvDM_headshot_only_allow_nade = CreateConVar("dm_headshot_only_allow_nade", "0", "Enable grenade damage during headshot only mode.");
     g_cvDM_respawn = CreateConVar("dm_respawn", "1", "Enable respawning.");
     g_cvDM_respawn_time = CreateConVar("dm_respawn_time", "1.0", "Respawn time.");
-    g_cvDM_respawn_valve = CreateConVar("dm_respawn_valve", "0", "Enable Valve respawning. This disables the plugin respawning method.");
+    g_cvDM_respawn_valve = CreateConVar("dm_respawn_valve", "0", "Enable Valve Deathmatch respawning. This disables the plugin respawning method.");
+    g_cvDM_spawn_default = CreateConVar("dm_spawn_default", "0", "Enable default map spawn points. Overrides Valve Deathmatch respawning.");
     g_cvDM_spawn_los = CreateConVar("dm_spawn_los", "1", "Enable line of sight spawning. If enabled, players will be spawned at a point where they cannot see enemies, and enemies cannot see them.");
     g_cvDM_spawn_los_attempts = CreateConVar("dm_spawn_los_attempts", "64", "Maximum number of attempts to find a suitable line of sight spawn point.");
     g_cvDM_spawn_distance = CreateConVar("dm_spawn_distance", "500000.0", "Minimum distance from enemies at which a player can spawn.");
@@ -113,6 +114,7 @@ void LoadChangeHooks()
     g_cvDM_respawn.AddChangeHook(Event_CvarChange);
     g_cvDM_respawn_valve.AddChangeHook(Event_CvarChange);
     g_cvDM_respawn_time.AddChangeHook(Event_CvarChange);
+    g_cvDM_spawn_default.AddChangeHook(Event_CvarChange);
     g_cvDM_spawn_los.AddChangeHook(Event_CvarChange);
     g_cvDM_spawn_los_attempts.AddChangeHook(Event_CvarChange);
     g_cvDM_spawn_distance.AddChangeHook(Event_CvarChange);

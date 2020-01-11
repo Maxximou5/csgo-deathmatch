@@ -107,11 +107,11 @@ void BuildWeaponsMenu(int client)
     Format(title, sizeof(title), "%T:", "Weapons Menu", client);
     menu.SetTitle(title);
     char itemtext[256];
-    Format(itemtext, sizeof(itemtext), "%T", "New weapons", client);
+    Format(itemtext, sizeof(itemtext), "%T", "New Weapons", client);
     menu.AddItem("New", itemtext);
-    Format(itemtext, sizeof(itemtext), "%T", "Same weapons", client);
+    Format(itemtext, sizeof(itemtext), "%T", "Same Weapons", client);
     menu.AddItem("Same", itemtext, allowSameWeapons);
-    Format(itemtext, sizeof(itemtext), "%T", "Random weapons", client);
+    Format(itemtext, sizeof(itemtext), "%T", "Random Weapons", client);
     menu.AddItem("Random", itemtext);
     menu.ExitButton = false;
     g_hWeaponsMenus[client] = menu;
@@ -126,12 +126,14 @@ void BuildAvailableWeaponsMenu(int client, bool primary)
         Reset_Handle(g_hPrimaryMenus[client]);
         menu = new Menu(Menu_Primary);
         menu.SetTitle("Primary Weapon:");
+        menu.ExitButton = true;
     }
     else
     {
         Reset_Handle(g_hSecondaryMenus[client]);
         menu = new Menu(Menu_Secondary);
         menu.SetTitle("Secondary Weapon:");
+        menu.ExitBackButton = true;
     }
 
     ArrayList weapons;
@@ -170,7 +172,6 @@ void BuildAvailableWeaponsMenu(int client, bool primary)
             }
         }
     }
-    menu.ExitBackButton = true;
     if (primary)
     {
         g_hPrimaryMenus[client] = menu;
@@ -180,6 +181,173 @@ void BuildAvailableWeaponsMenu(int client, bool primary)
     {
         g_hSecondaryMenus[client] = menu;
         DisplayMenu(g_hSecondaryMenus[client], client, MENU_TIME_FOREVER);
+    }
+}
+
+public int Menu_Weapons(Menu menu, MenuAction action, int param1, int param2)
+{
+    if (action == MenuAction_Select)
+    {
+        char info[24];
+        menu.GetItem(param2, info, sizeof(info));
+        SetClientCookie(param1, g_hWeapon_Remember_Cookie, "1");
+        g_bRememberChoice[param1] = true;
+
+        if (StrEqual(info, "New"))
+        {
+            if (g_cvDM_loadout_style.IntValue <= 1)
+            {
+                if (g_bWeaponsGivenThisRound[param1])
+                    CPrintToChat(param1, "%t %t", "Chat Tag", "Guns New Spawn");
+            }
+            if (g_cvDM_gun_menu_mode.IntValue == 1 || g_cvDM_gun_menu_mode.IntValue == 2)
+                BuildAvailableWeaponsMenu(param1, true);
+            else if (g_cvDM_gun_menu_mode.IntValue == 3)
+                BuildAvailableWeaponsMenu(param1, false);
+        }
+        else if (StrEqual(info, "Same"))
+        {
+            if (g_cvDM_loadout_style.IntValue <= 1)
+            {
+                if (g_bWeaponsGivenThisRound[param1])
+                    CPrintToChat(param1, "%t %t", "Chat Tag", "Guns Same Spawn");
+            }
+            if (g_cvDM_gun_menu_mode.IntValue == 1 || g_cvDM_gun_menu_mode.IntValue == 5)
+                GiveSavedWeapons(param1, true, true);
+            else if (g_cvDM_gun_menu_mode.IntValue == 2)
+                GiveSavedWeapons(param1, true, false);
+            else if (g_cvDM_gun_menu_mode.IntValue == 3)
+                GiveSavedWeapons(param1, false, true);
+            else if (g_cvDM_gun_menu_mode.IntValue == 4)
+                GiveSavedWeapons(param1, false, false);
+        }
+        else if (StrEqual(info, "Random"))
+        {
+            if (g_cvDM_loadout_style.IntValue <= 1)
+            {
+                if (g_bWeaponsGivenThisRound[param1])
+                    CPrintToChat(param1, "%t %t", "Chat Tag", "Guns Random Spawn");
+            }
+            if (g_cvDM_gun_menu_mode.IntValue == 1 || g_cvDM_gun_menu_mode.IntValue == 5)
+            {
+                g_cPrimaryWeapon[param1] = "random";
+                g_cSecondaryWeapon[param1] = "random";
+                GiveSavedWeapons(param1, true, true);
+            }
+            else if (g_cvDM_gun_menu_mode.IntValue == 2)
+            {
+                g_cPrimaryWeapon[param1] = "random";
+                g_cSecondaryWeapon[param1] = "none";
+                GiveSavedWeapons(param1, true, false);
+            }
+            else if (g_cvDM_gun_menu_mode.IntValue == 3)
+            {
+                g_cPrimaryWeapon[param1] = "none";
+                g_cSecondaryWeapon[param1] = "random";
+                GiveSavedWeapons(param1, false, true);
+            }
+            else if (g_cvDM_gun_menu_mode.IntValue == 4)
+            {
+                g_cPrimaryWeapon[param1] = "none";
+                g_cSecondaryWeapon[param1] = "none";
+                GiveSavedWeapons(param1, false, false);
+            }
+        }
+    }
+}
+
+public int Menu_Primary(Menu menu, MenuAction action, int param1, int param2)
+{
+    if (action == MenuAction_Select)
+    {
+        char weaponEntity[24];
+        char weaponName[24];
+        int weaponCount;
+        int weaponLimit;
+
+        menu.GetItem(param2, weaponEntity, sizeof(weaponEntity));
+        g_smWeaponMenuNames.GetString(weaponEntity, weaponName, sizeof(weaponName));
+        g_smWeaponCounts.GetValue(weaponEntity, weaponCount);
+        g_smWeaponLimits.GetValue(weaponEntity, weaponLimit);
+
+        if ((weaponLimit == -1) || (weaponCount < weaponLimit))
+            IncrementWeaponCount(weaponEntity);
+
+        DecrementWeaponCount(g_cPrimaryWeapon[param1]);
+        g_cPrimaryWeapon[param1] = weaponEntity;
+        g_bGiveFullLoadout[param1] = true;
+        if (g_cvDM_gun_menu_mode.IntValue != 2)
+            BuildAvailableWeaponsMenu(param1, false)
+        else
+            GiveSavedWeapons(param1, true, false);
+        CPrintToChat(param1, "%t %t %s", "Chat Tag", "Primary Selection", weaponName);
+    }
+    else if (action == MenuAction_Cancel)
+    {
+        if (IsClientInGame(param1) && param2 == MenuCancel_Exit)
+        {
+            DecrementWeaponCount(g_cPrimaryWeapon[param1]);
+            g_cPrimaryWeapon[param1] = "none";
+            g_bGiveFullLoadout[param1] = true;
+            if (g_cvDM_gun_menu_mode.IntValue != 2)
+                BuildAvailableWeaponsMenu(param1, false)
+            else
+                GiveSavedWeapons(param1, true, false);
+            CPrintToChat(param1, "%t %t None", "Chat Tag", "Primary Selection");
+        }
+    }
+}
+
+public int Menu_Secondary(Menu menu, MenuAction action, int param1, int param2)
+{
+    if (action == MenuAction_Select)
+    {
+        char weaponEntity[24];
+        char weaponName[24];
+        int weaponCount;
+        int weaponLimit;
+
+        menu.GetItem(param2, weaponEntity, sizeof(weaponEntity));
+        g_smWeaponMenuNames.GetString(weaponEntity, weaponName, sizeof(weaponName));
+        g_smWeaponCounts.GetValue(weaponEntity, weaponCount);
+        g_smWeaponLimits.GetValue(weaponEntity, weaponLimit);
+
+        if ((weaponLimit == -1) || (weaponCount < weaponLimit))
+            IncrementWeaponCount(weaponEntity);
+
+        DecrementWeaponCount(g_cSecondaryWeapon[param1]);
+        g_cSecondaryWeapon[param1] = weaponEntity;
+        if (g_cvDM_gun_menu_mode.IntValue == 2)
+            BuildAvailableWeaponsMenu(param1, true)
+        else
+        {
+            if (g_bGiveFullLoadout[param1])
+                GiveSavedWeapons(param1, true, true);
+            else
+                GiveSavedWeapons(param1, false, true);
+            CPrintToChat(param1, "%t %t %s", "Chat Tag", "Secondary Selection", weaponName);
+        }
+    }
+    else if (action == MenuAction_Cancel)
+    {
+        if (IsClientInGame(param1) && param2 == MenuCancel_ExitBack)
+            BuildAvailableWeaponsMenu(param1, true)
+
+        if (IsClientInGame(param1) && param2 == MenuCancel_Exit)
+        {
+            DecrementWeaponCount(g_cSecondaryWeapon[param1]);
+            g_cSecondaryWeapon[param1] = "none";
+            if (g_cvDM_gun_menu_mode.IntValue == 2)
+                BuildAvailableWeaponsMenu(param1, true)
+            else
+            {
+                if (g_bGiveFullLoadout[param1])
+                    GiveSavedWeapons(param1, true, true);
+                else
+                    GiveSavedWeapons(param1, false, true);
+                CPrintToChat(param1, "%t %t None", "Chat Tag", "Secondary Selection");
+            }
+        }
     }
 }
 
@@ -193,10 +361,13 @@ void BuildConfigMenu(int client)
     for (int i = 0; i < g_aConfigNames.Length; i++)
     {
         g_aConfigNames.GetString(i, config, sizeof(config));
-        if (LoadConfigName(config))
-            menu.AddItem(config, g_cLoadConfigName);
-        else
-            menu.AddItem(config, config, ITEMDRAW_DISABLED);
+        if (StrContains(config, "config_loader.ini", false) == -1)
+        {
+            if (LoadConfigName(config))
+                menu.AddItem(config, g_cLoadConfigName);
+            else
+                menu.AddItem(config, config, ITEMDRAW_DISABLED);
+        }
     }
     menu.ExitBackButton = true;
     menu.Display(client, MENU_TIME_FOREVER);
@@ -239,7 +410,7 @@ void BuildSpawnEditorMenu(int client)
     menu.AddItem("Delete All", itemtext);
     Format(itemtext, sizeof(itemtext), "%T", "Spawn Editor Menu Save", client);
     menu.AddItem("Save", itemtext);
-    menu.ExitBackButton = true;
+    menu.ExitButton = true;
     menu.Display(client, MENU_TIME_FOREVER);
 }
 
@@ -395,168 +566,6 @@ public int Menu_ConfigTime(Menu menu, MenuAction action, int param1, int param2)
 }
 
 public int PanelSpawnStats(Menu menu, MenuAction action, int param1, int param2) {}
-
-public int Menu_Weapons(Menu menu, MenuAction action, int param1, int param2)
-{
-    if (action == MenuAction_Select)
-    {
-        char info[24];
-        menu.GetItem(param2, info, sizeof(info));
-        SetClientCookie(param1, g_hWeapon_Remember_Cookie, "1");
-        g_bRememberChoice[param1] = true;
-
-        if (StrEqual(info, "New"))
-        {
-            if (g_cvDM_loadout_style.IntValue <= 1)
-            {
-                if (g_bWeaponsGivenThisRound[param1])
-                    CPrintToChat(param1, "%t %t", "Chat Tag", "Guns New Spawn");
-            }
-            if (g_cvDM_gun_menu_mode.IntValue == 1 || g_cvDM_gun_menu_mode.IntValue == 2)
-                BuildAvailableWeaponsMenu(param1, true);
-            else if (g_cvDM_gun_menu_mode.IntValue == 3)
-                BuildAvailableWeaponsMenu(param1, false);
-        }
-        else if (StrEqual(info, "Same"))
-        {
-            if (g_cvDM_loadout_style.IntValue <= 1)
-            {
-                if (g_bWeaponsGivenThisRound[param1])
-                    CPrintToChat(param1, "%t %t", "Chat Tag", "Guns Same Spawn");
-            }
-            if (g_cvDM_gun_menu_mode.IntValue == 1 || g_cvDM_gun_menu_mode.IntValue == 5)
-                GiveSavedWeapons(param1, true, true);
-            else if (g_cvDM_gun_menu_mode.IntValue == 2)
-                GiveSavedWeapons(param1, true, false);
-            else if (g_cvDM_gun_menu_mode.IntValue == 3)
-                GiveSavedWeapons(param1, false, true);
-            else if (g_cvDM_gun_menu_mode.IntValue == 4)
-                GiveSavedWeapons(param1, false, false);
-        }
-        else if (StrEqual(info, "Random"))
-        {
-            if (g_cvDM_loadout_style.IntValue <= 1)
-            {
-                if (g_bWeaponsGivenThisRound[param1])
-                    CPrintToChat(param1, "%t %t", "Chat Tag", "Guns Random Spawn");
-            }
-            if (g_cvDM_gun_menu_mode.IntValue == 1 || g_cvDM_gun_menu_mode.IntValue == 5)
-            {
-                g_cPrimaryWeapon[param1] = "random";
-                g_cSecondaryWeapon[param1] = "random";
-                GiveSavedWeapons(param1, true, true);
-            }
-            else if (g_cvDM_gun_menu_mode.IntValue == 2)
-            {
-                g_cPrimaryWeapon[param1] = "random";
-                g_cSecondaryWeapon[param1] = "none";
-                GiveSavedWeapons(param1, true, false);
-            }
-            else if (g_cvDM_gun_menu_mode.IntValue == 3)
-            {
-                g_cPrimaryWeapon[param1] = "none";
-                g_cSecondaryWeapon[param1] = "random";
-                GiveSavedWeapons(param1, false, true);
-            }
-            else if (g_cvDM_gun_menu_mode.IntValue == 4)
-            {
-                g_cPrimaryWeapon[param1] = "none";
-                g_cSecondaryWeapon[param1] = "none";
-                GiveSavedWeapons(param1, false, false);
-            }
-        }
-    }
-}
-
-public int Menu_Primary(Menu menu, MenuAction action, int param1, int param2)
-{
-    if (action == MenuAction_Select)
-    {
-        char info[24];
-        menu.GetItem(param2, info, sizeof(info));
-        int weaponCount;
-        g_smWeaponCounts.GetValue(info, weaponCount);
-        int weaponLimit;
-        g_smWeaponLimits.GetValue(info, weaponLimit);
-
-        if ((weaponLimit == -1) || (weaponCount < weaponLimit))
-        {
-            IncrementWeaponCount(info);
-            DecrementWeaponCount(g_cPrimaryWeapon[param1]);
-            g_cPrimaryWeapon[param1] = info;
-            GiveSavedWeapons(param1, true, false);
-            if (g_cvDM_gun_menu_mode.IntValue != 2)
-                BuildAvailableWeaponsMenu(param1, false)
-            else
-            {
-                DecrementWeaponCount(g_cSecondaryWeapon[param1]);
-                g_cSecondaryWeapon[param1] = "none";
-                GiveSavedWeapons(param1, false, true);
-                SetClientCookie(param1, g_hWeapon_First_Cookie, "0");
-                g_bFirstWeaponSelection[param1] = false;
-            }
-        }
-        else
-        {
-            DecrementWeaponCount(g_cPrimaryWeapon[param1]);
-            g_cPrimaryWeapon[param1] = "none";
-            GiveSavedWeapons(param1, true, false);
-            if (g_cvDM_gun_menu_mode.IntValue != 2)
-                BuildAvailableWeaponsMenu(param1, false);
-            else
-            {
-                DecrementWeaponCount(g_cSecondaryWeapon[param1]);
-                g_cSecondaryWeapon[param1] = "none";
-                GiveSavedWeapons(param1, false, true);
-                SetClientCookie(param1, g_hWeapon_First_Cookie, "0");
-                g_bFirstWeaponSelection[param1] = false;
-            }
-        }
-    }
-    else if (action == MenuAction_Cancel)
-    {
-        if (param2 == MenuCancel_Exit)
-        {
-            if (!(0 < param1 <= MaxClients) && IsClientInGame(param1))
-            {
-                DecrementWeaponCount(g_cPrimaryWeapon[param1]);
-                g_cPrimaryWeapon[param1] = "none";
-                GiveSavedWeapons(param1, true, false);
-                if (g_cvDM_gun_menu_mode.IntValue != 2)
-                    BuildAvailableWeaponsMenu(param1, false);
-            }
-        }
-    }
-}
-
-public int Menu_Secondary(Menu menu, MenuAction action, int param1, int param2)
-{
-    if (action == MenuAction_Select)
-    {
-        char info[24];
-        menu.GetItem(param2, info, sizeof(info));
-        IncrementWeaponCount(info);
-        DecrementWeaponCount(g_cSecondaryWeapon[param1]);
-        g_cSecondaryWeapon[param1] = info;
-        GiveSavedWeapons(param1, false, true);
-        SetClientCookie(param1, g_hWeapon_First_Cookie, "0");
-        g_bFirstWeaponSelection[param1] = false;
-    }
-    else if (action == MenuAction_Cancel)
-    {
-        if (param2 == MenuCancel_Exit)
-        {
-            if (!(0 < param1 <= MaxClients) && IsClientInGame(param1))
-            {
-                DecrementWeaponCount(g_cSecondaryWeapon[param1]);
-                g_cSecondaryWeapon[param1] = "none";
-                GiveSavedWeapons(param1, false, true);
-                SetClientCookie(param1, g_hWeapon_First_Cookie, "0");
-                g_bFirstWeaponSelection[param1] = false;
-            }
-        }
-    }
-}
 
 void DisplaySpawnStats(int client, bool console)
 {

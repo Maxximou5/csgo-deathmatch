@@ -71,6 +71,8 @@ void State_EnableDM()
         State_EnableFFA();
     else
         State_DisableFFA();
+    if (!g_cvDM_spawn_default.BoolValue && g_cvDM_respawn_valve.BoolValue)
+        State_SetSpawnPoints();
     if (g_cvDM_gun_menu_mode.IntValue != 6)
     {
         for (int i = 1; i <= MaxClients; i++)
