@@ -130,6 +130,16 @@
 	dm_nades_he - (Default) 0 - Number of HE grenades to give each player.
 	dm_nades_smoke - (Default) 0 - Number of smoke grenades to give each player.
 	dm_nades_tactical - (Default) 0 - Number of tactical grenades to give each player.
+	
+### ALPHA to BETA upgrade guide
+
+- `dm_respawning` was renamed to `dm_respawn`
+- ConVar `dm_respawn_valve` with default `0`
+- ConVar `dm_spawn_default` with default `0`
+- `dm_los_spawning` was renamed to `dm_spawn_los`
+- `dm_los_attempts` was renamed to `dm_spawn_los_attempts`
+- ConVar `dm_spawn_distance_attempts` was added with default `64`
+- ConVar `dm_remove_blood` was split into `dm_remove_blood_player` and `dm_remove_blood_walls` both with default `1`
 
 ### Compatibility
 
