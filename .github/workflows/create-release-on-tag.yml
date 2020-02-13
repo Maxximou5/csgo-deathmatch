@@ -64,7 +64,7 @@ jobs:
         mv ./translations ./artifact
         mv ./LICENSE ./artifact/
         mv ./CHANGELOG.md ./artifact
-        nv ./README.md ./artifact
+        mv ./README.md ./artifact
 
     - name: Zip plugin
       run : |

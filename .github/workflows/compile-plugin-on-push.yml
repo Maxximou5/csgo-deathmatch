@@ -36,7 +36,7 @@ jobs:
         mv ./translations ./artifact
         mv ./LICENSE ./artifact/
         mv ./CHANGELOG.md ./artifact
-        nv ./README.md ./artifact
+        mv ./README.md ./artifact
 
     - name: Upload compiled plugin
       uses: actions/upload-artifact@v1
