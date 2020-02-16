@@ -2,6 +2,7 @@
 {
     "Guns Menu"
     {
+        "chi"	"输入 {green}guns {default}设置你需要的武器."
         "br"    "Digite {green}guns{default} para abrir o menu de armas."
         "en"    "Type {green}guns{default} to open the weapons menu."
         "es"    "Escriba {green}guns{default} para abrir el menú de armas."
@@ -14,6 +15,7 @@
 
     "Guns Disabled"
     {
+        "chi"	"选枪菜单被服务器关闭"
         "br"    "O menu de armas foi {red}desativado{default}."
         "en"    "The guns menu has been {red}disabled{default}."
         "es"    "El menú de armas se ha {red}desactivado{default}."
@@ -25,6 +27,7 @@
     }
     "HS Only"
     {
+        "chi"   "爆头模式已经{green}启用{default}"
         "br"    "HS Only mode is {green}enabled{default}."
         "en"    "HS Only mode is {green}enabled{default}."
         "es"    "HS Only mode is {green}enabled{default}."
@@ -36,6 +39,7 @@
     }
     "HS Only Client"
     {
+        "chi"   "输入 {green}hs{default} 来启用本地爆头模式"
         "br"    "Type {green}hs{default} to enable personal HS only client mode."
         "en"    "Type {green}hs{default} to enable personal HS only client mode."
         "es"    "Type {green}hs{default} to enable personal HS only client mode."
@@ -47,6 +51,7 @@
     }
     "HS Only Client Disabled"
     {
+        "chi"   "本地爆头模式已被{red}关闭{default}"
         "br"    "HS Only Client mode has been {red}disabled{default}."
         "en"    "HS Only Client mode has been {red}disabled{default}."
         "es"    "HS Only Client mode has been {red}disabled{default}."
@@ -59,6 +64,7 @@
     
     "HS Only Client Enabled"
     {
+        "chi"   "本地爆头模式已被{red}开启{default}"
         "br"    "HS Only Client mode has been {green}enabled{default}."
         "en"    "HS Only Client mode has been {green}enabled{default}."
         "es"    "HS Only Client mode has been {green}enabled{default}."
@@ -71,6 +77,7 @@
 
     "Guns New Spawn"
     {
+        "chi"	"你将得到 {green}新的 {default}武器 当你下次重生."
         "br"    "Voce recebera a {green}nova{default} arma no próximo spawn."
         "en"    "You will be given {green}new{default} weapons on next spawn."
         "es"    "Se le dará {green}nuevas{default} armas en el próximo desove."
@@ -83,6 +90,7 @@
 
     "Guns Same Spawn"
     {
+        "chi"	"你将得到{green} 上次的 {default}武器 当你下次重生."
         "br"    "Você recebera as {green}mesmas{default} armas nos próximos spawns"
         "en"    "You will be given {green}same{default} weapons on next spawn."
         "es"    "Se le dará {green}mismas{default} armas en el próximo desove."
@@ -95,6 +103,7 @@
 
     "Guns Random Spawn"
     {
+        "chi"	"你将得到{green} 随机 {default}武器 当你下次重生."
         "br"    "Você recebera armas {green}aleatórias{default} nos próximos spawns"
         "en"    "You will be given {green}random{default} weapons on next spawn."
         "es"    "Se le dará armas {green}al azar{default} en el próximo desove."
@@ -107,6 +116,7 @@
 
     "Panel Health Remaining"
     {
+        "chi"	"生命值剩余:"
         "br"    "Vida Restante:"
         "en"    "Health Remaining:"
         "es"    "Salud restante:"
@@ -119,6 +129,7 @@
 
     "Panel Damage Giver"
     {
+        "chi"	"你已经死亡"
         "br"    "Você fez"
         "en"    "You did"
         "es"    "Lo hiciste"
@@ -131,6 +142,7 @@
 
     "Panel Damage Taker"
     {
+        "chi"	"造成伤害给予"
         "br"    "danos ao"
         "en"    "damage to"
         "es"    "daño a"
@@ -143,6 +155,7 @@
 
     "Panel Kill Confirmed"
     {
+        "chi"	"你击杀了ta."
         "br"    "Você matou."
         "en"    "You killed him."
         "es"    "Usted lo mató."
@@ -155,6 +168,7 @@
 
     "HP Knife Kill"
     {
+        "chi"   "使用 ({green}刀{default})击杀1个敌人.{red}HP+{1}{default} {pink}护甲+{2}{default}"
         "br"    "Por matar um inimigo com a ({green}faca{default})."
         "en"    "for killing an enemy ({green}knife{default})."
         "es"    "por matar a un enemigo ({green}cuchillo{default})."
@@ -167,6 +181,7 @@
 
     "HP Headshot Kill"
     {
+        "chi"   "({green}爆头{default})击杀1个敌人.{red}HP+{1}{default} {pink}护甲+{2}{default}"
         "br"    "Por matar um inimigo de ({green}headshot{default})."
         "en"    "for killing an enemy ({green}headshot{default})."
         "es"    "por matar a un enemigo ({green}disparo a la cabeza{default})."
@@ -179,6 +194,7 @@
 
     "HP Nade Kill"
     {
+        "chi"   "使用 ({green}手雷{default})击杀1个敌人.{red}HP+{1}{default} {pink}护甲+{2}{default}"
         "br"    "Por matar um inimigo na ({green}granada{default})."
         "en"    "for killing an enemy ({green}grenade{default})."
         "es"    "por matar a un enemigo ({green}granada{default})."
@@ -191,6 +207,7 @@
 
     "HP Kill"
     {
+        "chi"   "击杀1个敌人.{red}HP+{1}{default} {pink}护甲+{2}{default}"
         "br"    "Por matar um inimigo."
         "en"    "for killing an enemy."
         "es"    "por matar a un enemigo."
@@ -203,6 +220,7 @@
 
     "AP Knife Kill"
     {
+        "chi"   "使用({green}刀{default})击杀一名敌人"
         "br"    "Por matar um inimigo com a ({green}faca{default})."
         "en"    "for killing an enemy ({green}knife{default})."
         "es"    "por matar a un enemigo ({green}cuchillo{default})."
@@ -215,6 +233,7 @@
 
     "AP Headshot Kill"
     {
+        "chi"   "({green}爆头{default})击杀一名敌人"
         "br"    "Por matar um inimigo de ({green}headshot{default})."
         "en"    "for killing an enemy ({green}headshot{default})."
         "es"    "por matar a un enemigo ({green}disparo a la cabeza{default})."
@@ -227,6 +246,7 @@
 
     "AP Nade Kill"
     {
+        "chi"   "使用({green}手雷{default})击杀一名敌人"
         "br"    "Por matar um inimigo na ({green}granada{default})."
         "en"    "for killing an enemy ({green}grenade{default})."
         "es"    "por matar a un enemigo ({green}granada{default})."
@@ -239,6 +259,7 @@
 
     "AP Kill"
     {
+        "chi"   "击杀一名敌人"
         "br"    "Por matar um inimigo."
         "en"    "for killing an enemy."
         "es"    "por matar a un enemigo."
@@ -251,6 +272,7 @@
 
     "Spawn Editor Enabled"
     {
+        "chi"   "地图出生点编辑模式{green}开启{default}."
         "br"    "Edit mode {green}ativado{default}."
         "en"    "Edit mode {green}enabled{default}."
         "es"    "El modo de edición {green}activado{default}."
@@ -263,6 +285,7 @@
 
     "Spawn Editor Disabled"
     {
+        "chi"   "地图出生点编辑模式{green}关闭{default}."
         "br"    "Edit mode {red}desativado{default}."
         "en"    "Edit mode {red}disabled{default}."
         "es"    "El modo de edición {red}deshabilitado{default}."
@@ -275,6 +298,7 @@
 
     "Spawn Editor Teleported"
     {
+        "chi"	"传送到出生点"
         "br"    "Teleportado para spawn point"
         "en"    "Teleported to spawn point"
         "es"    "Teletransportado a desovar puntos"
@@ -287,6 +311,7 @@
 
     "Spawn Editor No Spawn"
     {
+        "chi"	"没有出生点."
         "br"    "Não há pontos de spawn."
         "en"    "There are no spawn points."
         "es"    "No hay puntos de regeneración."
@@ -299,6 +324,7 @@
 
     "Spawn Editor Deleted Spawn"
     {
+        "chi"	"删除出生点"
         "br"    "Ponto de spwan deletado."
         "en"    "Deleted spawn point"
         "es"    "Punto de desovar eliminados"
@@ -311,6 +337,7 @@
 
     "Spawn Editor Deleted All"
     {
+        "chi"	"所有出生点已经删除."
         "br"    "Todos os pontos de spwan deletados."
         "en"    "All spawn points have been deleted."
         "es"    "Se han eliminado todos los puntos de regeneración."
@@ -323,6 +350,7 @@
 
     "Spawn Editor Spawn Added"
     {
+        "chi"	"添加出生点"
         "br"    "Adicionado ponto de spawn"
         "en"    "Added spawn point"
         "es"    "Punto de desovar añadido"
@@ -335,6 +363,7 @@
 
     "Spawn Editor Spawn Not Added"
     {
+        "chi"	"无法添加出生点 (达到最大限制)."
         "br"    "Não foi possível adicionar ponto de spawn (limite máximo alcançado)."
         "en"    "Could not add spawn point (max limit reached)."
         "es"    "No se pudo añadir punto de desovar (límite máximo alcanzado)."
@@ -347,6 +376,7 @@
 
     "Spawn Editor Spawn Inserted"
     {
+        "chi"	"插入出生点在你的位置"
         "br"    "Ponto de spawn inserido no"
         "en"    "Inserted spawn point at"
         "es"    "Punto de desovar Insertado en"
@@ -359,6 +389,7 @@
 
     "Spawn Editor Config Saved"
     {
+        "chi"	"配置设置已经成功写入并储存到服务器."
         "br"    "A configuração foi salva."
         "en"    "Configuration has been saved."
         "es"    "La configuración se ha guardado."
@@ -371,6 +402,7 @@
 
     "Spawn Editor Config Not Saved"
     {
+        "chi"	"无法保存或写入配置.请检查目录权限或其他原因"
         "br"    "Configuração não pôde ser salva."
         "en"    "Configuration could not be saved."
         "es"    "La configuración no ha podido guardar."
