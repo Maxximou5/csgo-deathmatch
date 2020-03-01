@@ -1,0 +1,96 @@
+name: Publish release
+
+on:
+  push:
+    tags:
+    - 'v*'
+
+jobs:
+  release:
+    name: Create GitHub release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Output Release URL File
+        run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
+      
+      - name: Save Release URL File for publish
+        uses: actions/upload-artifact@v1
+        with:
+          name: release_url
+          path: release_url.txt
+
+  compile:
+    runs-on: ubuntu-latest
+    needs: release
+    strategy:
+      matrix:
+        sm-version: [ '1.10.x', '1.11.x' ]
+
+    name: SM version ${{ matrix.sm-version }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup SourcePawn Compiler
+      id: setup
+      uses: rumblefrog/setup-sp@v1.0.0
+      with: 
+          version: ${{ matrix.sm-version }}
+
+    - name: Create plugins directory
+      run: mkdir -p plugins
+
+    - run: spcomp -i ./scripting/include ./scripting/deathmatch.sp -o ./plugins/deathmatch.smx
+
+    - run: spcomp -i ./scripting/include ./scripting/deathmatch_loader.sp -o ./plugins/deathmatch_loader.smx
+
+    - name: Prepare files for artifact
+      run: |
+        mkdir artifact
+        mv ./configs ./artifact
+        mv ./plugins ./artifact/
+        mv ./scripting ./artifact/
+        mv ./translations ./artifact
+        mv ./LICENSE ./artifact/
+        mv ./CHANGELOG.md ./artifact
+        mv ./README.md ./artifact
+
+    - name: Zip plugin
+      run : |
+        cd artifact
+        zip -r deathmatch *
+        cd ..
+        mv artifact/deathmatch.zip .
+
+    - name: Load Release URL File from release job
+      uses: actions/download-artifact@v1
+      with:
+        name: release_url
+
+    - name: Get Release File Name & Upload URL
+      id: release_url
+      run: |
+        value=`cat release_url/release_url.txt`
+        echo ::set-output name=upload_url::$value
+
+    - name: Upload Release files
+      id: upload-release-files 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.release_url.outputs.upload_url }}
+        asset_path: ./deathmatch.zip
+        asset_name: deathmatch-sm${{ steps.setup.outputs.version }}.zip
+        asset_content_type: application/zip
