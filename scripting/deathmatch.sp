@@ -373,6 +373,8 @@ public void OnMapStart()
     }
     else if (!g_cvDM_spawn_default.BoolValue)
         State_SetSpawnPoints();
+        
+    State_Update();
 }
 
 public void OnClientPutInServer(int client)
