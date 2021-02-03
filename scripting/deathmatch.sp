@@ -190,12 +190,12 @@ int g_iSpawnPointSearchFailures = 0;
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
 	RegPluginLibrary("deathmatch");
-	
+
 	CreateNative("Deathmatch_DisplayOptionsMenu", Native_DisplayOptionsMenu);
 	CreateNative("Deathmatch_GiveSavedWeapons", Native_GiveSavedWeapons);
 	CreateNative("Deathmatch_UpdateSetting_Primary", Native_UpdateSetting_Primary);
 	CreateNative("Deathmatch_UpdateSetting_Secondary", Native_UpdateSetting_Secondary);
-	
+
 	return APLRes_Success;
 }
 
@@ -1067,12 +1067,12 @@ void SetGrenadeState()
     g_cvAmmo_grenade_limit_default.SetInt(maxGrenadesSameType);
     g_cvAmmo_grenade_limit_flashbang.SetInt(g_cvDM_nades_flashbang.IntValue);
     g_cvAmmo_grenade_limit_total.SetInt(
-        g_cvDM_nades_incendiary.IntValue + 
-        g_cvDM_nades_molotov.IntValue + 
-        g_cvDM_nades_decoy.IntValue + 
-        g_cvDM_nades_flashbang.IntValue + 
-        g_cvDM_nades_he.IntValue + 
-        g_cvDM_nades_smoke.IntValue + 
+        g_cvDM_nades_incendiary.IntValue +
+        g_cvDM_nades_molotov.IntValue +
+        g_cvDM_nades_decoy.IntValue +
+        g_cvDM_nades_flashbang.IntValue +
+        g_cvDM_nades_he.IntValue +
+        g_cvDM_nades_smoke.IntValue +
         g_cvDM_nades_tactical.IntValue);
 }
 
@@ -1269,7 +1269,7 @@ void BuildWeaponMenuNames()
     g_smWeaponMenuNames.SetString("weapon_mac10", "MAC-10");
     g_smWeaponMenuNames.SetString("weapon_mp9", "MP9");
     g_smWeaponMenuNames.SetString("weapon_mp7", "MP7");
-    g_smWeaponMenuNames.SetString("weapon_mp5sd", "MP5SD"); 
+    g_smWeaponMenuNames.SetString("weapon_mp5sd", "MP5SD");
     g_smWeaponMenuNames.SetString("weapon_ump45", "UMP-45");
     g_smWeaponMenuNames.SetString("weapon_p90", "P90");
     g_smWeaponMenuNames.SetString("weapon_bizon", "PP-Bizon");
@@ -1511,7 +1511,7 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
                             CPrintToChat(attacker, "[\x04DM\x01] \x04+%i HP\x01 %t", g_cvDM_hp_headshot.IntValue, "HP Headshot Kill");
                         else if (naded || decoy || inferno)
                             CPrintToChat(attacker, "[\x04DM\x01] \x04+%i HP\x01 %t", g_cvDM_hp_nade.IntValue, "HP Nade Kill");
-                        else 
+                        else
                             CPrintToChat(attacker, "[\x04DM\x01] \x04+%i HP\x01 %t", g_cvDM_hp_kill.IntValue, "HP Kill");
                     }
                 }
@@ -1586,7 +1586,7 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
                         CPrintToChat(attacker, "[\x04DM\x01] \x04+%i HP\x01 %t", g_cvDM_hp_headshot.IntValue, "HP Headshot Kill");
                     else if (naded || decoy || inferno)
                         CPrintToChat(attacker, "[\x04DM\x01] \x04+%i HP\x01 %t", g_cvDM_hp_nade.IntValue, "HP Nade Kill");
-                    else 
+                    else
                         CPrintToChat(attacker, "[\x04DM\x01] \x04+%i HP\x01 %t", g_cvDM_hp_kill.IntValue, "HP Kill");
 
                     bchanged = false;
@@ -1913,7 +1913,7 @@ public Action CS_OnCSWeaponDrop(int client, int weaponIndex)
 {
 	if (g_cvDM_blockweapondrops.BoolValue)
 		return Plugin_Handled;
-	
+
 	return Plugin_Continue;
 }
 
@@ -1965,12 +1965,12 @@ public void Frame_FastSwitch(any serial)
     int client = GetClientFromSerial(serial);
     if (!IsValidClient(client) || !IsPlayerAlive(client))
         return;
-    
+
     char weapon[64];
     GetClientWeapon(client, weapon, sizeof(weapon));
     CSWeaponID weaponId = CS_AliasToWeaponID(weapon);
 
-    int sequence = weaponId == CSWeapon_M4A1_SILENCER ? 1 : 0;
+    int sequence = weaponId == CSWeapon_NEGEV ? 1 : 0;
     SetEntPropFloat(client, Prop_Send, "m_flNextAttack", GetGameTime());
     int viewModel = GetEntPropEnt(client, Prop_Send, "m_hViewModel");
 
@@ -1993,7 +1993,7 @@ public void Frame_GiveAmmo(any serial)
     {
         switch (g_cvDM_replenish_ammo_type.IntValue)
         {
-            case 1: 
+            case 1:
             {
                 weaponEntity = GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
                 if (weaponEntity != -1)
@@ -2003,7 +2003,7 @@ public void Frame_GiveAmmo(any serial)
                 if (weaponEntity != -1)
                     Ammo_ClipRefill(EntIndexToEntRef(weaponEntity), client);
             }
-            case 2: 
+            case 2:
             {
                 weaponEntity = GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
                 if (weaponEntity != -1)
@@ -2013,7 +2013,7 @@ public void Frame_GiveAmmo(any serial)
                 if (weaponEntity != -1)
                     Ammo_ResRefill(EntIndexToEntRef(weaponEntity), client);
             }
-            case 3: 
+            case 3:
             {
                 weaponEntity = GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
                 if (weaponEntity != -1)
@@ -2154,7 +2154,7 @@ int GetWeaponAmmoCount(char[] weaponName, bool currentClip)
     else if (StrEqual(weaponName,  "weapon_ump45"))
         return currentClip ? 25 : 100;
     else if (StrEqual(weaponName,  "weapon_mp5sd"))
-        return currentClip ? 30 : 120; 
+        return currentClip ? 30 : 120;
     else if (StrEqual(weaponName,  "weapon_bizon"))
         return currentClip ? 64 : 120;
     else if (StrEqual(weaponName,  "weapon_glock"))
@@ -3280,7 +3280,7 @@ public Action Event_TextMsg(UserMsg msg_id, BfRead msg, const int[] players, int
         else
             BfReadString(msg, text, sizeof(text));
 
-        static char cashTriggers[][] = 
+        static char cashTriggers[][] =
         {
             "#Player_Cash_Award_Killed_Enemy",
             "#Team_Cash_Award_Win_Hostages_Rescue",
@@ -3370,7 +3370,7 @@ public Action Event_RadioText(UserMsg msg_id, BfRead msg, const int[] players, i
 {
     if (g_cvDM_nade_messages.BoolValue)
     {
-        static char grenadeTriggers[][] = 
+        static char grenadeTriggers[][] =
         {
             "#SFUI_TitlesTXT_Fire_in_the_hole",
             "#SFUI_TitlesTXT_Flashbang_in_the_hole",
@@ -3445,23 +3445,23 @@ public void GiveSkinnedWeapon(int client, const char[] weapon)
 public int Native_DisplayOptionsMenu(Handle plugin, int numParams)
 {
 	int client = GetNativeCell(1);
-	
+
 	if (client < 1 || client > MaxClients || !IsClientInGame(client))
 		ThrowNativeError(SP_ERROR_NATIVE, "Client is invalid.");
-	
+
 	if (g_cvDM_gun_menu_mode.IntValue != 1 && g_cvDM_gun_menu_mode.IntValue != 2 && g_cvDM_gun_menu_mode.IntValue != 3)
 		ThrowNativeError(SP_ERROR_NATIVE, "Native is disabled.");
-	
+
 	DisplayOptionsMenu(client);
 }
 
 public int Native_GiveSavedWeapons(Handle plugin, int numParams)
 {
     int client = GetNativeCell(1);
-    
+
     if (client < 1 || client > MaxClients || !IsClientInGame(client))
         ThrowNativeError(SP_ERROR_NATIVE, "Client is invalid.");
-    
+
     if (g_cvDM_gun_menu_mode.IntValue == 1 || g_cvDM_gun_menu_mode.IntValue == 4)
         GiveSavedWeapons(client, true, true, false);
     else if (g_cvDM_gun_menu_mode.IntValue == 2)
@@ -3473,19 +3473,19 @@ public int Native_GiveSavedWeapons(Handle plugin, int numParams)
 public int Native_UpdateSetting_Primary(Handle plugin, int numParams)
 {
 	int client = GetNativeCell(1);
-	
+
 	if (client < 1 || client > MaxClients || !IsClientInGame(client))
 		ThrowNativeError(SP_ERROR_NATIVE, "Client is invalid.");
-	
+
 	GetNativeString(2, g_cPrimaryWeapon[client], sizeof(g_cPrimaryWeapon[]));
 }
 
 public int Native_UpdateSetting_Secondary(Handle plugin, int numParams)
 {
 	int client = GetNativeCell(1);
-	
+
 	if (client < 1 || client > MaxClients || !IsClientInGame(client))
 		ThrowNativeError(SP_ERROR_NATIVE, "Client is invalid.");
-	
+
 	GetNativeString(2, g_cSecondaryWeapon[client], sizeof(g_cSecondaryWeapon[]));
 }
