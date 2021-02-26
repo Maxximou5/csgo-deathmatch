@@ -1822,7 +1822,7 @@ public Action OnTraceAttack(int victim, int &attacker, int &inflictor, float &da
     {
         char knife[32];
         GetClientWeapon(attacker, knife, sizeof(knife));
-        if (StrEqual(knife, "weapon_knife") || StrEqual(knife, "weapon_bayonet"))
+        if (StrEqual(knife, "weapon_knife") || StrEqual(knife, "weapon_bayonet") || StrEqual(knife, "weapon_knife_css") || StrEqual(knife, "weapon_knife_butterfly") || StrEqual(knife, "weapon_knife_falchion") || StrEqual(knife, "weapon_knife_flip") || StrEqual(knife, "weapon_knife_gut") || StrEqual(knife, "weapon_knife_tactical") || StrEqual(knife, "weapon_knife_karambit") || StrEqual(knife, "weapon_knife_m9_bayonet") || StrEqual(knife, "weapon_knife_push") || StrEqual(knife, "weapon_knife_survival_bowie") || StrEqual(knife, "weapon_knife_ursus") || StrEqual(knife, "weapon_knife_gypsy_jackknife") || StrEqual(knife, "weapon_knife_stiletto") || StrEqual(knife, "weapon_knife_widowmaker") || StrEqual(knife, "weapon_knife_outdoor") || StrEqual(knife, "weapon_knife_skeleton") || StrEqual(knife, "weapon_knife_canis") || StrEqual(knife, "weapon_knife_cord"))
             return Plugin_Handled;
     }
 
@@ -1835,7 +1835,7 @@ public Action OnTraceAttack(int victim, int &attacker, int &inflictor, float &da
 
         if (hitgroup == 1)
             return Plugin_Continue;
-        else if (g_cvDM_headshot_only_allow_knife.BoolValue && (StrEqual(weapon, "weapon_knife") || StrEqual(weapon, "weapon_bayonet")))
+        else if (g_cvDM_headshot_only_allow_knife.BoolValue && (StrEqual(weapon, "weapon_knife") || StrEqual(weapon, "weapon_bayonet") || StrEqual(weapon, "weapon_knife_css") || StrEqual(weapon, "weapon_knife_butterfly") || StrEqual(weapon, "weapon_knife_falchion") || StrEqual(weapon, "weapon_knife_flip") || StrEqual(weapon, "weapon_knife_gut") || StrEqual(weapon, "weapon_knife_tactical") || StrEqual(weapon, "weapon_knife_karambit") || StrEqual(weapon, "weapon_knife_m9_bayonet") || StrEqual(weapon, "weapon_knife_push") || StrEqual(weapon, "weapon_knife_survival_bowie") || StrEqual(weapon, "weapon_knife_ursus") || StrEqual(weapon, "weapon_knife_gypsy_jackknife") || StrEqual(weapon, "weapon_knife_stiletto") || StrEqual(weapon, "weapon_knife_widowmaker") || StrEqual(weapon, "weapon_knife_outdoor") || StrEqual(weapon, "weapon_knife_skeleton") || StrEqual(weapon, "weapon_knife_canis") || StrEqual(weapon, "weapon_knife_cord")))
             return Plugin_Continue;
         else if (g_cvDM_headshot_only_allow_nade.BoolValue && (StrEqual(grenade, "hegrenade_projectile") || StrEqual(grenade, "decoy_projectile") || StrEqual(grenade, "molotov_projectile") || StrEqual(grenade, "tagrenade_projectile")))
             return Plugin_Continue;
@@ -1861,7 +1861,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
             char knife[32];
             GetClientWeapon(attacker, knife, sizeof(knife));
 
-            if (StrEqual(knife, "weapon_knife") || StrEqual(knife, "weapon_bayonet"))
+            if (StrEqual(knife, "weapon_knife") || StrEqual(knife, "weapon_bayonet") || StrEqual(knife, "weapon_knife_css") || StrEqual(knife, "weapon_knife_butterfly") || StrEqual(knife, "weapon_knife_falchion") || StrEqual(knife, "weapon_knife_flip") || StrEqual(knife, "weapon_knife_gut") || StrEqual(knife, "weapon_knife_tactical") || StrEqual(knife, "weapon_knife_karambit") || StrEqual(knife, "weapon_knife_m9_bayonet") || StrEqual(knife, "weapon_knife_push") || StrEqual(knife, "weapon_knife_survival_bowie") || StrEqual(knife, "weapon_knife_ursus") || StrEqual(knife, "weapon_knife_gypsy_jackknife") || StrEqual(knife, "weapon_knife_stiletto") || StrEqual(knife, "weapon_knife_widowmaker") || StrEqual(knife, "weapon_knife_outdoor") || StrEqual(knife, "weapon_knife_skeleton") || StrEqual(knife, "weapon_knife_canis") || StrEqual(knife, "weapon_knife_cord"))
                 return Plugin_Handled;
         }
     }
@@ -1890,7 +1890,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
                     return Plugin_Continue;
                 else
                 {
-                    if (g_cvDM_headshot_only_allow_knife.BoolValue && (StrEqual(weapon, "weapon_knife") || StrEqual(weapon, "weapon_bayonet")))
+                    if (g_cvDM_headshot_only_allow_knife.BoolValue && (StrEqual(weapon, "weapon_knife") || StrEqual(weapon, "weapon_bayonet") || StrEqual(weapon, "weapon_knife_css") || StrEqual(weapon, "weapon_knife_butterfly") || StrEqual(weapon, "weapon_knife_falchion") || StrEqual(weapon, "weapon_knife_flip") || StrEqual(weapon, "weapon_knife_gut") || StrEqual(weapon, "weapon_knife_tactical") || StrEqual(weapon, "weapon_knife_karambit") || StrEqual(weapon, "weapon_knife_m9_bayonet") || StrEqual(weapon, "weapon_knife_push") || StrEqual(weapon, "weapon_knife_survival_bowie") || StrEqual(weapon, "weapon_knife_ursus") || StrEqual(weapon, "weapon_knife_gypsy_jackknife") || StrEqual(weapon, "weapon_knife_stiletto") || StrEqual(weapon, "weapon_knife_widowmaker") || StrEqual(weapon, "weapon_knife_outdoor") || StrEqual(weapon, "weapon_knife_skeleton") || StrEqual(weapon, "weapon_knife_canis") || StrEqual(weapon, "weapon_knife_cord")))
                         return Plugin_Continue;
                     else if (g_cvDM_headshot_only_allow_nade.BoolValue && (StrEqual(grenade, "hegrenade_projectile") || StrEqual(grenade, "decoy_projectile") || StrEqual(grenade, "molotov_projectile") || StrEqual(grenade, "tagrenade_projectile")))
                         return Plugin_Continue;
