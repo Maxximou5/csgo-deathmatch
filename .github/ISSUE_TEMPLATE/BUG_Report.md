@@ -1,6 +1,6 @@
 ---
 name: BUG Report
-about: Create a bug report for the [CS:GO] Deathmatch
+about: Create a bug report for the [CS:GO] Deathmatch plugin
 
 ---
 <!--(Thanks for reporting an issue! Please make sure you click the link above to view the issue guidelines, then fill out the blanks below.)-->
@@ -12,6 +12,7 @@ about: Create a bug report for the [CS:GO] Deathmatch
 3.
 4.
 
+
 ### What Happens?
 -------------
 
@@ -20,13 +21,13 @@ about: Create a bug report for the [CS:GO] Deathmatch
 ----------------------------------
 
 
-### Any logs, error output, prints, etc.?
+### Any logs, error output, screenshots, etc.?
 ----------------------------
 <!--(If it’s long, please paste to https://gist.github.com/ and insert the link here.)-->
 <!--(e.g. SourceMod error.log, debug output of the Deathmatch plugin, etc.)-->
 
 
-### Any other comments?
+### Any Other Comments?
 -------------------
 
 

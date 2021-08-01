@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Suggest an idea for [CS:GO] Deathmatch
+about: Suggest an idea for [CS:GO] Deathmatch plugin
 
 ---
 <!--(Thanks for proposing a feature request! Please make sure you click the link above to view the issue guidelines, then fill out the blanks below.)-->
