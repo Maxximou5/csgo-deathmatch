@@ -48,18 +48,6 @@
         "pt"    "Menu de armas foi {red}desativado{default}."
         "ru"    "Меню оружия было {red}отключено{default}."
     }
-    "Guns Menu"
-    {
-        "chi"   "直接按 {green}G 键{default} 选枪."
-        "en"    "Type {green}guns{default} to open the weapons menu."
-        "es"    "Escriba {green}guns{default} para abrir el menú de armas."
-        "de"    "Schreibe {green}guns{default} um das Waffenmenü zu öffnen."
-        "fr"    "Tapez {green}guns{default} pour ouvrir le menu des armes."
-        "jp"    "Type {green}guns{default} to open the weapons menu."
-        "pl"    "Napisz {green}guns{default} aby otworzyć menu broni."
-        "pt"    "Digite {green}guns{default} para abrir o menu de armas."
-        "ru"    "Напечатайте {green}guns{default} что бы открыть меню оружия."
-    }
     "Weapons Menu"
     {
         "chi"   "Weapons Menu"
@@ -178,7 +166,7 @@
         "fr"    "Vous recevrez de {green}nouvelles{default} armes sur le prochain spawn."
         "jp"    "次のスポーン時に{green}新しい武器{default}が手に入ります。"
         "pl"    "Zostaną dodane {green}nowe{default} bronie po respawnie."
-        "pt"    "Voce recebera a {green}nova{default} arma no próximo spawn."
+        "pt"    "Voce receberá {green}novas armas {default}no próximo spawn."
         "ru"    "Вы получите {green}новое{default} оружие в следующем возрождении."
     }
     "Guns Same Spawn"
@@ -190,7 +178,7 @@
         "fr"    "Vous recevrez {green}mêmes{default} armes sur le prochain spawn."
         "jp"    "次のスポーン時から{green}同じ武器{default}が手に入るようになります。"
         "pl"    "Zostaną dodane {green}te same{default} bronie po respawnie."
-        "pt"    "Você recebera as {green}mesmas armas {default}no próximo spawn."
+        "pt"    "Você receberá as {green}mesmas armas {default}no próximo spawn."
         "ru"    "Вы получите {green}аналогичное{default} оружие в следующем возрождении."
     }
     "Guns Random Spawn"
@@ -202,7 +190,7 @@
         "fr"    "Vous recevrez armes {green}aléatoires{default} sur le prochain spawn."
         "jp"    "次のスポーン時から{green}ランダムで{default}武器が手に入ります。"
         "pl"    "Zostaną dodane {green}losowe{default} bronie po respawnie."
-        "pt"    "Você recebera {green}armas aleatórias {default}no próximo spawn."
+        "pt"    "Você receberá {green}armas aleatórias {default}no próximo spawn."
         "ru"    "Вы получите {green}случайное{default} оружие в следующем возрождении."
     }
     "All Player Respawn"
@@ -214,7 +202,7 @@
         "fr"    "Tous les joueurs ont réapparu."
         "jp"    "All players have respawned."
         "pl"    "Wszyscy gracze odrodzili się."
-        "pt"    "Todos os jogadores han reaparecido."
+        "pt"    "Todos players respawnaram."
         "ru"    "Все игроки возродились."
     }
     "Player Respawn"
@@ -226,7 +214,7 @@
         "fr"    "Vous avez réapparu."
         "jp"    "You have respawned."
         "pl"    "Odrodziłeś się."
-        "pt"    "Você respawned."
+        "pt"    "Você respawnou."
         "ru"    "Вы возродились."
     }
     "Display Health Remaining"
@@ -238,7 +226,7 @@
         "fr"    "Restant Santé:"
         "jp"    "Health Remaining:"
         "pl"    "Pozostałe zdrowie:"
-        "pt"    "Vida Restante:"
+        "pt"    "Health Remaining:"
         "ru"    "Оставшееся здоровье:"
     }
     "Display Damage Giver"
@@ -334,7 +322,7 @@
         "fr"    "Spawn Editor Menu"
         "jp"    "Spawn Editor Menu"
         "pl"    "Spawn Editor Menu"
-        "pt"    "Spawn Editor Menu"
+        "pt"    "Menu Editor de Spawn"
         "ru"    "Spawn Editor Menu"
     }
     "Spawn Editor Menu Enable"
@@ -346,7 +334,7 @@
         "fr"    "Enable edit mode"
         "jp"    "Enable edit mode"
         "pl"    "Enable edit mode"
-        "pt"    "Enable edit mode"
+        "pt"    "Ativar modo edição"
         "ru"    "Enable edit mode"
     }
     "Spawn Editor Menu Disable"
@@ -358,7 +346,7 @@
         "fr"    "Disable edit mode"
         "jp"    "Disable edit mode"
         "pl"    "Disable edit mode"
-        "pt"    "Disable edit mode"
+        "pt"    "Desativar modo edição"
         "ru"    "Disable edit mode"
     }
     "Spawn Editor Menu Nearest"
@@ -454,7 +442,7 @@
         "fr"    "Save Configuration"
         "jp"    "Save Configuration"
         "pl"    "Save Configuration"
-        "pt"    "Save Configuration"
+        "pt"    "Salvar configuração"
         "ru"    "Save Configuration"
     }
     "Spawn Editor Enabled"
@@ -574,7 +562,7 @@
         "fr"    "Configuration a été enregistrée."
         "jp"    "設定が保存されました。"
         "pl"    "Konfiguracja została zapisana."
-        "pt"    "A configuração foi salva."
+        "pt"    "Configuração foi salva."
         "ru"    "Конфигурация была сохранена."
     }
     "Spawn Editor Config Not Saved"
@@ -598,7 +586,7 @@
         "fr"    "Spawn statistics have been reset."
         "jp"    "Spawn statistics have been reset."
         "pl"    "Spawn statistics have been reset."
-        "pt"    "Spawn statistics have been reset."
+        "pt"    "Estatísticas de spawn foram resetadas."
         "ru"    "Spawn statistics have been reset."
     }
 }
