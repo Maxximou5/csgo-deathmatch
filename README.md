@@ -60,9 +60,10 @@
 	- Chinese Supported
 	- Japanese Supported
 
-### Client Commands
-**Open Weapons Menu:**
-- gun, !gun, /gun, guns, !guns, /guns, menu, !menu, /menu, weapon, !weapon, /weapon, weapons, !weapons, /weapons
+## Client Commands
+**Função** | **Comando** | **Aliases** |
+
+**Open Weapons Menu:**| sm_guns | gun, !gun, /gun, guns, !guns, /guns, menu, !menu, /menu, weapon, !weapon, /weapon, weapons, !weapons, /weapons|
 
 **Open Deathmatch Settings Menu:**
 - settings, !settings, /settings
@@ -70,7 +71,7 @@
 **Client Toggle Headshot Mode:**
 - hs, !hs, /hs, headshot, !headshot, /headshot
 
-### Admin Commands
+## Admin Commands
 **Deathmatch:**
 - **`dm_load`** - Loads the configuration file specified **`(configs/deathmatch/filename.ini)`**.
 - **`dm_load_menu`** - Opens the Config Loader Menu.
@@ -83,7 +84,7 @@
 **Deathmatch Loader:**
 - **`dm_reload`** - Reloads the loader configuration file.
 
-### ConVars
+## ConVars
 **Deathmatch:**
 - **`dm_config_name "Default"`** - The configuration name that is currently loaded.
 - **`dm_enabled "1"`** - Enable Deathmatch.
@@ -176,15 +177,15 @@
 - **`dm_loader_include_bots "1"`** - Enable/disable including bots when counting number of clients
 - **`dm_loader_include_spec "1"`** - Enable/disable including spectators when counting number of clients
 
-### Compatibility
+## Compatibility
 This plugin is tested on the following **Sourcemod & Metamod** versions.
 - <a href="https://www.sourcemod.net/downloads.php?branch=stable">Sourcemod 1.10+</a>
 - <a href="https://www.sourcemm.net/downloads.php/?branch=stable">Metamod 1.11+</a>
 
-### Requirements
+## Requirements
 None.
 
-### Instructions
+## Instructions
 - Extract zip file and place files in the corresponding directories of **`/addons/sourcemod`**
 - `/configs/deathmatch/deathmatch.ini`
 - `/configs/deathmatch/deathmatch_*.ini`
@@ -195,17 +196,17 @@ None.
 - `/scripting/deathmatch.sp` ***(Necessary only for compiling)***
 - `/scripting/deathmatch_loader.sp` ***(Necessary only for compiling)***
 
-### Changelog
+## Changelog
 To view the most recent changelog visit the <a href="https://github.com/Maxximou5/csgo-deathmatch/blob/master/CHANGELOG.md">changelog</a> file.
 
-### Download
+## Download
 Once installed, the plugin will update itself as long as you've done as described in the requirements section; otherwise, downloaded the latest release below.
 Please download the latest **deathmatch.zip** file from <a href="https://github.com/Maxximou5/csgo-deathmatch/releases">my releases</a>.
 
-### Bugs
+## Bugs
 If there are any bugs, please report them using the <a href="https://github.com/Maxximou5/csgo-deathmatch/issues">issues page</a>.
 
-### Credit
+## Credits
 A thank you to those who helped:
 - <a href="https://forums.alliedmods.net/member.php?u=187003">Snip3rUK</a> (<a href="https://forums.alliedmods.net/showthread.php?t=189577">Original Plugin</a>)
 - <a href="https://forums.alliedmods.net/member.php?u=26021">Dr!fter</a> (General Code Support)
@@ -222,7 +223,7 @@ A thank you to those who helped:
 - <a href="https://github.com/b3none">b3none</a> (Improvements)
 - <a href="https://github.com/Drixevel">Drixevel</a> (Improvements)
 
-### Donate
+## Donate
 If you think I am doing a good job or you want to buy me a beer or feed my cat, please donate.
 Thanks!
 
