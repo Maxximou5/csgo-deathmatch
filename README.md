@@ -35,11 +35,11 @@
 - Spawn Editor Menu and Statistics
 - Display Damage ***(Text/Panel/Popup)***
 - Different Game Modes:
-	- Headshot Only
-	- Primary Weapons Only
-	- Secondary Weapons Only
-	- Tertiary Weapons Only
-	- Random Weapons Only
+	- **Headshot Only
+	- **Primary Weapons Only**
+	- **Secondary Weapons Only**
+	- **Tertiary Weapons Only**
+	- **Random Weapons Only**
 - Fast Weapon Equip
 - Kill Feed Minifer
 - No Knife Damage ***(Guns Only)***
@@ -50,7 +50,7 @@
 - Kill Reward ***(HP/AP/Ammo/Grenades)***
 - Line of Sight/Distance Spawning
 - 3rd Party Knife Plugin Support
-- Multi-Language Support
+- Multi-Language Support:
 	- **English Supported**
 	- **Spanish Supported**
 	- **French Supported**
