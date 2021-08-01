@@ -63,13 +63,9 @@
 ## Client Commands
 **Função** | **Comando** | **Aliases** |
 :--------: | -------- |  :--------: |
-**Open Weapons Menu:**| sm_guns | gun, !gun, /gun, guns, !guns, /guns, menu, !menu, /menu, weapon, !weapon, /weapon, weapons, !weapons, /weapons|
-
-**Open Deathmatch Settings Menu:**
-- settings, !settings, /settings
-
-**Client Toggle Headshot Mode:**
-- hs, !hs, /hs, headshot, !headshot, /headshot
+**Open Weapons Menu**| sm_guns | gun, !gun, /gun, guns, !guns, /guns, menu, !menu, /menu, weapon, !weapon, /weapon, weapons, !weapons, /weapons |
+**Open Deathmatch Settings Menu** | sm_settings | settings, !settings, /settings |
+**Client Toggle Headshot Mode** | sm_headshot | hs, !hs, /hs, headshot, !headshot, /headshot | 
 
 ## Admin Commands
 **Deathmatch:**
