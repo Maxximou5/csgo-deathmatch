@@ -35,7 +35,7 @@
 - Spawn Editor Menu and Statistics
 - Display Damage ***(Text/Panel/Popup)***
 - Different Game Modes:
-	- **Headshot Only
+	- **Headshot Only**
 	- **Primary Weapons Only**
 	- **Secondary Weapons Only**
 	- **Tertiary Weapons Only**
