@@ -62,7 +62,7 @@
 
 ## Client Commands
 **Função** | **Comando** | **Aliases** |
-:--------: | -------- |  :--------: | :--------: |
+:--------: | -------- |  :--------: |
 **Open Weapons Menu:**| sm_guns | gun, !gun, /gun, guns, !guns, /guns, menu, !menu, /menu, weapon, !weapon, /weapon, weapons, !weapons, /weapons|
 
 **Open Deathmatch Settings Menu:**
