@@ -2,15 +2,15 @@
 {
     "Chat Tag"
     {
-        "chi"   "[{green}DM{default}]"
-        "en"    "[{green}DM{default}]"
-        "es"    "[{green}DM{default}]"
-        "de"    "[{green}DM{default}]"
-        "fr"    "[{green}DM{default}]"
-        "jp"    "[{green}DM{default}]"
-        "pl"    "[{green}DM{default}]"
-        "pt"    "[{green}DM{default}]"
-        "ru"    "[{green}DM{default}]"
+        "chi"   "[{green}DEATHMATCH{default}]"
+        "en"    "[{green}DEATHMATCH{default}]"
+        "es"    "[{green}DEATHMATCH{default}]"
+        "de"    "[{green}DEATHMATCH{default}]"
+        "fr"    "[{green}DEATHMATCH{default}]"
+        "jp"    "[{green}DEATHMATCH{default}]"
+        "pl"    "[{green}DEATHMATCH{default}]"
+        "pt"    "[{green}DEATHMATCH{default}]"
+        "ru"    "[{green}DEATHMATCH{default}]"
     }
     "Settings Menu"
     {
@@ -21,7 +21,7 @@
         "fr"    "Tapez {green}settings{default} pour ouvrir le menu."
         "jp"    "Type {green}settings{default} to open the settings menu."
         "pl"    "Napisz {green}settings{default} aby otworzyć menu."
-        "pt"    "Digite {green}settings{default} para abrir o menu."
+        "pt"    "Digite {green}settings{default} para abrir o menu de configurações."
         "ru"    "Напечатайте {green}settings{default} что бы открыть."
     }
     "Guns Menu"
