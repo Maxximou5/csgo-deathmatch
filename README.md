@@ -61,11 +61,11 @@
 	- Japanese Supported
 
 ## Client Commands
-**Function** | **Command** | **Aliases** |
+**CVARS** | **Description** | **Commands** |
 :--------: | -------- |  :--------: |
-**Open Weapons Menu**| sm_guns | gun, !gun, /gun, guns, !guns, /guns, menu, !menu, /menu, weapon, !weapon, /weapon, weapons, !weapons, /weapons |
-**Open Deathmatch Settings Menu** | sm_settings | settings, !settings, /settings |
-**Client Toggle Headshot Mode** | sm_headshot | hs, !hs, /hs, headshot, !headshot, /headshot | 
+**sm_guns** | Open Weapons Menu | gun, !gun, /gun, guns, !guns, /guns, menu, !menu, /menu, weapon, !weapon, /weapon, weapons, !weapons, /weapons |
+**sm_settings** | Open Deathmatch Settings Menu | settings, !settings, /settings |
+**sm_headshot** | Client Toggle Headshot Mode |  hs, !hs, /hs, headshot, !headshot, /headshot | 
 
 ## Admin Commands
 **Deathmatch:**
