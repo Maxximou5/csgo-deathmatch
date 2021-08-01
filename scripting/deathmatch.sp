@@ -12,7 +12,7 @@
 #define PLUGIN_VERSION          "3.0.0 BETA"
 #define PLUGIN_NAME             "[CS:GO] Deathmatch"
 #define PLUGIN_AUTHOR           "Maxximou5"
-#define PLUGIN_DESCRIPTION      "Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc)."
+#define PLUGIN_DESCRIPTION      "Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc)"
 #define PLUGIN_URL              "https://github.com/Maxximou5/csgo-deathmatch/"
 
 public Plugin myinfo =

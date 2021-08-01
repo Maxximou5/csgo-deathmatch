@@ -10,7 +10,7 @@
 #define PLUGIN_VERSION          "1.0.0"
 #define PLUGIN_NAME             "[CS:GO] Deathmatch Loader"
 #define PLUGIN_AUTHOR           "Maxximou5"
-#define PLUGIN_DESCRIPTION      "Loads Deathmatch configuration files based on events or at specified times."
+#define PLUGIN_DESCRIPTION      "Loads Deathmatch configuration files based on events or at specified times"
 #define PLUGIN_URL              "https://github.com/Maxximou5/csgo-deathmatch/"
 
 public Plugin myinfo =

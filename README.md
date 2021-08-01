@@ -193,6 +193,7 @@ To view the most recent changelog visit the <a href="https://github.com/Maxximou
 
 ## Download
 Once installed, the plugin will update itself as long as you've done as described in the requirements section; otherwise, downloaded the latest release below.
+
 Please download the latest **deathmatch.zip** file from <a href="https://github.com/Maxximou5/csgo-deathmatch/releases">my releases</a>.
 
 ## Bugs
