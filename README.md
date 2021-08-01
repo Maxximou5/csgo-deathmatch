@@ -23,10 +23,9 @@
 	</a>
 </p>
 
-#### **[CS:GO] Deathmatch** - Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc).
+#### [CS:GO] Deathmatch - Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc)
 
 ### Main Features
-
 - Weapon Menu
 - Loadout Style
 - Free For All (FFA)
@@ -62,7 +61,6 @@
 	- Japanese Supported
 
 ### Client Commands
-
 	Open weapons menu:
 	- gun, !gun, /gun, guns, !guns, /guns, menu, !menu, /menu, weapon, !weapon, /weapon, weapons, !weapons, /weapons
 	Open deathmatch settings menu:
@@ -71,7 +69,6 @@
 	- hs, !hs, /hs, headshot, !headshot, /headshot
 
 ### Admin Commands
-
 	Deathmatch:
 	dm_load - Loads the configuration file specified (configs/deathmatch/filename.ini).
 	dm_load_menu - Opens the Config Loader Menu.
@@ -85,8 +82,7 @@
 	dm_reload - Reloads the loader configuration file.
 
 ### ConVars
-
-	Deathmatch:
+	**Deathmatch:**
 	dm_config_name - (Default) "Default" - The configuration name that is currently loaded.
 	dm_enabled - (Default) "1" - Enable Deathmatch.
 	dm_enable_valve_deathmatch - (Default) "0" - Enable compatibility for Valve Deathmatch (game_type 1 & game_mode 2) or Custom (game_type 3 & game_mode 0).
@@ -173,49 +169,42 @@
 	dm_nades_tactical - (Default) "0" - Number of tactical grenades to give each player.
 	dm_armor - (Default) "2" - Give players armor. 0) Disable. 1) Chest. 2) Chest + Helmet.
 
-	Deathmatch Loader:
-	dm_loader_enabled - (Default) 1 - Enable/disable executing configs
-	dm_loader_include_bots - (Default) 1 - Enable/disable including bots when counting number of clients
-	dm_loader_include_spec - (Default) 1 - Enable/disable including spectators when counting number of clients
+	**Deathmatch Loader:**
+	**- `dm_loader_enabled` -** (Default) 1 - Enable/disable executing configs
+	**- `dm_loader_include_bots` -** (Default) 1 - Enable/disable including bots when counting number of clients
+	**- `dm_loader_include_spec` -** (Default) 1 - Enable/disable including spectators when counting number of clients
 
 ### Compatibility
-
 This plugin is tested on the following Sourcemod & Metamod Versions.
 
 - <a href="https://www.sourcemod.net/downloads.php">Sourcemod 1.10.0+</a>
 - <a href="https://www.sourcemm.net/downloads.php">Metamod 1.11.0+</a>
 
 ### Requirements
-
 None.
 
 ### Instructions
-
-- Extract zip file and place files in the corresponding directories of **/addons/sourcemod**
-- /configs/deathmatch/deathmatch.ini
-- /configs/deathmatch/deathmatch_*.ini
-- /configs/deathmatch/config_loader.ini (necessary only for deathmatch loader)
-- /configs/deathmatch/spawns/*.txt
-- /plugins/deathmatch.smx
-- /plugins/deathmatch_loader.smx
-- /scripting/deathmatch.sp (necessary only for compiling)
-- /scripting/deathmatch_loader.sp (necessary only for compiling)
+- Extract zip file and place files in the corresponding directories of **`/addons/sourcemod`**
+- `/configs/deathmatch/deathmatch.ini`
+- `/configs/deathmatch/deathmatch_*.ini`
+- `/configs/deathmatch/config_loader.ini` (necessary only for deathmatch loader)
+- `/configs/deathmatch/spawns/*.txt`
+- `/plugins/deathmatch.smx`
+- `/plugins/deathmatch_loader.smx`
+- `/scripting/deathmatch.sp` ***(Necessary only for compiling)***
+- `/scripting/deathmatch_loader.sp` ***(Necessary only for compiling)***
 
 ### Changelog
-
 To view the most recent changelog visit the <a href="https://github.com/Maxximou5/csgo-deathmatch/blob/master/CHANGELOG.md">changelog</a> file.
 
 ### Download
-
 Once installed, the plugin will update itself as long as you've done as described in the requirements section; otherwise, downloaded the latest release below.
 Please download the latest **deathmatch.zip** file from <a href="https://github.com/Maxximou5/csgo-deathmatch/releases">my releases</a>.
 
 ### Bugs
-
 If there are any bugs, please report them using the <a href="https://github.com/Maxximou5/csgo-deathmatch/issues">issues page</a>.
 
 ### Credit
-
 A thank you to those who helped:
 
 - <a href="https://forums.alliedmods.net/member.php?u=187003">Snip3rUK</a> (<a href="https://forums.alliedmods.net/showthread.php?t=189577">Original Plugin</a>)
@@ -234,7 +223,6 @@ A thank you to those who helped:
 - <a href="https://github.com/Drixevel">Drixevel</a> (Improvements)
 
 ### Donate
-
 If you think I am doing a good job or you want to buy me a beer or feed my cat, please donate.
 Thanks!
 

@@ -45,7 +45,7 @@
         "fr"    "Le menu des armes a été {red}désactivé{default}."
         "jp"    "武器メニューが{red}無効{default}になっています。"
         "pl"    "Menu broni zostało {red}wyłączone{default}."
-        "pt"    "O menu de armas foi {red}desativado{default}."
+        "pt"    "Menu de armas foi {red}desativado{default}."
         "ru"    "Меню оружия было {red}отключено{default}."
     }
     "Guns Menu"
@@ -190,7 +190,7 @@
         "fr"    "Vous recevrez {green}mêmes{default} armes sur le prochain spawn."
         "jp"    "次のスポーン時から{green}同じ武器{default}が手に入るようになります。"
         "pl"    "Zostaną dodane {green}te same{default} bronie po respawnie."
-        "pt"    "Você recebera as {green}mesmas{default} armas nos próximos spawns"
+        "pt"    "Você recebera as {green}mesmas armas {default}no próximo spawn."
         "ru"    "Вы получите {green}аналогичное{default} оружие в следующем возрождении."
     }
     "Guns Random Spawn"
@@ -202,7 +202,7 @@
         "fr"    "Vous recevrez armes {green}aléatoires{default} sur le prochain spawn."
         "jp"    "次のスポーン時から{green}ランダムで{default}武器が手に入ります。"
         "pl"    "Zostaną dodane {green}losowe{default} bronie po respawnie."
-        "pt"    "Você recebera armas {green}aleatórias{default} nos próximos spawns"
+        "pt"    "Você recebera {green}armas aleatórias {default}no próximo spawn."
         "ru"    "Вы получите {green}случайное{default} оружие в следующем возрождении."
     }
     "All Player Respawn"
