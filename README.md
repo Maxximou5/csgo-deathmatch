@@ -115,7 +115,7 @@
 - **`dm_remove_cash "1"`** - Remove client cash.
 - **`dm_remove_chickens "1"`** - Remove chickens from the map and from spawning.
 - **`dm_remove_buyzones "1"`** - Remove buyzones from map.
-- **`dm_remove_objectives "1"`** - Remove objectives (disables bomb sites, and removes c4 and hostages).
+- **`dm_remove_objectives "1"`** - Remove objectives **(Disables bomb sites, and removes c4 and hostages)**.
 - **`dm_remove_ragdoll "1"`** - Remove ragdoll after a player dies.
 - **`dm_remove_ragdoll_time "1.0"`** - Amount of time before removing ragdoll.
 - **`dm_remove_knife_damage "0"`** - Remove damage from knife attacks.
@@ -125,9 +125,9 @@
 - **`dm_replenish_ammo_empty "1"`** - Replenish ammo when weapon is empty.
 - **`dm_replenish_ammo_reload "0"`** - Replenish ammo on reload action.
 - **`dm_replenish_ammo_kill "1"`** - Replenish ammo on kill.
-- **`dm_replenish_ammo_type "2"`** - Replenish type. 1) Clip only. 2) Reserve only. 3) Both.
+- **`dm_replenish_ammo_type "2"`** - Replenish type. 1 = Clip only. 2 = Reserve only. 3 = Both.
 - **`dm_replenish_ammo_hs_kill "0"`** - Replenish ammo  on headshot kill.
-- **`dm_replenish_ammo_hs_type "1"`** - Replenish type. 1) Clip only. 2) Reserve only. 3) Both.
+- **`dm_replenish_ammo_hs_type "1"`** - Replenish type. 1 = Clip only. 2 = Reserve only. 3 = Both.
 - **`dm_replenish_grenade "0"`** - Unlimited player grenades.
 - **`dm_replenish_grenade_kill "0"`** - Give players their grenade back on successful kill.
 - **`dm_nade_messages "1"`** - Disable grenade messages.
@@ -145,8 +145,8 @@
 - **`dm_ap_knife "50"`** - Armor Points (AP) per knife kill.
 - **`dm_ap_nade "30"`** - Armor Points (AP) per nade kill.
 - **`dm_ap_messages "1"`** - Display AP messages.
-- **`dm_gun_menu_mode "1"`** - Gun menu mode. 0) Disabled. 1) Enabled. 2) Primary weapons only. 3) Secondary weapons only. 4) Tertiary weapons only. 5) Random weapons only.
-- **`dm_loadout_style "1"`** - When players can receive weapons. 1) On respawn. 2) Immediately.
+- **`dm_gun_menu_mode "1"`** - Gun menu mode. 0 = Disabled. 1 = Enabled. 2 = Primary weapons only. 3 = Secondary weapons only. 4 = Tertiary weapons only. 5 = Random weapons only.
+- **`dm_loadout_style "1"`** - When players can receive weapons. 1 = On respawn. 2 = Immediately.
 - **`dm_fast_equip "0"`** - Enable fast weapon equipping.
 - **`dm_healthshot "0"`** - Allow players to use a healthshot.
 - **`dm_healthshot_health "50"`** - Total amount of health given when a healthshot is used.
@@ -166,7 +166,7 @@
 - **`dm_nades_he "0"`** - Number of HE grenades to give each player.
 - **`dm_nades_smoke "0"`** - Number of smoke grenades to give each player.
 - **`dm_nades_tactical "0"`** - Number of tactical grenades to give each player.
-- **`dm_armor "2"`** - Give players armor. 0) Disable. 1) Chest. 2) Chest + Helmet.
+- **`dm_armor "2"`** - Give players armor. 0 = Disable. 1 = Chest. 2 = Chest + Helmet.
 
 **Deathmatch Loader:**
 - **`dm_loader_enabled "1"`** - Enable/disable executing configs
