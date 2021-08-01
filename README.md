@@ -23,9 +23,9 @@
 	</a>
 </p>
 
-## [CS:GO] Deathmatch - Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc)
+### [CS:GO] Deathmatch - Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc)
 
-### Main Features
+## Main Features
 - Weapon Menu
 - Loadout Style
 - Free For All ***(FFA)***
