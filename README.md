@@ -51,14 +51,14 @@
 - Line of Sight/Distance Spawning
 - 3rd Party Knife Plugin Support
 - Multi-Language Support
-	- **English Supported
-	- **Spanish Supported
-	- **French Supported
-	- **Polish Supported (Credits to <a href="https://forums.alliedmods.net/member.php?u=255924">szyma94</a>)***
-	- **Brazilian Supported (Credits to <a href="https://forums.alliedmods.net/member.php?u=260574">Rbt</a> & [crashzk](https://github.com/crashzk))***
-	- **German Supported (Credits to <a href="https://github.com/Shoxxo">Shoxxo</a>)***
-	- **Chinese Simplified Supported (Credits to <a href="https://forums.alliedmods.net/member.php?u=64286">qiuhaian</a>)***
-	- **Japanese Supported (Credits to <a href="https://github.com/k4tyxd">k4tyxd</a>)***
+	- **English Supported**
+	- **Spanish Supported**
+	- **French Supported**
+	- **Polish Supported *(Credits to <a href="https://forums.alliedmods.net/member.php?u=255924">szyma94</a>)***
+	- **Brazilian Supported *(Credits to <a href="https://forums.alliedmods.net/member.php?u=260574">Rbt</a> & [crashzk](https://github.com/crashzk))***
+	- **German Supported *(Credits to <a href="https://github.com/Shoxxo">Shoxxo</a>)***
+	- **Chinese Simplified Supported *(Credits to <a href="https://forums.alliedmods.net/member.php?u=64286">qiuhaian</a>)***
+	- **Japanese Supported *(Credits to <a href="https://github.com/k4tyxd">k4tyxd</a>)***
 	
 ## Client Commands
 **CVARS** | **Description** | **Commands** |
