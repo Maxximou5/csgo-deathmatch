@@ -173,13 +173,9 @@
 - **`dm_loader_include_bots "1"`** - Enable/disable including bots when counting number of clients
 - **`dm_loader_include_spec "1"`** - Enable/disable including spectators when counting number of clients
 
-## Compatibility
-This plugin is tested on the following **Sourcemod & Metamod** versions.
+## Requirements
 - <a href="https://www.sourcemod.net/downloads.php?branch=stable">Sourcemod 1.10+</a>
 - <a href="https://www.sourcemm.net/downloads.php/?branch=stable">Metamod 1.11+</a>
-
-## Requirements
-None.
 
 ## Instructions
 - Extract zip file and place files in the corresponding directories of **`/addons/sourcemod`**
