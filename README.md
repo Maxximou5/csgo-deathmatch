@@ -54,7 +54,7 @@
 	- English Supported
 	- Spanish Supported
 	- French Supported
-	- Polish Supported
+	- Polish Supported (<a href="https://forums.alliedmods.net/member.php?u=255924">szyma94</a>)
 	- Brazilian Supported
 	- German Supported
 	- Chinese Supported
@@ -204,20 +204,20 @@ If there are any bugs, please report them using the <a href="https://github.com/
 
 ## Credits
 A thank you to those who helped:
-- <a href="https://forums.alliedmods.net/member.php?u=187003">Snip3rUK</a> (<a href="https://forums.alliedmods.net/showthread.php?t=189577">Original Plugin</a>)
-- <a href="https://forums.alliedmods.net/member.php?u=26021">Dr!fter</a> (General Code Support)
-- <a href="https://steamcommunity.com/id/DoomHammer69/">DoomHammer</a> (Debugging and Testing)
-- <a href="https://steamcommunity.com/id/int64shrandy/">int64 Shrandy</a> (Fixing Ammo)
-- <a href="https://forums.alliedmods.net/member.php?u=255924">szyma94</a> (Polish Translation)
-- <a href="https://forums.alliedmods.net/member.php?u=260574">Rbt</a> & [crashzk](https://github.com/crashzk) (Brazilian Translation)
-- <a href="https://forums.alliedmods.net/member.php?u=245683">splewis</a> (Weapon Skins Implementation)
-- <a href="https://github.com/Shoxxo">Shoxxo</a> (German Translation)
-- <a href="https://steamcommunity.com/profiles/76561198098268870/">MAJOR</a> (Debugging and Testing)
-- <a href="http://steamcommunity.com/profiles/76561197975262643">Skyprah</a> (Debugging and Testing)
-- <a href="https://forums.alliedmods.net/member.php?u=64286">qiuhaian</a> (Chinese Simplified Translation)
-- <a href="https://github.com/k4tyxd">k4tyxd</a> (Japanese Translation)
-- <a href="https://github.com/b3none">b3none</a> (Improvements)
-- <a href="https://github.com/Drixevel">Drixevel</a> (Improvements)
+- <a href="https://forums.alliedmods.net/member.php?u=187003">Snip3rUK</a> - <a href="https://forums.alliedmods.net/showthread.php?t=189577">Original Plugin</a>
+- <a href="https://forums.alliedmods.net/member.php?u=26021">Dr!fter</a> - General Code Support
+- <a href="https://steamcommunity.com/id/DoomHammer69/">DoomHammer</a> - Debugging and Testing
+- <a href="https://steamcommunity.com/id/int64shrandy/">int64 Shrandy</a> - Fixing Ammo
+- <a href="https://forums.alliedmods.net/member.php?u=255924">szyma94</a> - Polish Translation
+- <a href="https://forums.alliedmods.net/member.php?u=260574">Rbt</a> & [crashzk](https://github.com/crashzk) - Brazilian Translation
+- <a href="https://forums.alliedmods.net/member.php?u=245683">splewis</a> - Weapon Skins Implementation
+- <a href="https://github.com/Shoxxo">Shoxxo</a> - German Translation
+- <a href="https://steamcommunity.com/profiles/76561198098268870/">MAJOR</a> - Debugging and Testing
+- <a href="http://steamcommunity.com/profiles/76561197975262643">Skyprah</a> - Debugging and Testing
+- <a href="https://forums.alliedmods.net/member.php?u=64286">qiuhaian</a> - Chinese Simplified Translation
+- <a href="https://github.com/k4tyxd">k4tyxd</a> - Japanese Translation
+- <a href="https://github.com/b3none">b3none</a> - Improvements
+- <a href="https://github.com/Drixevel">Drixevel</a> - Improvements
 
 ## Donate
 If you think I am doing a good job or you want to buy me a beer or feed my cat, please donate.
