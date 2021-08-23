@@ -97,11 +97,11 @@ void BuildWeaponMenuNames()
     /* Secondary weapons */
     g_smWeaponMenuNames.SetString("weapon_glock", "Glock-18");
     g_smWeaponMenuNames.SetString("weapon_p250", "P250");
-    g_smWeaponMenuNames.SetString("weapon_cz75a", "CZ75-A");
+    g_smWeaponMenuNames.SetString("weapon_cz75a", "CZ75-Auto");
     g_smWeaponMenuNames.SetString("weapon_usp_silencer", "USP-S");
     g_smWeaponMenuNames.SetString("weapon_fiveseven", "Five-SeveN");
     g_smWeaponMenuNames.SetString("weapon_deagle", "Desert Eagle");
-    g_smWeaponMenuNames.SetString("weapon_revolver", "R8");
+    g_smWeaponMenuNames.SetString("weapon_revolver", "R8 Revolver");
     g_smWeaponMenuNames.SetString("weapon_elite", "Dual Berettas");
     g_smWeaponMenuNames.SetString("weapon_tec9", "Tec-9");
     g_smWeaponMenuNames.SetString("weapon_hkp2000", "P2000");
