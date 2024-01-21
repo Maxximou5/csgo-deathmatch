@@ -52,6 +52,7 @@ jobs:
       run: mkdir -p plugins
 
     - run: spcomp -i ./scripting/include ./scripting/deathmatch.sp -o ./plugins/deathmatch.smx
+    - run: spcomp -i ./scripting/include ./scripting/deathmatch_loader.sp -o ./plugins/deathmatch_loader.smx
 
     - name: Prepare files for artifact
       run: |
