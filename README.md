@@ -1,6 +1,6 @@
 <p align="center">
-	<a href="https://www.maxximou5.com/">
-		<img src="https://www.maxximou5.com/sourcemod/assests/img/deathmatch_csgo.png" alt="csgo deathmatch plugin" width="600" alt="csgo-deathmatch-logo">
+	<a href="https://maxximou5.com/">
+		<img src="https://maxximous.com/static/img/banners/deathmatch_csgo.png" alt="CS:GO Deathmatch Sourcemod Plugin">
 	</a>
     <br>
     <a href="https://github.com/Maxximou5/csgo-deathmatch/releases">
