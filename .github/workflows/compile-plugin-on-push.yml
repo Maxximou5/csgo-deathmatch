@@ -1,0 +1,45 @@
+name: Compile Plugin
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        sm-version: [ '1.11.x' ]
+
+    name: SM version ${{ matrix.sm-version }}
+
+    steps:
+    - uses: actions/checkout@v2
+      
+    - name: Setup SourcePawn Compiler
+      id: setup
+      uses: rumblefrog/setup-sp@v1.0.0
+      with: 
+          version: ${{ matrix.sm-version }}
+
+    - name: Create plugins directory
+      run: mkdir plugins
+      
+    - run: spcomp -i scripting/include scripting/deathmatch.sp -o plugins/deathmatch.smx
+    - run: spcomp -i scripting/include scripting/deathmatch_loader.sp -o plugins/deathmatch_loader.smx
+
+    - name: Prepare files for artifact
+      run: |
+        mkdir artifact
+        mv ./configs ./artifact
+        mv ./plugins ./artifact/
+        mv ./scripting ./artifact/
+        mv ./translations ./artifact
+        mv ./LICENSE ./artifact/
+        mv ./CHANGELOG.md ./artifact
+        mv ./README.md ./artifact
+
+    - name: Upload compiled plugin
+      uses: actions/upload-artifact@v1
+      with:
+        name: Compiled plugin with SM ${{ steps.setup.outputs.version }}
+        path: artifact

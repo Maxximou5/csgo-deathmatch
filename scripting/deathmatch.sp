@@ -3022,7 +3022,7 @@ void MovePlayer(int client)
     if (!spawnPointFound) g_iSpawnPointSearchFailures++; /* Stats */
 }
 
-bool IsPointSuitableDistance(int spawnPoint, float[][3] enemyEyePositions, int numberOfEnemies)
+bool IsPointSuitableDistance(int spawnPoint, float enemyEyePositions[][3], int numberOfEnemies)
 {
     for (int i = 0; i < numberOfEnemies; i++)
     {
