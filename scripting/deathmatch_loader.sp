@@ -1,9 +1,23 @@
+/**
+ * [CS:GO] Deathmatch Loader
+ *
+ *  Copyright (C) 2020 Maxximous 'Maxximou5' Ambrosio
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program. If not, see http://www.gnu.org/licenses/.
+ */
+
 #include <sourcemod>
-#include <sdktools>
-#include <sdkhooks>
-#include <cstrike>
-#include <csgocolors>
-#include <clientprefs>
+#include <colorlib>
 
 #pragma newdecls required
 
@@ -11,7 +25,7 @@
 #define PLUGIN_NAME             "[CS:GO] Deathmatch Loader"
 #define PLUGIN_AUTHOR           "Maxximou5"
 #define PLUGIN_DESCRIPTION      "Loads Deathmatch configuration files based on events or at specified times."
-#define PLUGIN_URL              "https://github.com/Maxximou5/csgo-deathmatch/"
+#define PLUGIN_URL              "https://github.com/Maxximou5/csgo-deathmatch-loader/"
 
 public Plugin myinfo =
 {
@@ -99,7 +113,10 @@ public void OnMapTimeLeftChanged()
 
     int iTimeleft;
     if (GetMapTimeLeft(iTimeleft) && iTimeleft > 0)
+    {
+        PrintToServer("Timeleft: %i", iTimeleft);
         g_hTimer = CreateTimer(60.0, Timer_ExecTimeleftConfig, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
+    }
 }
 
 public void OnClientPutInServer(int client)
@@ -171,9 +188,13 @@ public Action Timer_ExecTimeleftConfig(Handle timer)
     if (!GetMapTimeLeft(iTimeleft) || iTimeleft < 0)
         return Plugin_Continue;
 
+    PrintToServer("Timeleft: %i", iTimeleft);
+
     char sTimeleft[4];
     IntToString(iTimeleft / 60, sTimeleft, sizeof(sTimeleft));
     ExecConfig(TIMELEFT, sTimeleft);
+
+    PrintToServer("Timeleft: %s", sTimeleft);
 
     return Plugin_Continue;
 }
@@ -213,7 +234,7 @@ void ExecClientsConfig(int client)
         client += GetClientCount();
     else
     {
-        for(int i = 1; i <= MaxClients; i++)
+        for (int i = 1; i <= MaxClients; i++)
         {
             if (!IsClientInGame(i))
                 continue;

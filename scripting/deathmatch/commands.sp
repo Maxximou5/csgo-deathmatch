@@ -4,10 +4,12 @@ void LoadCommands()
     RegAdminCmd("dm_load", Command_ConfigLoad, ADMFLAG_CHANGEMAP, "Loads the configuration file specified (configs/deathmatch/filename.ini).");
     RegAdminCmd("dm_load_menu", Command_ConfigLoadMenu, ADMFLAG_CHANGEMAP, "Opens the Config Loader Menu.");
     RegAdminCmd("dm_spawn_menu", Command_SpawnMenu, ADMFLAG_CHANGEMAP, "Opens the Spawn Editor Menu.");
+    RegAdminCmd("dm_spawn_list", Command_SpawnList, ADMFLAG_CHANGEMAP, "Displays the entire spawn list for the map.");
+    RegAdminCmd("dm_spawn_stats", Command_SpawnStats, ADMFLAG_CHANGEMAP, "Displays spawn statistics.");
+    RegAdminCmd("dm_spawn_reset", Command_SpawnReset, ADMFLAG_CHANGEMAP, "Resets spawn statistics.");
     RegAdminCmd("dm_respawn_all", Command_RespawnAll, ADMFLAG_CHANGEMAP, "Respawns all players.");
     RegAdminCmd("dm_settings", Command_SettingsMenu, ADMFLAG_CHANGEMAP, "Opens the Deathmatch Settings Menu.");
-    RegAdminCmd("dm_stats", Command_Stats, ADMFLAG_CHANGEMAP, "Displays spawn statistics.");
-    RegAdminCmd("dm_stats_reset", Command_StatsReset, ADMFLAG_CHANGEMAP, "Resets spawn statistics.");
+    RegAdminCmd("dm_weapon_stats", Command_WeaponStats, ADMFLAG_CHANGEMAP, "Displays weapon statistics.");
 }
 
 public Action Command_ConfigLoad(int client, int args)
@@ -28,11 +30,11 @@ public Action Command_ConfigLoad(int client, int args)
         StripQuotes(config);
         StripQuotes(option);
 
-        if (StrEqual(option, "respawn", false))
+        if (strcmp(option, "respawn", false) == 0)
             LoadTimeConfig(client, config, option);
-        else if (StrEqual(option, "restart", false))
+        else if (strcmp(option, "restart", false) == 0)
             LoadTimeConfig(client, config, option);
-        else if (StrEqual(option, "nextround", false))
+        else if (strcmp(option, "nextround", false) == 0)
             LoadTimeConfig(client, config, option);
         else
         {
@@ -67,17 +69,22 @@ public Action Command_SpawnMenu(int client, int args)
     return Plugin_Handled;
 }
 
+public Action Command_SpawnList(int client, int args)
+{
+    for (int i = 0; i < g_iSpawnPointCount; i++)
+    {
+        PrintToServer("#%i | Location = %f %f %f | Direction = %f %f %f | Occupied = %s", i, g_fSpawnPositions[i][0], g_fSpawnPositions[i][1], g_fSpawnPositions[i][2], g_fSpawnAngles[i][0], g_fSpawnAngles[i][1], g_fSpawnAngles[i][2], g_bSpawnPointOccupied[i] ? "TRUE" : "FALSE");
+    }
+}
+
 public Action Command_RespawnAll(int client, int args)
 {
     if (client == 0)
-    {
-        RespawnAll();
         CReplyToCommand(client, "%t %t", "Chat Tag", "All Player Respawn");
-        return Plugin_Handled;
-    }
+    else
+        CPrintToChat(client, "%t %t", "Chat Tag", "All Player Respawn");
 
-    RespawnAll();
-    CPrintToChat(client, "%t %t", "Chat Tag", "All Player Respawn");
+    Spawns_RespawnAll();
     return Plugin_Handled;
 }
 
@@ -93,8 +100,7 @@ public Action Command_SettingsMenu(int client, int args)
     return Plugin_Handled;
 }
 
-
-public Action Command_Stats(int client, int args)
+public Action Command_SpawnStats(int client, int args)
 {
     if (client == 0)
     {
@@ -106,16 +112,29 @@ public Action Command_Stats(int client, int args)
     return Plugin_Handled;
 }
 
-public Action Command_StatsReset(int client, int args)
+public Action Command_SpawnReset(int client, int args)
 {
     if (client == 0)
     {
-        ResetSpawnStats();
+        Spawns_ResetSpawnStats();
         CReplyToCommand(client, "%t %t", "Chat Tag", "Spawn Stats Reset");
         return Plugin_Handled;
     }
 
-    ResetSpawnStats();
+    Spawns_ResetSpawnStats();
     CPrintToChat(client, "%t %t", "Chat Tag", "Spawn Stats Reset");
+    return Plugin_Handled;
+}
+
+public Action Command_WeaponStats(int client, int args)
+{
+
+    if (client == 0)
+    {
+        DisplayWeaponStats(client, true);
+        return Plugin_Handled;
+    }
+
+    DisplayWeaponStats(client, false);
     return Plugin_Handled;
 }

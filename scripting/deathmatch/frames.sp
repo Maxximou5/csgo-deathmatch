@@ -1,19 +1,7 @@
-public void Frame_RespawnDead(any serial)
-{
-    int client = GetClientFromSerial(serial);
-    if (!g_bRoundEnded && client && (GetClientTeam(client) > CS_TEAM_SPECTATOR) && !IsPlayerAlive(client))
-    {
-        UpdateSpawnPoints();
-        g_bPlayerMoved[client] = false;
-        CS_RespawnPlayer(client);
-        CPrintToChat(client, "%t %t", "Chat Tag", "Player Respawn");
-    }
-}
-
 public void Frame_RespawnAll(any serial)
 {
     int client = GetClientFromSerial(serial);
-    if (client && IsClientInGame(client) && (GetClientTeam(client) > CS_TEAM_SPECTATOR))
+    if (IsValidClient(client, true) && GetClientTeam(client) > CS_TEAM_SPECTATOR)
     {
         g_bPlayerMoved[client] = false;
         CS_RespawnPlayer(client);
@@ -24,7 +12,7 @@ public void Frame_RespawnAll(any serial)
 public void Frame_FastSwitch(any serial)
 {
     int client = GetClientFromSerial(serial);
-    if (client && IsClientInGame(client) && IsPlayerAlive(client))
+    if (IsValidClient(client, false) && IsPlayerAlive(client))
     {
         char weapon[64];
         GetClientWeapon(client, weapon, sizeof(weapon));
@@ -42,14 +30,14 @@ public void Frame_FastSwitch(any serial)
 public void Frame_RemoveRadar(any serial)
 {
     int client = GetClientFromSerial(serial);
-    if (client && IsClientInGame(client) && IsPlayerAlive(client))
+    if (IsValidClient(client, false) && IsPlayerAlive(client))
         SetEntProp(client, Prop_Send, "m_iHideHUD", HIDEHUD_RADAR);
 }
 
 public void Frame_GiveAmmo(any serial)
 {
     int client = GetClientFromSerial(serial)
-    if (client && IsClientInGame(client) && !IsFakeClient(client) && IsPlayerAlive(client))
+    if (IsValidClient(client, false) && IsPlayerAlive(client))
     {
         int weaponEntity;
         switch (g_cvDM_replenish_ammo_type.IntValue)
@@ -91,7 +79,7 @@ public void Frame_GiveAmmo(any serial)
 public void Frame_GiveAmmoHS(any serial)
 {
     int client = GetClientFromSerial(serial)
-    if (client && IsClientInGame(client) && !IsFakeClient(client) && IsPlayerAlive(client))
+    if (IsValidClient(client, false) && IsPlayerAlive(client))
     {
         int weaponEntity;
         switch (g_cvDM_replenish_ammo_hs_type.IntValue)
@@ -135,7 +123,7 @@ public void Frame_GiveHealthshot(any serial)
     if (g_cvDM_healthshot.BoolValue)
     {
         int client = GetClientFromSerial(serial)
-        if (client && (g_iHealthshotCount[client] < g_cvDM_healthshot_total.IntValue) && !IsFakeClient(client) && IsPlayerAlive(client))
+        if (IsValidClient(client, false) && IsPlayerAlive(client) && (g_iHealthshotCount[client] < g_cvDM_healthshot_total.IntValue))
         {
             GivePlayerItem(client, "weapon_healthshot");
             g_iHealthshotCount[client] += 1;
@@ -148,10 +136,17 @@ public void Frame_GiveTaser(any serial)
     if (g_cvDM_zeus.BoolValue)
     {
         int client = GetClientFromSerial(serial)
-        if (client && IsClientInGame(client) && !g_bPlayerHasZeus[client] && !IsFakeClient(client) && IsPlayerAlive(client))
+        if (IsValidClient(client, false) && IsPlayerAlive(client) && !g_bPlayerHasZeus[client])
         {
             GivePlayerItem(client, "weapon_taser");
             g_bPlayerHasZeus[client] = true;
         }
     }
+}
+
+public void Frame_StopSound(int serial)
+{
+    int client = GetClientFromSerial(serial)
+    if (IsValidClient(client, false) && IsPlayerAlive(client))
+        StopSound(client, SNDCHAN_ITEM, "buttons/bell1.wav");
 }

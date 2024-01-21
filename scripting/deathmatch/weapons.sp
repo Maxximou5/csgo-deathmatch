@@ -3,8 +3,8 @@ void LoadWeapons()
     g_iAmmoOffset = FindSendPropInfo("CCSPlayer", "m_iAmmo");
 
     /* Create arrays to store available weapons loaded by config */
-    g_aPrimaryWeaponsAvailable =  new ArrayList(25);
-    g_aSecondaryWeaponsAvailable =  new ArrayList(11);
+    g_aPrimaryWeaponsAvailable =  new ArrayList(24);
+    g_aSecondaryWeaponsAvailable =  new ArrayList(10);
 
     /* Create stringmap to store weapon limits, counts, and teams */
     g_smWeaponLimits = new StringMap();
@@ -17,8 +17,8 @@ void LoadWeapons()
 
 void SetClientGunSettings(int client, char[] primary, char[] secondary)
 {
-    strcopy(g_cPrimaryWeapon[client], sizeof(g_cPrimaryWeapon[]), primary);
-    strcopy(g_cSecondaryWeapon[client], sizeof(g_cSecondaryWeapon[]), secondary);
+    strcopy(g_sPrimaryWeapon[client], sizeof(g_sPrimaryWeapon[]), primary);
+    strcopy(g_sSecondaryWeapon[client], sizeof(g_sSecondaryWeapon[]), secondary);
 }
 
 void SetClientGunModeSettings(int client)
@@ -52,7 +52,6 @@ void SetClientGunModeSettings(int client)
             {
                 SetClientCookie(client, g_hWeapon_Primary_Cookie, "random");
                 SetClientCookie(client, g_hWeapon_Secondary_Cookie, "random");
-                SetClientCookie(client, g_hWeapon_First_Cookie, "0");
             }
         }
         case 6:
@@ -71,7 +70,7 @@ void BuildWeaponMenuNames()
     g_smWeaponMenuNames = new StringMap();
     /* Primary weapons */
     g_smWeaponMenuNames.SetString("weapon_ak47", "AK-47");
-    g_smWeaponMenuNames.SetString("weapon_m4a1", "M4A1");
+    g_smWeaponMenuNames.SetString("weapon_m4a1", "M4A4");
     g_smWeaponMenuNames.SetString("weapon_m4a1_silencer", "M4A1-S");
     g_smWeaponMenuNames.SetString("weapon_sg556", "SG 553");
     g_smWeaponMenuNames.SetString("weapon_aug", "AUG");
@@ -109,36 +108,44 @@ void BuildWeaponMenuNames()
     g_smWeaponMenuNames.SetString("random", "Random");
 }
 
-void InitialiseWeaponCounts()
+void InitializeWeaponCounts()
 {
     for (int i = 0; i < g_aPrimaryWeaponsAvailable.Length; i++)
     {
-        char weapon[24];
+        char weapon[32];
         g_aPrimaryWeaponsAvailable.GetString(i, weapon, sizeof(weapon));
         g_smWeaponCounts.SetValue(weapon, 0);
     }
     for (int i = 0; i < g_aSecondaryWeaponsAvailable.Length; i++)
     {
-        char weapon[24];
+        char weapon[32];
         g_aSecondaryWeaponsAvailable.GetString(i, weapon, sizeof(weapon));
         g_smWeaponCounts.SetValue(weapon, 0);
     }
 }
 
-void IncrementWeaponCount(char[] weapon)
+void IncrementWeaponCount(const char[] weapon)
 {
-    int weaponCount;
-    g_smWeaponCounts.GetValue(weapon, weaponCount);
-    g_smWeaponCounts.SetValue(weapon, weaponCount + 1);
-}
-
-void DecrementWeaponCount(char[] weapon)
-{
-    if (!StrEqual(weapon, "none"))
+    if (strcmp(weapon, "none") == 0 || strcmp(weapon, "random") == 0)
+        return
+    else
     {
         int weaponCount;
         g_smWeaponCounts.GetValue(weapon, weaponCount);
-        g_smWeaponCounts.SetValue(weapon, weaponCount - 1);
+        g_smWeaponCounts.SetValue(weapon, weaponCount + 1);
+    }
+}
+
+void DecrementWeaponCount(const char[] weapon)
+{
+    if (strcmp(weapon, "none") == 0 || strcmp(weapon, "random") == 0)
+        return
+    else
+    {
+        int weaponCount;
+        g_smWeaponCounts.GetValue(weapon, weaponCount);
+        if (weaponCount > 0)
+            g_smWeaponCounts.SetValue(weapon, weaponCount - 1);
     }
 }
 
@@ -149,10 +156,13 @@ public int GetWeaponTeam(const char[] weapon)
     return team;
 }
 
-public void GiveSkinnedWeapon(int client, const char[] weapon)
+void GiveSkinnedWeapon(int client, const char[] weapon, bool primary, bool random = false)
 {
     int playerTeam = GetEntProp(client, Prop_Data, "m_iTeamNum");
     int weaponTeam = GetWeaponTeam(weapon);
+    bool playerVIP = CheckCommandAccess(client, "dm_access_weapons_awp", ADMFLAG_RESERVATION);
+    bool awpCurrent = strcmp(weapon, "weapon_awp") == 0;
+    bool awpPrevious = strcmp(g_sPrimaryWeaponPrevious[client], "weapon_awp") == 0;
 
     if (weaponTeam > 0)
         SetEntProp(client, Prop_Data, "m_iTeamNum", weaponTeam);
@@ -162,11 +172,31 @@ public void GiveSkinnedWeapon(int client, const char[] weapon)
 
     if (g_cvDM_fast_equip.BoolValue)
         RequestFrame(Frame_FastSwitch, GetClientSerial(client));
+
+    if (!IsFakeClient(client))
+    {
+        if (primary)
+        {
+            if (!playerVIP && !awpCurrent)
+                IncrementWeaponCount(weapon);
+            if (!playerVIP && !awpPrevious)
+                DecrementWeaponCount(weapon);
+            if (!random)
+                strcopy(g_sPrimaryWeapon[client], sizeof(g_sPrimaryWeapon[]), weapon);
+        }
+        else
+        {
+            IncrementWeaponCount(weapon);
+            DecrementWeaponCount(weapon);
+            if (!random)
+                strcopy(g_sSecondaryWeapon[client], sizeof(g_sSecondaryWeapon[]), weapon);
+        }
+    }
 }
 
 void GiveSavedWeapons(int client, bool primary, bool secondary)
 {
-    if (client && IsPlayerAlive(client))
+    if (IsValidClient(client, true) && IsPlayerAlive(client) && GetClientTeam(client) > CS_TEAM_SPECTATOR)
     {
         if (IsFakeClient(client))
             SetClientGunModeSettings(client);
@@ -178,28 +208,29 @@ void GiveSavedWeapons(int client, bool primary, bool secondary)
         {
             RemoveClientWeapons(client);
 
-            if (g_cvDM_gun_menu_mode.IntValue == 2 && StrEqual(g_cPrimaryWeapon[client], "none"))
-                g_cPrimaryWeapon[client] = "random";
-            if (primary && !StrEqual(g_cPrimaryWeapon[client], "none"))
+            if (g_cvDM_gun_menu_mode.IntValue == 2 && strcmp(g_sPrimaryWeapon[client], "none") == 0)
+                g_sPrimaryWeapon[client] = "random";
+
+            if (primary && !StrEqual(g_sPrimaryWeapon[client], "none") && g_aPrimaryWeaponsAvailable.Length != 0)
             {
-                if (StrEqual(g_cPrimaryWeapon[client], "random"))
+                int random = GetRandomInt(0, g_aPrimaryWeaponsAvailable.Length - 1);
+                if (strcmp(g_sPrimaryWeapon[client], "random") == 0)
                 {
                     /* Select random menu item (excluding "Random" option) */
-                    int random = GetRandomInt(0, g_aPrimaryWeaponsAvailable.Length - 2);
-                    char randomWeapon[24];
+                    char randomWeapon[32];
                     g_aPrimaryWeaponsAvailable.GetString(random, randomWeapon, sizeof(randomWeapon));
-                    GiveSkinnedWeapon(client, randomWeapon);
+                    GiveSkinnedWeapon(client, randomWeapon, true, true);
                     if (!IsFakeClient(client))
                         SetClientCookie(client, g_hWeapon_Primary_Cookie, "random");
                 }
                 else
                 {
                     bool weaponFound = false;
-                    char weapon[24];
+                    char weapon[32];
                     for (int i = 0; i < g_aPrimaryWeaponsAvailable.Length; i++)
                     {
                         g_aPrimaryWeaponsAvailable.GetString(i, weapon, sizeof(weapon));
-                        if (StrEqual(g_cPrimaryWeapon[client], weapon))
+                        if (StrEqual(g_sPrimaryWeapon[client], weapon))
                         {
                             weaponFound = true;
                             break;
@@ -208,16 +239,15 @@ void GiveSavedWeapons(int client, bool primary, bool secondary)
 
                     if (weaponFound)
                     {
-                        GiveSkinnedWeapon(client, g_cPrimaryWeapon[client]);
+                        GiveSkinnedWeapon(client, g_sPrimaryWeapon[client], true);
                         if (!IsFakeClient(client))
-                            SetClientCookie(client, g_hWeapon_Primary_Cookie, g_cPrimaryWeapon[client]);
+                            SetClientCookie(client, g_hWeapon_Primary_Cookie, g_sPrimaryWeapon[client]);
                     }
                     else
                     {
-                        int random = GetRandomInt(0, g_aPrimaryWeaponsAvailable.Length - 2);
-                        char randomWeapon[24];
+                        char randomWeapon[32];
                         g_aPrimaryWeaponsAvailable.GetString(random, randomWeapon, sizeof(randomWeapon));
-                        GiveSkinnedWeapon(client, randomWeapon);
+                        GiveSkinnedWeapon(client, randomWeapon, true, true);
                         if (!IsFakeClient(client))
                             SetClientCookie(client, g_hWeapon_Primary_Cookie, "random");
                     }
@@ -225,28 +255,29 @@ void GiveSavedWeapons(int client, bool primary, bool secondary)
             }
             if (secondary)
             {
-                if (g_cvDM_gun_menu_mode.IntValue == 3 && StrEqual(g_cSecondaryWeapon[client], "none"))
-                    g_cSecondaryWeapon[client] = "random";
-                if (!StrEqual(g_cSecondaryWeapon[client], "none"))
+                if (g_cvDM_gun_menu_mode.IntValue == 3 && strcmp(g_sSecondaryWeapon[client], "none") == 0)
+                    g_sSecondaryWeapon[client] = "random";
+
+                if (!StrEqual(g_sSecondaryWeapon[client], "none") && g_aSecondaryWeaponsAvailable.Length != 0)
                 {
-                    if (StrEqual(g_cSecondaryWeapon[client], "random"))
+                    int random = GetRandomInt(0, g_aSecondaryWeaponsAvailable.Length - 1);
+                    if (strcmp(g_sSecondaryWeapon[client], "random") == 0)
                     {
                         /* Select random menu item (excluding "Random" option) */
-                        int random = GetRandomInt(0, g_aSecondaryWeaponsAvailable.Length - 2);
-                        char randomWeapon[24];
+                        char randomWeapon[32];
                         g_aSecondaryWeaponsAvailable.GetString(random, randomWeapon, sizeof(randomWeapon));
-                        GiveSkinnedWeapon(client, randomWeapon);
+                        GiveSkinnedWeapon(client, randomWeapon, false, true);
                         if (!IsFakeClient(client))
                             SetClientCookie(client, g_hWeapon_Secondary_Cookie, "random");
                     }
                     else
                     {
                         bool weaponFound = false;
-                        char weapon[24];
+                        char weapon[32];
                         for (int i = 0; i < g_aSecondaryWeaponsAvailable.Length; i++)
                         {
                             g_aSecondaryWeaponsAvailable.GetString(i, weapon, sizeof(weapon));
-                            if (StrEqual(g_cSecondaryWeapon[client], weapon))
+                            if (StrEqual(g_sSecondaryWeapon[client], weapon))
                             {
                                 weaponFound = true;
                                 break;
@@ -255,16 +286,15 @@ void GiveSavedWeapons(int client, bool primary, bool secondary)
 
                         if (weaponFound)
                         {
-                            GiveSkinnedWeapon(client, g_cSecondaryWeapon[client]);
+                            GiveSkinnedWeapon(client, g_sSecondaryWeapon[client], false);
                             if (!IsFakeClient(client))
-                                SetClientCookie(client, g_hWeapon_Secondary_Cookie, g_cSecondaryWeapon[client]);
+                                SetClientCookie(client, g_hWeapon_Secondary_Cookie, g_sSecondaryWeapon[client]);
                         }
                         else
                         {
-                            int random = GetRandomInt(0, g_aSecondaryWeaponsAvailable.Length - 2);
-                            char randomWeapon[24];
+                            char randomWeapon[32];
                             g_aSecondaryWeaponsAvailable.GetString(random, randomWeapon, sizeof(randomWeapon));
-                            GiveSkinnedWeapon(client, randomWeapon);
+                            GiveSkinnedWeapon(client, randomWeapon, false, true);
                             if (!IsFakeClient(client))
                                 SetClientCookie(client, g_hWeapon_Secondary_Cookie, "random");
                         }
@@ -315,79 +345,80 @@ void GiveSavedWeapons(int client, bool primary, bool secondary)
 
                 SetClientCookie(client, g_hWeapon_Remember_Cookie, "1");
             }
+            PreviousClientWeapons(client);
         }
     }
 }
 
-int GetWeaponAmmoCount(char[] weaponName, bool currentClip)
+public int GetWeaponAmmoCount(char[] weaponName, bool currentClip)
 {
-    if (StrEqual(weaponName,  "weapon_ak47"))
+    if (strcmp(weaponName, "weapon_ak47") == 0)
         return currentClip ? 30 : 90;
-    else if (StrEqual(weaponName,  "weapon_m4a1"))
+    else if (strcmp(weaponName, "weapon_m4a1") == 0)
         return currentClip ? 30 : 90;
-    else if (StrEqual(weaponName,  "weapon_m4a1_silencer"))
-        return currentClip ? 25 : 75;
-    else if (StrEqual(weaponName,  "weapon_awp"))
+    else if (strcmp(weaponName, "weapon_m4a1_silencer") == 0)
+        return currentClip ? 20 : 80;
+    else if (strcmp(weaponName, "weapon_awp") == 0)
         return currentClip ? 10 : 30;
-    else if (StrEqual(weaponName,  "weapon_sg552"))
+    else if (strcmp(weaponName, "weapon_sg552") == 0)
         return currentClip ? 30 : 90;
-    else if (StrEqual(weaponName,  "weapon_aug"))
+    else if (strcmp(weaponName, "weapon_aug") == 0)
         return currentClip ? 30 : 90;
-    else if (StrEqual(weaponName,  "weapon_p90"))
+    else if (strcmp(weaponName, "weapon_p90") == 0)
         return currentClip ? 50 : 100;
-    else if (StrEqual(weaponName,  "weapon_galilar"))
+    else if (strcmp(weaponName, "weapon_galilar") == 0)
         return currentClip ? 35 : 90;
-    else if (StrEqual(weaponName,  "weapon_famas"))
+    else if (strcmp(weaponName, "weapon_famas") == 0)
         return currentClip ? 25 : 90;
-    else if (StrEqual(weaponName,  "weapon_ssg08"))
+    else if (strcmp(weaponName, "weapon_ssg08") == 0)
         return currentClip ? 10 : 90;
-    else if (StrEqual(weaponName,  "weapon_g3sg1"))
+    else if (strcmp(weaponName, "weapon_g3sg1") == 0)
         return currentClip ? 20 : 90;
-    else if (StrEqual(weaponName,  "weapon_scar20"))
+    else if (strcmp(weaponName, "weapon_scar20") == 0)
         return currentClip ? 20 : 90;
-    else if (StrEqual(weaponName,  "weapon_m249"))
+    else if (strcmp(weaponName, "weapon_m249") == 0)
         return currentClip ? 100 : 200;
-    else if (StrEqual(weaponName,  "weapon_negev"))
+    else if (strcmp(weaponName, "weapon_negev") == 0)
         return currentClip ? 150 : 200;
-    else if (StrEqual(weaponName,  "weapon_nova"))
+    else if (strcmp(weaponName, "weapon_nova") == 0)
         return currentClip ? 8 : 32;
-    else if (StrEqual(weaponName,  "weapon_xm1014"))
+    else if (strcmp(weaponName, "weapon_xm1014") == 0)
         return currentClip ? 7 : 32;
-    else if (StrEqual(weaponName,  "weapon_sawedoff"))
+    else if (strcmp(weaponName, "weapon_sawedoff") == 0)
         return currentClip ? 7 : 32;
-    else if (StrEqual(weaponName,  "weapon_mag7"))
+    else if (strcmp(weaponName, "weapon_mag7") == 0)
         return currentClip ? 5 : 32;
-    else if (StrEqual(weaponName,  "weapon_mac10"))
+    else if (strcmp(weaponName, "weapon_mac10") == 0)
         return currentClip ? 30 : 100;
-    else if (StrEqual(weaponName,  "weapon_mp9"))
+    else if (strcmp(weaponName, "weapon_mp9") == 0)
         return currentClip ? 30 : 120;
-    else if (StrEqual(weaponName,  "weapon_mp7"))
+    else if (strcmp(weaponName, "weapon_mp7") == 0)
         return currentClip ? 30 : 120;
-    else if (StrEqual(weaponName,  "weapon_mp5sd"))
+    else if (strcmp(weaponName, "weapon_mp5sd") == 0)
         return currentClip ? 30 : 120;
-    else if (StrEqual(weaponName,  "weapon_ump45"))
+    else if (strcmp(weaponName, "weapon_ump45") == 0)
         return currentClip ? 25 : 100;
-    else if (StrEqual(weaponName,  "weapon_bizon"))
+    else if (strcmp(weaponName, "weapon_bizon") == 0)
         return currentClip ? 64 : 120;
-    else if (StrEqual(weaponName,  "weapon_glock"))
+    else if (strcmp(weaponName, "weapon_glock") == 0)
         return currentClip ? 20 : 120;
-    else if (StrEqual(weaponName,  "weapon_fiveseven"))
+    else if (strcmp(weaponName, "weapon_fiveseven") == 0)
         return currentClip ? 20 : 100;
-    else if (StrEqual(weaponName,  "weapon_deagle"))
+    else if (strcmp(weaponName, "weapon_deagle") == 0)
         return currentClip ? 7 : 35;
-    else if (StrEqual(weaponName,  "weapon_revolver"))
+    else if (strcmp(weaponName, "weapon_revolver") == 0)
         return currentClip ? 8 : 8;
-    else if (StrEqual(weaponName,  "weapon_hkp2000"))
+    else if (strcmp(weaponName, "weapon_hkp2000") == 0)
         return currentClip ? 13 : 52;
-    else if (StrEqual(weaponName,  "weapon_usp_silencer"))
+    else if (strcmp(weaponName, "weapon_usp_silencer") == 0)
         return currentClip ? 12 : 24;
-    else if (StrEqual(weaponName,  "weapon_p250"))
+    else if (strcmp(weaponName, "weapon_p250") == 0)
         return currentClip ? 13 : 26;
-    else if (StrEqual(weaponName,  "weapon_elite"))
+    else if (strcmp(weaponName, "weapon_elite") == 0)
         return currentClip ? 30 : 120;
-    else if (StrEqual(weaponName,  "weapon_tec9"))
+    else if (strcmp(weaponName, "weapon_tec9") == 0)
         return currentClip ? 24 : 120;
-    else if (StrEqual(weaponName,  "weapon_cz75a"))
+    else if (strcmp(weaponName, "weapon_cz75a") == 0)
         return currentClip ? 12 : 12;
     return currentClip ? 30 : 90;
 }
@@ -449,7 +480,7 @@ void Ammo_FullRefill(int weaponRef, any client)
     int weaponEntity = EntRefToEntIndex(weaponRef);
     if (IsValidEdict(weaponEntity))
     {
-        char weaponName[35];
+        char weaponName[64];
         char clipSize;
         int maxAmmoCount;
         int ammoType = GetEntProp(weaponEntity, Prop_Send, "m_iPrimaryAmmoType", 1) * 4;
@@ -472,12 +503,45 @@ void Ammo_FullRefill(int weaponRef, any client)
     }
 }
 
-void RemoveClientWeapons(int client)
+void PreviousClientWeapons(int client)
 {
+    int entProp;
+    int entityIndex;
+    int weaponEntity;
+    char weaponName[32];
+
     for (int i = 0; i < 4; i++)
     {
-        int entityIndex;
-        while ((entityIndex = GetPlayerWeaponSlot(client, i)) != -1)
+        if ((entityIndex = GetPlayerWeaponSlot(client, i)) != -1)
+        {
+            if (GetEntityClassname(entityIndex, weaponName, sizeof(weaponName)))
+            {
+                weaponEntity = EntIndexToEntRef(entityIndex);
+                entProp = GetEntProp(weaponEntity, Prop_Send, "m_iItemDefinitionIndex");
+                switch (entProp)
+                {
+                    case 60: strcopy(weaponName, sizeof(weaponName), "weapon_m4a1_silencer");
+                    case 61: strcopy(weaponName, sizeof(weaponName), "weapon_usp_silencer");
+                    case 63: strcopy(weaponName, sizeof(weaponName), "weapon_cz75a");
+                    case 64: strcopy(weaponName, sizeof(weaponName), "weapon_revolver");
+                }
+
+                if (i == CS_SLOT_PRIMARY)
+                    g_sPrimaryWeaponPrevious[client] = weaponName;
+                else if (i == CS_SLOT_SECONDARY)
+                    g_sSecondaryWeaponPrevious[client] = weaponName;
+            }
+        }
+    }
+}
+
+void RemoveClientWeapons(int client)
+{
+    int entityIndex;
+
+    for (int i = 0; i < 4; i++)
+    {
+        if ((entityIndex = GetPlayerWeaponSlot(client, i)) != -1)
         {
             RemovePlayerItem(client, entityIndex);
             RemoveEntity(entityIndex);
@@ -492,12 +556,14 @@ void RemoveGroundWeapons()
 
     for (int i = MaxClients + 1; i < MaxEntities; i++)
     {
-        if (IsValidEdict(i) && HasEntProp(i, Prop_Send, "m_hOwnerEntity") && (GetEntPropEnt(i, Prop_Send, "m_hOwnerEntity") == -1))
+        if (!IsValidEdict(i)) continue;
+
+        if (HasEntProp(i, Prop_Send, "m_hOwnerEntity") && (GetEntPropEnt(i, Prop_Send, "m_hOwnerEntity") == -1))
         {
             GetEdictClassname(i, class, sizeof(class));
             if ((StrContains(class, "weapon_") != -1) || (StrContains(class, "item_") != -1))
             {
-                if (StrEqual(class, "weapon_c4"))
+                if (strcmp(class, "weapon_c4") == 0)
                 {
                     if (!g_cvDM_remove_objectives.BoolValue)
                         continue;

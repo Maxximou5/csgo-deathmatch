@@ -27,11 +27,12 @@ public void OnAdminMenuReady(Handle aTopMenu)
 
     if (deathmatch_commands != INVALID_TOPMENUOBJECT)
     {
-        g_tmAdminMenu.AddItem("dm_load", AdminMenu_Load, deathmatch_commands, "dm_load", ADMFLAG_SLAY);
+        g_tmAdminMenu.AddItem("dm_load_menu", AdminMenu_Load, deathmatch_commands, "dm_load_menu", ADMFLAG_SLAY);
         g_tmAdminMenu.AddItem("dm_spawn_menu", AdminMenu_Spawn, deathmatch_commands, "dm_spawn_menu", ADMFLAG_SLAY);
+        g_tmAdminMenu.AddItem("dm_spawn_stats", AdminMenu_SpawnStats, deathmatch_commands, "dm_spawn_stats", ADMFLAG_SLAY);
+        g_tmAdminMenu.AddItem("dm_spawn_reset", AdminMenu_StatsReset, deathmatch_commands, "dm_spawn_reset", ADMFLAG_SLAY);
+        g_tmAdminMenu.AddItem("dm_weapon_stats", AdminMenu_WeaponStats, deathmatch_commands, "dm_weapon_stats", ADMFLAG_SLAY);
         g_tmAdminMenu.AddItem("dm_respawn_all", AdminMenu_Respawn, deathmatch_commands, "dm_respawn_all", ADMFLAG_SLAY);
-        g_tmAdminMenu.AddItem("dm_stats", AdminMenu_Stats, deathmatch_commands, "dm_stats", ADMFLAG_SLAY);
-        g_tmAdminMenu.AddItem("dm_stats_reset", AdminMenu_Reset, deathmatch_commands, "dm_stats_reset", ADMFLAG_SLAY);
     }
 }
 
@@ -74,12 +75,12 @@ public void AdminMenu_Respawn(Handle topmenu, TopMenuAction action, TopMenuObjec
         Format(buffer, maxlength, "Respawn All");
     else if (action == TopMenuAction_SelectOption)
     {
-        RespawnAll();
+        Spawns_RespawnAll();
         CReplyToCommand(param, "%t %t", "Chat Tag", "All Player Respawn");
     }
 }
 
-public void AdminMenu_Stats(Handle topmenu, TopMenuAction action, TopMenuObject object_id, int param, char[] buffer, int maxlength)
+public void AdminMenu_SpawnStats(Handle topmenu, TopMenuAction action, TopMenuObject object_id, int param, char[] buffer, int maxlength)
 {
     if (action == TopMenuAction_DisplayOption)
         Format(buffer, maxlength, "Display Spawn Statistics");
@@ -87,20 +88,27 @@ public void AdminMenu_Stats(Handle topmenu, TopMenuAction action, TopMenuObject 
         DisplaySpawnStats(param, false);
 }
 
-public void AdminMenu_Reset(Handle topmenu, TopMenuAction action, TopMenuObject object_id, int param, char[] buffer, int maxlength)
+public void AdminMenu_StatsReset(Handle topmenu, TopMenuAction action, TopMenuObject object_id, int param, char[] buffer, int maxlength)
 {
     if (action == TopMenuAction_DisplayOption)
         Format(buffer, maxlength, "Reset Spawn Statistics");
     else if (action == TopMenuAction_SelectOption)
     {
-        ResetSpawnStats();
+        Spawns_ResetSpawnStats();
         CPrintToChat(param, "%t %t", "Chat Tag", "Spawn Stats Reset");
     }
 }
 
+public void AdminMenu_WeaponStats(Handle topmenu, TopMenuAction action, TopMenuObject object_id, int param, char[] buffer, int maxlength)
+{
+    if (action == TopMenuAction_DisplayOption)
+        Format(buffer, maxlength, "Display Weapon Statistics");
+    else if (action == TopMenuAction_SelectOption)
+        DisplayWeaponStats(param, false);
+}
+
 void BuildWeaponsMenu(int client)
 {
-    Reset_Handle(g_hWeaponsMenus[client]);
     int allowSameWeapons = (g_bRememberChoice[client]) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
     Menu menu = new Menu(Menu_Weapons);
     char title[100];
@@ -114,8 +122,7 @@ void BuildWeaponsMenu(int client)
     Format(itemtext, sizeof(itemtext), "%T", "Random Weapons", client);
     menu.AddItem("Random", itemtext);
     menu.ExitButton = false;
-    g_hWeaponsMenus[client] = menu;
-    DisplayMenu(g_hWeaponsMenus[client], client, MENU_TIME_FOREVER);
+    menu.Display(client, MENU_TIME_FOREVER);
 }
 
 void BuildAvailableWeaponsMenu(int client, bool primary)
@@ -123,32 +130,30 @@ void BuildAvailableWeaponsMenu(int client, bool primary)
     Menu menu;
     if (primary)
     {
-        Reset_Handle(g_hPrimaryMenus[client]);
         menu = new Menu(Menu_Primary);
         menu.SetTitle("Primary Weapon:");
         menu.ExitButton = true;
     }
     else
     {
-        Reset_Handle(g_hSecondaryMenus[client]);
         menu = new Menu(Menu_Secondary);
         menu.SetTitle("Secondary Weapon:");
         menu.ExitBackButton = true;
     }
 
-    ArrayList weapons;
-    weapons = new ArrayList();
-    weapons = (primary) ? g_aPrimaryWeaponsAvailable : g_aSecondaryWeaponsAvailable;
+    g_aWeaponsList = new ArrayList();
+    g_aWeaponsList = (primary) ? g_aPrimaryWeaponsAvailable : g_aSecondaryWeaponsAvailable;
 
-    char currentWeapon[24];
-    currentWeapon = (primary) ? g_cPrimaryWeapon[client] : g_cSecondaryWeapon[client];
+    char currentWeapon[32];
+    currentWeapon = (primary) ? g_sPrimaryWeapon[client] : g_sSecondaryWeapon[client];
 
-    for (int i = 0; i < weapons.Length; i++)
+    for (int i = 0; i < g_aWeaponsList.Length; i++)
     {
-        char weapon[24];
-        weapons.GetString(i, weapon, sizeof(weapon));
+        char text[64];
+        char weapon[32];
+        g_aWeaponsList.GetString(i, weapon, sizeof(weapon));
 
-        char weaponMenuName[24];
+        char weaponMenuName[32];
         g_smWeaponMenuNames.GetString(weapon, weaponMenuName, sizeof(weaponMenuName));
 
         int weaponCount;
@@ -162,26 +167,23 @@ void BuildAvailableWeaponsMenu(int client, bool primary)
             menu.AddItem(weapon, weaponMenuName);
         else
         {
-            if ((weaponLimit == -1) || (weaponCount < weaponLimit))
+            if (StrEqual(weapon, "weapon_awp") && CheckCommandAccess(client, "dm_weapons_awp_override", ADMFLAG_CUSTOM5))
+            {
+                Format(text, sizeof(text), "%s (VIP)", weaponMenuName);
+                menu.AddItem(weapon, text);
+            }
+            else if ((weaponLimit == -1) || (weaponCount < weaponLimit))
                 menu.AddItem(weapon, weaponMenuName);
             else
             {
-                char text[64];
                 Format(text, sizeof(text), "%s (Limited)", weaponMenuName);
                 menu.AddItem(weapon, text, ITEMDRAW_DISABLED);
             }
         }
     }
-    if (primary)
-    {
-        g_hPrimaryMenus[client] = menu;
-        DisplayMenu(g_hPrimaryMenus[client], client, MENU_TIME_FOREVER);
-    }
-    else
-    {
-        g_hSecondaryMenus[client] = menu;
-        DisplayMenu(g_hSecondaryMenus[client], client, MENU_TIME_FOREVER);
-    }
+    menu.AddItem("random", "Random");
+
+    menu.Display(client, MENU_TIME_FOREVER);
 }
 
 public int Menu_Weapons(Menu menu, MenuAction action, int param1, int param2)
@@ -230,26 +232,26 @@ public int Menu_Weapons(Menu menu, MenuAction action, int param1, int param2)
             }
             if (g_cvDM_gun_menu_mode.IntValue == 1 || g_cvDM_gun_menu_mode.IntValue == 5)
             {
-                g_cPrimaryWeapon[param1] = "random";
-                g_cSecondaryWeapon[param1] = "random";
+                g_sPrimaryWeapon[param1] = "random";
+                g_sSecondaryWeapon[param1] = "random";
                 GiveSavedWeapons(param1, true, true);
             }
             else if (g_cvDM_gun_menu_mode.IntValue == 2)
             {
-                g_cPrimaryWeapon[param1] = "random";
-                g_cSecondaryWeapon[param1] = "none";
+                g_sPrimaryWeapon[param1] = "random";
+                g_sSecondaryWeapon[param1] = "none";
                 GiveSavedWeapons(param1, true, false);
             }
             else if (g_cvDM_gun_menu_mode.IntValue == 3)
             {
-                g_cPrimaryWeapon[param1] = "none";
-                g_cSecondaryWeapon[param1] = "random";
+                g_sPrimaryWeapon[param1] = "none";
+                g_sSecondaryWeapon[param1] = "random";
                 GiveSavedWeapons(param1, false, true);
             }
             else if (g_cvDM_gun_menu_mode.IntValue == 4)
             {
-                g_cPrimaryWeapon[param1] = "none";
-                g_cSecondaryWeapon[param1] = "none";
+                g_sPrimaryWeapon[param1] = "none";
+                g_sSecondaryWeapon[param1] = "none";
                 GiveSavedWeapons(param1, false, false);
             }
         }
@@ -260,8 +262,8 @@ public int Menu_Primary(Menu menu, MenuAction action, int param1, int param2)
 {
     if (action == MenuAction_Select)
     {
-        char weaponEntity[24];
-        char weaponName[24];
+        char weaponEntity[32];
+        char weaponName[32];
         int weaponCount;
         int weaponLimit;
 
@@ -269,30 +271,27 @@ public int Menu_Primary(Menu menu, MenuAction action, int param1, int param2)
         g_smWeaponMenuNames.GetString(weaponEntity, weaponName, sizeof(weaponName));
         g_smWeaponCounts.GetValue(weaponEntity, weaponCount);
         g_smWeaponLimits.GetValue(weaponEntity, weaponLimit);
-
-        if ((weaponLimit == -1) || (weaponCount < weaponLimit))
-            IncrementWeaponCount(weaponEntity);
-
-        DecrementWeaponCount(g_cPrimaryWeapon[param1]);
-        g_cPrimaryWeapon[param1] = weaponEntity;
+        strcopy(g_sPrimaryWeapon[param1], sizeof(g_sPrimaryWeapon[]), weaponEntity);
         g_bGiveFullLoadout[param1] = true;
+
         if (g_cvDM_gun_menu_mode.IntValue != 2)
             BuildAvailableWeaponsMenu(param1, false)
         else
             GiveSavedWeapons(param1, true, false);
+
         CPrintToChat(param1, "%t %t %s", "Chat Tag", "Primary Selection", weaponName);
     }
     else if (action == MenuAction_Cancel)
     {
         if (IsClientInGame(param1) && param2 == MenuCancel_Exit)
         {
-            DecrementWeaponCount(g_cPrimaryWeapon[param1]);
-            g_cPrimaryWeapon[param1] = "none";
+            g_sPrimaryWeapon[param1] = "none";
             g_bGiveFullLoadout[param1] = true;
             if (g_cvDM_gun_menu_mode.IntValue != 2)
                 BuildAvailableWeaponsMenu(param1, false)
             else
                 GiveSavedWeapons(param1, true, false);
+
             CPrintToChat(param1, "%t %t None", "Chat Tag", "Primary Selection");
         }
     }
@@ -302,8 +301,8 @@ public int Menu_Secondary(Menu menu, MenuAction action, int param1, int param2)
 {
     if (action == MenuAction_Select)
     {
-        char weaponEntity[24];
-        char weaponName[24];
+        char weaponEntity[32];
+        char weaponName[32];
         int weaponCount;
         int weaponLimit;
 
@@ -311,12 +310,8 @@ public int Menu_Secondary(Menu menu, MenuAction action, int param1, int param2)
         g_smWeaponMenuNames.GetString(weaponEntity, weaponName, sizeof(weaponName));
         g_smWeaponCounts.GetValue(weaponEntity, weaponCount);
         g_smWeaponLimits.GetValue(weaponEntity, weaponLimit);
+        strcopy(g_sSecondaryWeapon[param1], sizeof(g_sSecondaryWeapon[]), weaponEntity);
 
-        if ((weaponLimit == -1) || (weaponCount < weaponLimit))
-            IncrementWeaponCount(weaponEntity);
-
-        DecrementWeaponCount(g_cSecondaryWeapon[param1]);
-        g_cSecondaryWeapon[param1] = weaponEntity;
         if (g_cvDM_gun_menu_mode.IntValue == 2)
             BuildAvailableWeaponsMenu(param1, true)
         else
@@ -325,6 +320,7 @@ public int Menu_Secondary(Menu menu, MenuAction action, int param1, int param2)
                 GiveSavedWeapons(param1, true, true);
             else
                 GiveSavedWeapons(param1, false, true);
+
             CPrintToChat(param1, "%t %t %s", "Chat Tag", "Secondary Selection", weaponName);
         }
     }
@@ -335,8 +331,7 @@ public int Menu_Secondary(Menu menu, MenuAction action, int param1, int param2)
 
         if (IsClientInGame(param1) && param2 == MenuCancel_Exit)
         {
-            DecrementWeaponCount(g_cSecondaryWeapon[param1]);
-            g_cSecondaryWeapon[param1] = "none";
+            g_sSecondaryWeapon[param1] = "none";
             if (g_cvDM_gun_menu_mode.IntValue == 2)
                 BuildAvailableWeaponsMenu(param1, true)
             else
@@ -345,6 +340,7 @@ public int Menu_Secondary(Menu menu, MenuAction action, int param1, int param2)
                     GiveSavedWeapons(param1, true, true);
                 else
                     GiveSavedWeapons(param1, false, true);
+
                 CPrintToChat(param1, "%t %t None", "Chat Tag", "Secondary Selection");
             }
         }
@@ -364,7 +360,7 @@ void BuildConfigMenu(int client)
         if (StrContains(config, "config_loader.ini", false) == -1)
         {
             if (LoadConfigName(config))
-                menu.AddItem(config, g_cLoadConfigName);
+                menu.AddItem(config, g_sLoadConfigName);
             else
                 menu.AddItem(config, config, ITEMDRAW_DISABLED);
         }
@@ -428,7 +424,7 @@ public int Menu_ConfigMenu(Menu menu, MenuAction action, int param1, int param2)
         char info[PLATFORM_MAX_PATH];
         menu.GetItem(param2, info, sizeof(info));
         BuildConfigTimeMenu(param1);
-        strcopy(g_cLoadConfigMenu, sizeof(g_cLoadConfigMenu), info);
+        strcopy(g_sLoadConfigMenu, sizeof(g_sLoadConfigMenu), info);
     }
 }
 
@@ -451,15 +447,15 @@ public int Menu_SpawnEditor(Menu menu, MenuAction action, int param1, int param2
             g_bInEditMode = !g_bInEditMode;
             if (g_bInEditMode)
             {
-                EnableEditorMode(param1);
-                CreateTimer(1.0, RenderSpawnPoints, GetClientSerial(param1), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+                Spawns_EnableEditorMode(param1);
+                CreateTimer(1.0, Timer_RenderSpawnPoints, GetClientSerial(param1), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
             }
             else
-                DisableEditorMode(param1);
+                Spawns_DisableEditorMode(param1);
         }
         else if (StrEqual(info, "Nearest"))
         {
-            int spawnPoint = GetNearestSpawn(param1);
+            int spawnPoint = Spawns_GetNearestSpawn(param1);
             if (spawnPoint != -1)
             {
                 TeleportEntity(param1, g_fSpawnPositions[spawnPoint], g_fSpawnAngles[spawnPoint], NULL_VECTOR);
@@ -499,18 +495,18 @@ public int Menu_SpawnEditor(Menu menu, MenuAction action, int param1, int param2
         }
         else if (StrEqual(info, "Add"))
         {
-            AddSpawn(param1);
+            Spawns_AddSpawn(param1);
         }
         else if (StrEqual(info, "Insert"))
         {
-            InsertSpawn(param1);
+            Spawns_InsertSpawn(param1);
         }
         else if (StrEqual(info, "Delete"))
         {
-            int spawnPoint = GetNearestSpawn(param1);
+            int spawnPoint = Spawns_GetNearestSpawn(param1);
             if (spawnPoint != -1)
             {
-                DeleteSpawn(spawnPoint);
+                Spawns_DeleteSpawn(spawnPoint);
                 CPrintToChat(param1, "%t %t #%i (%i total).", "Chat Tag", "Spawn Editor Deleted Spawn", spawnPoint + 1, g_iSpawnPointCount);
             }
         }
@@ -561,7 +557,7 @@ public int Menu_ConfigTime(Menu menu, MenuAction action, int param1, int param2)
     {
         char info[32];
         menu.GetItem(param2, info, sizeof(info));
-        LoadTimeConfig(param1, g_cLoadConfigMenu, info);
+        LoadTimeConfig(param1, g_sLoadConfigMenu, info);
     }
 }
 
@@ -574,13 +570,8 @@ void DisplaySpawnStats(int client, bool console)
     {
         PrintToServer("////////////////////////////////////////////////////////////////");
         PrintToServer("Spawn Stats:");
+        PrintToServer("////////////////////////////////////////////////////////////////");
         Format(text, sizeof(text), "- Number of player spawns: %i", g_iNumberOfPlayerSpawns);
-        PrintToServer("%s", text);
-        Format(text, sizeof(text), "- LoS + Distance Attempts: %i", g_iLosDisSearchAttempts);
-        PrintToServer("%s", text);
-        Format(text, sizeof(text), "- LoS + Distance search success rate: %.2f\%", (float(g_iLosDisSearchSuccesses) / float(g_iLosDisSearchAttempts)) * 100)
-        PrintToServer("%s", text);
-        Format(text, sizeof(text), "- LoS + Distance search failure rate: %.2f\%", (float(g_iLosDisSearchFailures) / float(g_iLosDisSearchAttempts)) * 100);
         PrintToServer("%s", text);
         Format(text, sizeof(text), "- LoS Attempts: %i", g_iLosSearchAttempts);
         PrintToServer("%s", text);
@@ -604,12 +595,6 @@ void DisplaySpawnStats(int client, bool console)
         panel.SetTitle("Spawn Stats:");
         Format(text, sizeof(text), "- Number of player spawns: %i", g_iNumberOfPlayerSpawns);
         panel.DrawText(text);
-        Format(text, sizeof(text), "- LoS + Distance Attempts: %i", g_iLosDisSearchAttempts);
-        panel.DrawText(text);
-        Format(text, sizeof(text), "- LoS + Distance search success rate: %.2f\%", (float(g_iLosDisSearchSuccesses) / float(g_iLosDisSearchAttempts)) * 100);
-        panel.DrawText(text);
-        Format(text, sizeof(text), "- LoS + Distance search failure rate: %.2f\%", (float(g_iLosDisSearchFailures) / float(g_iLosDisSearchAttempts)) * 100);
-        panel.DrawText(text);
         Format(text, sizeof(text), "- LoS Attempts: %i", g_iLosSearchAttempts);
         panel.DrawText(text);
         Format(text, sizeof(text), "- LoS search success rate: %.2f\%", (float(g_iLosSearchSuccesses) / float(g_iLosSearchAttempts)) * 100);
@@ -631,12 +616,77 @@ void DisplaySpawnStats(int client, bool console)
     }
 }
 
-void Reset_Handle(Handle handle)
+public int Menu_WeaponStats(Menu menu, MenuAction action, int param1, int param2)
 {
-    if (handle != null)
+    if (action == MenuAction_End)
+        delete menu;
+}
+
+void DisplayWeaponStats(int client, bool console)
+{
+    char text[64];
+    char weapon[32];
+    char weaponMenuName[32];
+    int weaponCount;
+    int weaponLimit;
+
+    if (console)
     {
-        CancelMenu(handle);
-        CloseHandle(handle);
-        handle = null;
+        PrintToServer("////////////////////////////////////////////////////////////////");
+        PrintToServer("Weapon Primary Stats:");
+        PrintToServer("////////////////////////////////////////////////////////////////");
+        for (int i = 0; i < g_aPrimaryWeaponsAvailable.Length; i++)
+        {
+            g_aPrimaryWeaponsAvailable.GetString(i, weapon, sizeof(weapon));
+            g_smWeaponMenuNames.GetString(weapon, weaponMenuName, sizeof(weaponMenuName));
+            g_smWeaponCounts.GetValue(weapon, weaponCount);
+            g_smWeaponLimits.GetValue(weapon, weaponLimit);
+
+            Format(text, sizeof(text), "%s | Count: %i | Limit: %i", weaponMenuName, weaponCount, weaponLimit);
+            PrintToServer("%s", text);
+        }
+        PrintToServer("////////////////////////////////////////////////////////////////");
+        PrintToServer("Weapon Secondary Stats:");
+        for (int i = 0; i < g_aSecondaryWeaponsAvailable.Length; i++)
+        {
+            g_aSecondaryWeaponsAvailable.GetString(i, weapon, sizeof(weapon));
+            g_smWeaponMenuNames.GetString(weapon, weaponMenuName, sizeof(weaponMenuName));
+            g_smWeaponCounts.GetValue(weapon, weaponCount);
+            g_smWeaponLimits.GetValue(weapon, weaponLimit);
+
+            Format(text, sizeof(text), "%s | Count: %i | Limit: %i", weaponMenuName, weaponCount, weaponLimit);
+            PrintToServer("%s", text);
+        }
+        PrintToServer("////////////////////////////////////////////////////////////////");
+    }
+    else
+    {
+        Menu menu = new Menu(Menu_WeaponStats);
+        menu.SetTitle("Weapon Stats:");
+
+        for (int i = 0; i < g_aPrimaryWeaponsAvailable.Length; i++)
+        {
+            g_aPrimaryWeaponsAvailable.GetString(i, weapon, sizeof(weapon));
+            g_smWeaponMenuNames.GetString(weapon, weaponMenuName, sizeof(weaponMenuName));
+            g_smWeaponCounts.GetValue(weapon, weaponCount);
+            g_smWeaponLimits.GetValue(weapon, weaponLimit);
+
+            Format(text, sizeof(text), "%s | Count: %i | Limit: %i", weaponMenuName, weaponCount, weaponLimit);
+            menu.AddItem(weapon, text);
+        }
+
+        for (int i = 0; i < g_aSecondaryWeaponsAvailable.Length; i++)
+        {
+            g_aSecondaryWeaponsAvailable.GetString(i, weapon, sizeof(weapon));
+            g_smWeaponMenuNames.GetString(weapon, weaponMenuName, sizeof(weaponMenuName));
+            g_smWeaponCounts.GetValue(weapon, weaponCount);
+            g_smWeaponLimits.GetValue(weapon, weaponLimit);
+
+            Format(text, sizeof(text), "%s | Count: %i | Limit: %i", weaponMenuName, weaponCount, weaponLimit);
+            menu.AddItem(weapon, text);
+        }
+
+        menu.ExitButton = true;
+        menu.Display(client, MENU_TIME_FOREVER);
     }
 }

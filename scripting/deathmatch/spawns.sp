@@ -1,37 +1,36 @@
-void RespawnDead()
+void Spawns_RespawnAll()
 {
     for (int i = 1; i <= MaxClients; i++)
-        RequestFrame(Frame_RespawnDead, GetClientSerial(i));
-}
-
-void RespawnAll()
-{
-    for (int i = 1; i <= MaxClients; i++)
+    {
+        if (!IsClientInGame(i))
+            continue;
         RequestFrame(Frame_RespawnAll, GetClientSerial(i));
+    }
 }
 
 public Action Timer_Respawn(Handle timer, any serial)
 {
     int client = GetClientFromSerial(serial);
-    if (!g_bRoundEnded && client && (GetClientTeam(client) > CS_TEAM_SPECTATOR) && !IsPlayerAlive(client))
-    {
-        UpdateSpawnPoints();
-        g_bPlayerMoved[client] = false;
-        g_iHealthshotCount[client] = 0;
-        CS_RespawnPlayer(client);
-    }
+    if (g_bRoundEnded || !IsValidClient(client, true) || GetClientTeam(client) <= CS_TEAM_SPECTATOR || IsPlayerAlive(client))
+        return Plugin_Handled;
+
+    g_bPlayerMoved[client] = false;
+    g_iHealthshotCount[client] = 0;
+    CS_RespawnPlayer(client);
+
+    return Plugin_Handled;
 }
 
-void EnableSpawnProtection(int client)
+void Spawns_EnableSpawnProtection(int client)
 {
     int clientTeam = GetClientTeam(client);
     /* Disable damage */
     SetEntProp(client, Prop_Data, "m_takedamage", 0, 1);
     /* Set player color */
     if (clientTeam == CS_TEAM_T)
-        SetPlayerColor(client, g_iColorT);
+        Spawns_SetPlayerColor(client, g_iColorT);
     else if (clientTeam == CS_TEAM_CT)
-        SetPlayerColor(client, g_iColorCT);
+        Spawns_SetPlayerColor(client, g_iColorCT);
     /* Create timer to remove spawn protection */
     CreateTimer(g_cvDM_spawn_protection_time.FloatValue, Timer_DisableSpawnProtection, GetClientSerial(client));
 }
@@ -39,36 +38,46 @@ void EnableSpawnProtection(int client)
 public Action Timer_DisableSpawnProtection(Handle timer, any serial)
 {
     int client = GetClientFromSerial(serial);
-    if (client && (GetClientTeam(client) > CS_TEAM_SPECTATOR) && IsPlayerAlive(client))
-    {
-        /* Enable damage */
-        SetEntProp(client, Prop_Data, "m_takedamage", 2, 1);
-        /* Set player color */
-        SetPlayerColor(client, g_iDefaultColor);
-    }
+    if (!IsValidClient(client, true) || GetClientTeam(client) <= CS_TEAM_SPECTATOR || !IsPlayerAlive(client))
+        return Plugin_Handled;
+
+    /* Enable damage */
+    SetEntProp(client, Prop_Data, "m_takedamage", 2, 1);
+    /* Set player color */
+    Spawns_SetPlayerColor(client, g_iDefaultColor);
+
+    return Plugin_Handled;
 }
 
-void SetPlayerColor(int client, const int color[4])
+void Spawns_SetPlayerColor(int client, const int color[4])
 {
+    /* Set the player color to the specified variables */
     SetEntityRenderMode(client, (color[3] == 255) ? RENDER_NORMAL : RENDER_TRANSCOLOR);
     SetEntityRenderColor(client, color[0], color[1], color[2], color[3]);
 }
 
-void EnableEditorMode(int client)
+void Spawns_EnableEditorMode(int client)
 {
+    /* Set client edit mode to false */
     g_bInEditModeClient[client] = true;
-    SetEntProp(client, Prop_Data, "m_takedamage", 0, 1);
-    SetEntProp(client, Prop_Data, "m_CollisionGroup", 2);
-    SetEntPropFloat(client, Prop_Data, "m_flGravity", 0.2);
-    SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.5);
+    if (IsPlayerAlive(client))
+    {
+        /* After checking client alive, set attributes for God mode */
+        SetEntProp(client, Prop_Data, "m_takedamage", 0, 1);
+        SetEntProp(client, Prop_Data, "m_CollisionGroup", 2);
+        SetEntPropFloat(client, Prop_Data, "m_flGravity", 0.2);
+        SetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue", 1.5);
+    }
     CPrintToChat(client, "%t %t", "Chat Tag", "Spawn Editor Enabled");
 }
 
-void DisableEditorMode(int client)
+void Spawns_DisableEditorMode(int client)
 {
+    /* Set client edit mode to false */
     g_bInEditModeClient[client] = false;
     if (IsPlayerAlive(client))
     {
+        /* After checking client alive, remove attributes for God mode */
         SetEntProp(client, Prop_Data, "m_takedamage", 2, 1);
         SetEntProp(client, Prop_Data, "m_CollisionGroup", 5);
         SetEntPropFloat(client, Prop_Data, "m_flGravity", 1.0);
@@ -77,22 +86,22 @@ void DisableEditorMode(int client)
     CPrintToChat(client, "%t %t", "Chat Tag", "Spawn Editor Disabled");
 }
 
-public Action RenderSpawnPoints(Handle timer, any serial)
+public Action Timer_RenderSpawnPoints(Handle timer, any serial)
 {
     if (!g_bInEditMode)
         return Plugin_Stop;
 
     int client = GetClientFromSerial(serial);
-    if (!client)
+    if (!IsValidClient(client))
         return Plugin_Stop;
 
     for (int i = 0; i < g_iSpawnPointCount; i++)
-        DisplaySpawnPoint(client, g_fSpawnPositions[i], g_fSpawnAngles[i], 40.0);
+        Spawns_DisplaySpawnPoint(client, g_fSpawnPositions[i], g_fSpawnAngles[i], 40.0);
 
     return Plugin_Continue;
 }
 
-void DisplaySpawnPoint(int client, float position[3], float angles[3], float size)
+void Spawns_DisplaySpawnPoint(int client, float position[3], float angles[3], float size)
 {
     float direction[3];
     float spawnPosition[3];
@@ -113,7 +122,7 @@ void DisplaySpawnPoint(int client, float position[3], float angles[3], float siz
     TE_SendToClient(client);
 }
 
-int GetNearestSpawn(int client)
+public int Spawns_GetNearestSpawn(int client)
 {
     if (g_iSpawnPointCount == 0)
     {
@@ -139,7 +148,7 @@ int GetNearestSpawn(int client)
     return nearestPoint;
 }
 
-void AddSpawn(int client)
+void Spawns_AddSpawn(int client)
 {
     if (g_iSpawnPointCount >= MAX_SPAWNS)
     {
@@ -152,7 +161,7 @@ void AddSpawn(int client)
     CPrintToChat(client, "%t %t", "Chat Tag", "Spawn Editor Spawn Added", g_iSpawnPointCount, g_iSpawnPointCount);
 }
 
-void InsertSpawn(int client)
+void Spawns_InsertSpawn(int client)
 {
     if (g_iSpawnPointCount >= MAX_SPAWNS)
     {
@@ -161,16 +170,16 @@ void InsertSpawn(int client)
     }
 
     if (g_iSpawnPointCount == 0)
-        AddSpawn(client);
+        Spawns_AddSpawn(client);
     else
     {
-        /* Move spawn points down the list to make room for insertion. */
+        /* Move spawn points down the list to make room for insertion */
         for (int i = g_iSpawnPointCount - 1; i >= g_iLastEditorSpawnPoint[client]; i--)
         {
             g_fSpawnPositions[i + 1] = g_fSpawnPositions[i];
             g_fSpawnAngles[i + 1] = g_fSpawnAngles[i];
         }
-        /* Insert new spawn point. */
+        /* Insert new spawn point */
         GetClientAbsOrigin(client, g_fSpawnPositions[g_iLastEditorSpawnPoint[client]]);
         GetClientAbsAngles(client, g_fSpawnAngles[g_iLastEditorSpawnPoint[client]]);
         g_iSpawnPointCount++;
@@ -178,9 +187,9 @@ void InsertSpawn(int client)
     }
 }
 
-void DeleteSpawn(int spawnIndex)
+void Spawns_DeleteSpawn(int spawnIndex)
 {
-    for (int i = spawnIndex; i < (g_iSpawnPointCount - 1); i++)
+    for (int i = spawnIndex; i < g_iSpawnPointCount - 1; i++)
     {
         g_fSpawnPositions[i] = g_fSpawnPositions[i + 1];
         g_fSpawnAngles[i] = g_fSpawnAngles[i + 1];
@@ -188,22 +197,21 @@ void DeleteSpawn(int spawnIndex)
     g_iSpawnPointCount--;
 }
 
-/* Updates the occupation status of all spawn points. */
-void UpdateSpawnPoints()
+/* Updates the occupation status of all spawn points */
+void Spawns_UpdateSpawnPoints()
 {
-    if (g_cvDM_enabled.BoolValue && (g_iSpawnPointCount > 0))
+    if (g_cvDM_enabled.BoolValue && g_iSpawnPointCount > 0)
     {
-        /* Retrieve player positions. */
+        /* Retrieve player positions */
         float playerPositions[MAXPLAYERS+1][3];
         int numberOfAlivePlayers = 0;
 
         for (int i = 1; i <= MaxClients; i++)
         {
-            if (IsClientInGame(i) && (GetClientTeam(i) > CS_TEAM_SPECTATOR) && IsPlayerAlive(i))
-            {
-                GetClientAbsOrigin(i, playerPositions[numberOfAlivePlayers]);
-                numberOfAlivePlayers++;
-            }
+            if (!IsClientInGame(i) || GetClientTeam(i) <= CS_TEAM_SPECTATOR || !IsPlayerAlive(i))
+                continue;
+            GetClientAbsOrigin(i, playerPositions[numberOfAlivePlayers]);
+            numberOfAlivePlayers++;
         }
 
         /* Check each spawn point for occupation by proximity to alive players */
@@ -213,90 +221,88 @@ void UpdateSpawnPoints()
             for (int j = 0; j < numberOfAlivePlayers; j++)
             {
                 float fDistance = GetVectorDistance(g_fSpawnPositions[i], playerPositions[j], true);
-                if (fDistance < 10000.0)
-                {
-                    g_bSpawnPointOccupied[i] = true;
-                    break;
-                }
+                if (fDistance > 10000.0)
+                    continue;
+                g_bSpawnPointOccupied[i] = true;
+                break;
             }
         }
     }
 }
 
-void MovePlayer(int client)
+void Spawns_MovePlayer(int client)
 {
     g_iNumberOfPlayerSpawns++; /* Stats */
 
     int spawnPoint;
+    int spawnLoSAttempts = g_cvDM_spawn_los_attempts.IntValue;
+    int spawnDisAttempts = g_cvDM_spawn_distance_attempts.IntValue;
+    float spawnMinDistance = g_cvDM_spawn_distance.FloatValue;
     bool spawnPointFound = false;
 
     /* Retrieve enemy positions if required by LoS/distance spawning (at eye level for LoS checking). */
     if (g_cvDM_spawn_los.BoolValue)
     {
-        g_iLosDisSearchAttempts++; /* Stats */
-
-        /* Try to find a suitable spawn point with a clear line of sight within distance. */
-        for (int i = 0; i < g_cvDM_spawn_los_attempts.IntValue; i++)
-        {
-            spawnPoint = GetRandomInt(0, g_iSpawnPointCount - 1);
-
-            if (g_bSpawnPointOccupied[spawnPoint])
-                continue;
-
-            if (!IsSpawnPointSuitable(spawnPoint, client, true))
-                continue;
-            else
-            {
-                spawnPointFound = true;
-                break;
-            }
-        }
-        /* Stats */
-        if (spawnPointFound)
-            g_iLosDisSearchSuccesses++;
-        else
-            g_iLosDisSearchFailures++;
-    }
-
-    /* First fallback. Find a random unoccupied spawn point with a clear LoS. */
-    if (!spawnPointFound && g_cvDM_spawn_los.BoolValue)
-    {
         g_iLosSearchAttempts++; /* Stats */
 
-        for (int i = 0; i < g_cvDM_spawn_los_attempts.IntValue; i++)
+        /* Try to find a suitable spawn point with a clear line of sight within distance. */
+        for (int i = 0; i <= spawnLoSAttempts; i++)
         {
+            #if defined DEBUG
+            PrintToServer("LosAttempt = %i", i);
+            #endif
+
             spawnPoint = GetRandomInt(0, g_iSpawnPointCount - 1);
 
             if (g_bSpawnPointOccupied[spawnPoint])
                 continue;
 
-            if (!IsSpawnPointSuitable(spawnPoint, client, true))
+            if (!Spawns_IsSuitableDistance(spawnPoint, client))
                 continue;
-            else
-            {
-                spawnPointFound = true;
-                break;
-            }
+
+            if (!Spawns_IsSuitableLineOfSight(spawnPoint, client))
+                continue;
+
+            #if defined DEBUG
+            PrintToServer("Los SpawnPoint Found = %i", spawnPoint);
+            #endif
+            spawnPointFound = true;
+            break;
         }
         /* Stats */
         if (spawnPointFound)
             g_iLosSearchSuccesses++;
         else
             g_iLosSearchFailures++;
+
+        #if defined DEBUG
+        if (spawnPointFound)
+            PrintToServer("LoS and Distance | Found spawn point");
+        else
+            PrintToServer("LoS and Distance | Did not find spawn point");
+        #endif
     }
 
-    /* Second fallback. Find a random unoccupied spawn point at a suitable distance. */
-    if (!spawnPointFound && g_cvDM_spawn_distance.FloatValue > 0.0)
+    /* First fallback. Find a random unoccupied spawn point at a suitable distance. */
+    if (!spawnPointFound)
     {
         g_iDistanceSearchAttempts++; /* Stats */
 
-        for (int i = 0; i < g_cvDM_spawn_distance_attempts.IntValue; i++)
+        if (spawnMinDistance < 0.0)
+            spawnMinDistance = 0.0
+
+        for (int i = 0; i <= spawnDisAttempts; i++)
         {
+            #if defined DEBUG
+            PrintToServer("DisAttempt = %i", i);
+            #endif
+
             spawnPoint = GetRandomInt(0, g_iSpawnPointCount - 1);
+
             if (g_bSpawnPointOccupied[spawnPoint])
                 continue;
 
-            if (!IsSpawnPointSuitable(spawnPoint, client, false))
+            if (!Spawns_IsSuitableDistance(spawnPoint, client))
                 continue;
             else
             {
@@ -309,12 +315,19 @@ void MovePlayer(int client)
             g_iDistanceSearchSuccesses++;
         else
             g_iDistanceSearchFailures++;
+
+        #if defined DEBUG
+        if (spawnPointFound)
+            PrintToServer("Distance | Found spawn point");
+        else
+            PrintToServer("Distance | Did not find spawn point");
+        #endif
     }
 
     /* Final fallback. Find a random unoccupied spawn point. */
     if (!spawnPointFound)
     {
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i <= MAX_SPAWNS; i++)
         {
             spawnPoint = GetRandomInt(0, g_iSpawnPointCount - 1);
             if (!g_bSpawnPointOccupied[spawnPoint])
@@ -323,74 +336,86 @@ void MovePlayer(int client)
                 break;
             }
         }
+
+        #if defined DEBUG
+        PrintToServer("Final Fallback | spawn point");
+        #endif
     }
 
     if (spawnPointFound)
     {
         TeleportEntity(client, g_fSpawnPositions[spawnPoint], g_fSpawnAngles[spawnPoint], NULL_VECTOR);
         g_bSpawnPointOccupied[spawnPoint] = true;
-        g_bPlayerMoved[client] = true;
     }
     else
         g_iSpawnPointSearchFailures++; /* Stats */
 }
 
-bool IsSpawnPointSuitable(int spawnPoint, int client, bool lineofsight)
+public bool Spawns_IsSuitableDistance(int spawnPoint, int client)
 {
-    bool hasClearLineOfSight = true;
+    bool freeForAll = g_cvDM_free_for_all.BoolValue;
     float enemyEyePositions[MAXPLAYERS+1][3];
+    float spawnMinDistance = g_cvDM_spawn_distance.FloatValue;
 
     for (int i = 1; i <= MaxClients; i++)
     {
-        if (IsClientInGame(i) && !IsClientSourceTV(i) && GetClientTeam(i) > CS_TEAM_SPECTATOR && IsPlayerAlive(i) && i != client)
-        {
-            if (g_cvDM_free_for_all.BoolValue || GetClientTeam(i) != GetClientTeam(client))
-                GetClientEyePosition(i, enemyEyePositions[i]);
+        if (!IsClientInGame(i) || GetClientTeam(i) <= CS_TEAM_SPECTATOR || !IsPlayerAlive(i) || i == client)
+            continue;
 
-            float fDistance = GetVectorDistance(g_fSpawnPositions[spawnPoint], enemyEyePositions[i], true);
-            if (fDistance < g_cvDM_spawn_distance.FloatValue)
-                return false;
-        }
-    }
+        if (freeForAll || GetClientTeam(i) != GetClientTeam(client))
+            GetClientEyePosition(i, enemyEyePositions[i]);
 
-    if (lineofsight)
-    {
-        float spawnPointEyePosition[3];
-        AddVectors(g_fSpawnPositions[spawnPoint], g_fEyeOffset, spawnPointEyePosition);
-
-        for (int j = 1; j <= MaxClients; j++)
-        {
-            Handle trace = TR_TraceRayFilterEx(spawnPointEyePosition, enemyEyePositions[j], MASK_PLAYERSOLID_BRUSHONLY, RayType_EndPoint, TraceEntityFilterPlayer);
-            if (!TR_DidHit(trace))
-            {
-                hasClearLineOfSight = false;
-                delete trace;
-                break;
-            }
-            delete trace;
-        }
-
-        if (hasClearLineOfSight)
-            return true;
-        else
+        float fDistance = GetVectorDistance(g_fSpawnPositions[spawnPoint], enemyEyePositions[i], true);
+        if (fDistance < spawnMinDistance)
             return false;
     }
-    else
-        return true;
+
+    return true;
 }
 
-public bool TraceEntityFilterPlayer(int entity, int contentsMask)
+public bool Spawns_IsSuitableLineOfSight(int spawnPoint, int client)
+{
+    bool freeForAll = g_cvDM_free_for_all.BoolValue;
+    bool hasClearLineOfSight = true;
+    float enemyEyePositions[MAXPLAYERS+1][3];
+    float spawnPointEyePosition[3];
+
+    AddVectors(g_fSpawnPositions[spawnPoint], g_fEyeOffset, spawnPointEyePosition);
+
+    for (int i = 1; i <= MaxClients; i++)
+    {
+        if (!IsClientInGame(i) || GetClientTeam(i) <= CS_TEAM_SPECTATOR || !IsPlayerAlive(i) || i == client)
+            continue;
+
+        if (freeForAll || GetClientTeam(i) != GetClientTeam(client))
+            GetClientEyePosition(i, enemyEyePositions[i]);
+
+        Handle trace = TR_TraceRayFilterEx(spawnPointEyePosition, enemyEyePositions[i], MASK_PLAYERSOLID_BRUSHONLY, RayType_EndPoint, Spawns_TraceEntityFilterPlayer);
+
+        if (!TR_DidHit(trace))
+        {
+            hasClearLineOfSight = false;
+            delete trace;
+            break;
+        }
+        delete trace;
+    }
+
+    if (hasClearLineOfSight)
+        return true;
+    else
+        return false;
+}
+
+public bool Spawns_TraceEntityFilterPlayer(int entity, int contentsMask)
 {
     if ((entity > 0) && (entity <= MaxClients)) return false;
     return true;
 }
 
-void ResetSpawnStats()
+void Spawns_ResetSpawnStats()
 {
     g_iNumberOfPlayerSpawns = 0;
-    g_iLosDisSearchAttempts = 0;
-    g_iLosDisSearchSuccesses = 0;
-    g_iLosDisSearchFailures = 0;
     g_iLosSearchAttempts = 0;
     g_iLosSearchSuccesses = 0;
     g_iLosSearchFailures = 0;

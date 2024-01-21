@@ -6,15 +6,34 @@ void LoadCvars()
     g_cvDM_enabled = CreateConVar("dm_enabled", "1", "Enable Deathmatch.");
     g_cvDM_enable_valve_deathmatch = CreateConVar("dm_enable_valve_deathmatch", "0", "Enable compatibility for Valve Deathmatch (game_type 1 & game_mode 2) or Custom (game_type 3 & game_mode 0).");
     g_cvDM_welcomemsg = CreateConVar("dm_welcomemsg", "1", "Display a message saying that your server is running Deathmatch.");
+    g_cvDM_infomsg = CreateConVar("dm_infomsg", "1", "Display a message informing the players of current settings and options.");
     g_cvDM_free_for_all = CreateConVar("dm_free_for_all", "0", "Free for all mode.");
     g_cvDM_hide_radar = CreateConVar("dm_hide_radar", "0", "Hides the radar from players.");
+    g_cvDM_reset_score = CreateConVar("dm_reset_score", "0", "Allow clients the ability to reset their score.");
     g_cvDM_display_killfeed = CreateConVar("dm_display_killfeed", "1", "Enable kill feed to be displayed to all players.");
     g_cvDM_display_killfeed_player = CreateConVar("dm_display_killfeed_player", "0", "Enable to show kill feed to only the attacker and victim.");
+    g_cvDM_display_killfeed_player_allow_client = CreateConVar("dm_display_killfeed_player_allow_client", "1", "Enable clients to have their own kill feed.");
     g_cvDM_display_damage_panel = CreateConVar("dm_display_damage_panel", "0", "Display a panel showing enemies health and the damage done to a player.");
+    g_cvDM_display_damage_panel_allow_client = CreateConVar("dm_display_damage_panel_allow_client", "1", "Enable clients to have their own damage panel.");
     g_cvDM_display_damage_popup = CreateConVar("dm_display_damage_popup", "0", "Display text above the enemy showing damage done to an enemy.");
+    g_cvDM_display_damage_popup_allow_client = CreateConVar("dm_display_damage_popup_allow_client", "1", "Enable clients to have their own damage popup.");
     g_cvDM_display_damage_text = CreateConVar("dm_display_damage_text", "0", "Display text in chat showing damage done to an enemy.");
-    g_cvDM_sounds_bodyshots = CreateConVar("dm_sounds_bodyshots", "1", "Enable the sounds of bodyshots.");
-    g_cvDM_sounds_headshots = CreateConVar("dm_sounds_headshots", "1", "Enable the sounds of headshots.");
+    g_cvDM_display_damage_text_allow_client = CreateConVar("dm_display_damage_text_allow_client", "1", "Enable clients to have their own damage text.");
+    g_cvDM_sounds_bell_hit = CreateConVar("dm_sounds_bell_hit", "0", "Play bell sound when a player hits another player.");
+    g_cvDM_sounds_bell_hit_allow_client = CreateConVar("dm_sounds_bell_hit_allow_client", "1", "Enable clients to have their bell sound for hits.");
+    g_cvDM_sounds_bell_kill = CreateConVar("dm_sounds_bell_kill", "0", "Play bell sound when a player kills another player.");
+    g_cvDM_sounds_bell_kill_allow_client = CreateConVar("dm_sounds_bell_kill_allow_client", "1", "Enable clients to have their bell sound for kills.");
+    g_cvDM_sounds_bell_headshot = CreateConVar("dm_sounds_bell_headshot", "0", "Play bell sound when a player headshots another player.");
+    g_cvDM_sounds_bell_headshot_allow_client = CreateConVar("dm_sounds_bell_headshot_allow_client", "1", "Enable clients to have their bell sound for headshots.");
+    g_cvDM_sounds_deaths = CreateConVar("dm_sounds_deaths", "1", "Filter the sounds of player deaths.");
+    g_cvDM_sounds_deaths_allow_client = CreateConVar("dm_sounds_deaths_allow_client", "1", "Enable clients to toggle the sounds of player deaths.");
+    g_cvDM_sounds_bodyshots = CreateConVar("dm_sounds_bodyshots", "1", "Filter the sounds of bodyshots.");
+    g_cvDM_sounds_bodyshots_allow_client = CreateConVar("dm_sounds_bodyshots_allow_client", "1", "Enable clients to toggle the sounds of bodyshots.");
+    g_cvDM_sounds_headshots = CreateConVar("dm_sounds_headshots", "1", "Filter the sounds of headshots.");
+    g_cvDM_sounds_headshots_allow_client = CreateConVar("dm_sounds_headshots_allow_client", "1", "Enable clients to toggle the sounds of headshots.");
+    g_cvDM_sounds_gunshots = CreateConVar("dm_sounds_gunshots", "1", "Filter the sounds of gunshots.");
+    g_cvDM_sounds_gunshots_allow_client = CreateConVar("dm_sounds_gunshots_allow_client", "1", "Enable clients to toggle the sounds of gunshots.");
+    g_cvDM_sounds_gunshots_distance = CreateConVar("dm_sounds_gunshots_distance", "1200.0", "Minimum distance from enemies at which a player can hear gunshots.");
     g_cvDM_headshot_only = CreateConVar("dm_headshot_only", "0", "Headshot only mode.");
     g_cvDM_headshot_only_allow_client = CreateConVar("dm_headshot_only_allow_client", "1", "Enable players to have their own personal headshot only mode.");
     g_cvDM_headshot_only_allow_world = CreateConVar("dm_headshot_only_allow_world", "0", "Enable world damage during headshot only mode.");
@@ -27,7 +46,7 @@ void LoadCvars()
     g_cvDM_spawn_default = CreateConVar("dm_spawn_default", "0", "Enable default map spawn points. Overrides Valve Deathmatch respawning.");
     g_cvDM_spawn_los = CreateConVar("dm_spawn_los", "1", "Enable line of sight spawning. If enabled, players will be spawned at a point where they cannot see enemies, and enemies cannot see them.");
     g_cvDM_spawn_los_attempts = CreateConVar("dm_spawn_los_attempts", "64", "Maximum number of attempts to find a suitable line of sight spawn point.");
-    g_cvDM_spawn_distance = CreateConVar("dm_spawn_distance", "500000.0", "Minimum distance from enemies at which a player can spawn.");
+    g_cvDM_spawn_distance = CreateConVar("dm_spawn_distance", "100000.0", "Minimum distance from enemies at which a player can spawn.");
     g_cvDM_spawn_distance_attempts = CreateConVar("dm_spawn_distance_attempts", "64", "Maximum number of attempts to find a suitable distance spawn point.");
     g_cvDM_spawn_protection_time = CreateConVar("dm_spawn_protection_time", "1.0", "Spawn protection time.");
     g_cvDM_remove_blood_player = CreateConVar("dm_remove_blood_player", "1", "Remove blood splatter from player.");
@@ -46,12 +65,13 @@ void LoadCvars()
     g_cvDM_replenish_ammo_reload = CreateConVar("dm_replenish_ammo_reload", "0", "Replenish ammo on reload action.");
     g_cvDM_replenish_ammo_kill = CreateConVar("dm_replenish_ammo_kill", "1", "Replenish ammo on kill.");
     g_cvDM_replenish_ammo_type = CreateConVar("dm_replenish_ammo_type", "2", "Replenish type. 1) Clip only. 2) Reserve only. 3) Both.");
-    g_cvDM_replenish_ammo_hs_kill = CreateConVar("dm_replenish_ammo_hs_kill", "0", "Replenish ammo  on headshot kill.");
+    g_cvDM_replenish_ammo_hs_kill = CreateConVar("dm_replenish_ammo_hs_kill", "0", "Replenish ammo on headshot kill.");
     g_cvDM_replenish_ammo_hs_type = CreateConVar("dm_replenish_ammo_hs_type", "1", "Replenish type. 1) Clip only. 2) Reserve only. 3) Both.");
     g_cvDM_replenish_grenade = CreateConVar("dm_replenish_grenade", "0", "Unlimited player grenades.");
     g_cvDM_replenish_grenade_kill = CreateConVar("dm_replenish_grenade_kill", "0", "Give players their grenade back on successful kill.");
     g_cvDM_nade_messages = CreateConVar("dm_nade_messages", "1", "Disable grenade messages.");
     g_cvDM_cash_messages = CreateConVar("dm_cash_messages", "1", "Disable cash award messages.");
+    g_cvDM_hp_enable = CreateConVar("dm_hp_enable", "1", "Enable players to earn HP for every kill.");
     g_cvDM_hp_start = CreateConVar("dm_hp_start", "100", "Spawn Health Points (HP).");
     g_cvDM_hp_max = CreateConVar("dm_hp_max", "100", "Maximum Health Points (HP).");
     g_cvDM_hp_kill = CreateConVar("dm_hp_kill", "5", "Health Points (HP) per kill.");
@@ -59,6 +79,7 @@ void LoadCvars()
     g_cvDM_hp_knife = CreateConVar("dm_hp_knife", "50", "Health Points (HP) per knife kill.");
     g_cvDM_hp_nade = CreateConVar("dm_hp_nade", "30", "Health Points (HP) per nade kill.");
     g_cvDM_hp_messages = CreateConVar("dm_hp_messages", "1", "Display HP messages.");
+    g_cvDM_ap_enable = CreateConVar("dm_ap_enable", "1", "Enable players to earn AP for every kill.");
     g_cvDM_ap_max = CreateConVar("dm_ap_max", "100", "Maximum Armor Points (AP).");
     g_cvDM_ap_kill = CreateConVar("dm_ap_kill", "5", "Armor Points (AP) per kill.");
     g_cvDM_ap_headshot = CreateConVar("dm_ap_headshot", "10", "Armor Points (AP) per headshot kill.");
@@ -87,93 +108,36 @@ void LoadCvars()
     g_cvDM_nades_smoke = CreateConVar("dm_nades_smoke", "0", "Number of smoke grenades to give each player.");
     g_cvDM_nades_tactical = CreateConVar("dm_nades_tactical", "0", "Number of tactical grenades to give each player.");
     g_cvDM_armor = CreateConVar("dm_armor", "2", "Give players armor. 0) Disable. 1) Chest. 2) Chest + Helmet.");
+    /* Cookie Preferences */
+    g_cvDM_cookie_damage_panel = CreateConVar("dm_cookie_damage_panel", "0", "Default damage panel cookie preference.");
+    g_cvDM_cookie_damage_popup = CreateConVar("dm_cookie_damage_popup", "0", "Default damage popup cookie preference.");
+    g_cvDM_cookie_damage_text = CreateConVar("dm_cookie_damage_text", "0", "Default damage text cookie preference.");
+    g_cvDM_cookie_killfeed = CreateConVar("dm_cookie_killfeed", "0", "Default kill feed cookie preference.");
+    g_cvDM_cookie_sounds_death = CreateConVar("dm_cookie_sounds_death", "0", "Default death sounds cookie preference.");
+    g_cvDM_cookie_sounds_gunshots = CreateConVar("dm_cookie_sounds_gunshots", "0", "Default gunshot sounds cookie preference.");
+    g_cvDM_cookie_sounds_bodyshots = CreateConVar("dm_cookie_sounds_bodyshots", "0", "Default bodyshot sounds cookie preference.");
+    g_cvDM_cookie_sounds_headshots = CreateConVar("dm_cookie_sounds_headshots", "0", "Default headshot sounds cookie preference.");
+    g_cvDM_cookie_headshot_only = CreateConVar("dm_cookie_headshot_only", "0", "Default headshot only cookie preference.");
+    g_cvDM_cookie_bell_hit = CreateConVar("dm_cookie_bell_hit", "0", "Default cookie preference.");
+    g_cvDM_cookie_bell_kill = CreateConVar("dm_cookie_bell_kill", "0", "Default cookie preference.");
+    g_cvDM_cookie_bell_headshot = CreateConVar("dm_cookie_bell_headshot", "0", "Default cookie preference.");
 }
 
 void LoadChangeHooks()
 {
     /* Hook Console Variables */
     g_cvDM_enabled.AddChangeHook(Event_CvarChange);
-    g_cvDM_config_name.AddChangeHook(Event_CvarChange);
-    g_cvDM_enable_valve_deathmatch.AddChangeHook(Event_CvarChange);
-    g_cvDM_welcomemsg.AddChangeHook(Event_CvarChange);
-    g_cvDM_free_for_all.AddChangeHook(Event_CvarChange);
-    g_cvDM_hide_radar.AddChangeHook(Event_CvarChange);
-    g_cvDM_display_killfeed.AddChangeHook(Event_CvarChange);
-    g_cvDM_display_killfeed_player.AddChangeHook(Event_CvarChange);
-    g_cvDM_display_damage_panel.AddChangeHook(Event_CvarChange);
-    g_cvDM_display_damage_popup.AddChangeHook(Event_CvarChange);
-    g_cvDM_display_damage_text.AddChangeHook(Event_CvarChange);
-    g_cvDM_sounds_bodyshots.AddChangeHook(Event_CvarChange);
-    g_cvDM_sounds_headshots.AddChangeHook(Event_CvarChange);
-    g_cvDM_headshot_only.AddChangeHook(Event_CvarChange);
-    g_cvDM_headshot_only_allow_client.AddChangeHook(Event_CvarChange);
-    g_cvDM_headshot_only_allow_world.AddChangeHook(Event_CvarChange);
-    g_cvDM_headshot_only_allow_knife.AddChangeHook(Event_CvarChange);
-    g_cvDM_headshot_only_allow_taser.AddChangeHook(Event_CvarChange);
-    g_cvDM_headshot_only_allow_nade.AddChangeHook(Event_CvarChange);
-    g_cvDM_respawn.AddChangeHook(Event_CvarChange);
-    g_cvDM_respawn_valve.AddChangeHook(Event_CvarChange);
-    g_cvDM_respawn_time.AddChangeHook(Event_CvarChange);
-    g_cvDM_spawn_default.AddChangeHook(Event_CvarChange);
-    g_cvDM_spawn_los.AddChangeHook(Event_CvarChange);
-    g_cvDM_spawn_los_attempts.AddChangeHook(Event_CvarChange);
-    g_cvDM_spawn_distance.AddChangeHook(Event_CvarChange);
-    g_cvDM_spawn_protection_time.AddChangeHook(Event_CvarChange);
-    g_cvDM_remove_knife_damage.AddChangeHook(Event_CvarChange);
-    g_cvDM_remove_cash.AddChangeHook(Event_CvarChange);
-    g_cvDM_remove_chickens.AddChangeHook(Event_CvarChange);
-    g_cvDM_remove_buyzones.AddChangeHook(Event_CvarChange);
     g_cvDM_remove_objectives.AddChangeHook(Event_CvarChange);
-    g_cvDM_remove_ragdoll.AddChangeHook(Event_CvarChange);
-    g_cvDM_remove_ragdoll_time.AddChangeHook(Event_CvarChange);
-    g_cvDM_remove_spawn_weapons.AddChangeHook(Event_CvarChange);
-    g_cvDM_remove_ground_weapons.AddChangeHook(Event_CvarChange);
-    g_cvDM_remove_dropped_weapons.AddChangeHook(Event_CvarChange);
-    g_cvDM_replenish_ammo_empty.AddChangeHook(Event_CvarChange);
-    g_cvDM_replenish_ammo_reload.AddChangeHook(Event_CvarChange);
-    g_cvDM_replenish_ammo_kill.AddChangeHook(Event_CvarChange);
-    g_cvDM_replenish_ammo_type.AddChangeHook(Event_CvarChange);
-    g_cvDM_replenish_ammo_hs_kill.AddChangeHook(Event_CvarChange);
-    g_cvDM_replenish_ammo_hs_type.AddChangeHook(Event_CvarChange);
-    g_cvDM_replenish_grenade.AddChangeHook(Event_CvarChange);
-    g_cvDM_replenish_grenade_kill.AddChangeHook(Event_CvarChange);
-    g_cvDM_nade_messages.AddChangeHook(Event_CvarChange);
-    g_cvDM_cash_messages.AddChangeHook(Event_CvarChange);
-    g_cvDM_hp_start.AddChangeHook(Event_CvarChange);
-    g_cvDM_hp_max.AddChangeHook(Event_CvarChange);
-    g_cvDM_hp_kill.AddChangeHook(Event_CvarChange);
-    g_cvDM_hp_headshot.AddChangeHook(Event_CvarChange);
-    g_cvDM_hp_knife.AddChangeHook(Event_CvarChange);
-    g_cvDM_hp_nade.AddChangeHook(Event_CvarChange);
-    g_cvDM_hp_messages.AddChangeHook(Event_CvarChange);
-    g_cvDM_ap_max.AddChangeHook(Event_CvarChange);
-    g_cvDM_ap_kill.AddChangeHook(Event_CvarChange);
-    g_cvDM_ap_headshot.AddChangeHook(Event_CvarChange);
-    g_cvDM_ap_knife.AddChangeHook(Event_CvarChange);
-    g_cvDM_ap_nade.AddChangeHook(Event_CvarChange);
-    g_cvDM_ap_messages.AddChangeHook(Event_CvarChange);
-    g_cvDM_gun_menu_mode.AddChangeHook(Event_CvarChange);
-    g_cvDM_loadout_style.AddChangeHook(Event_CvarChange);
-    g_cvDM_fast_equip.AddChangeHook(Event_CvarChange);
+    g_cvDM_remove_buyzones.AddChangeHook(Event_CvarChange);
     g_cvDM_healthshot.AddChangeHook(Event_CvarChange);
-    g_cvDM_healthshot_health.AddChangeHook(Event_CvarChange);
-    g_cvDM_healthshot_spawn.AddChangeHook(Event_CvarChange);
-    g_cvDM_healthshot_total.AddChangeHook(Event_CvarChange);
-    g_cvDM_healthshot_kill.AddChangeHook(Event_CvarChange);
-    g_cvDM_healthshot_kill_knife.AddChangeHook(Event_CvarChange);
-    g_cvDM_zeus.AddChangeHook(Event_CvarChange);
-    g_cvDM_zeus_spawn.AddChangeHook(Event_CvarChange);
-    g_cvDM_zeus_kill.AddChangeHook(Event_CvarChange);
-    g_cvDM_zeus_kill_taser.AddChangeHook(Event_CvarChange);
-    g_cvDM_zeus_kill_knife.AddChangeHook(Event_CvarChange);
-    g_cvDM_nades_incendiary.AddChangeHook(Event_CvarChange);
-    g_cvDM_nades_molotov.AddChangeHook(Event_CvarChange);
-    g_cvDM_nades_decoy.AddChangeHook(Event_CvarChange);
-    g_cvDM_nades_flashbang.AddChangeHook(Event_CvarChange);
-    g_cvDM_nades_he.AddChangeHook(Event_CvarChange);
-    g_cvDM_nades_smoke.AddChangeHook(Event_CvarChange);
-    g_cvDM_nades_tactical.AddChangeHook(Event_CvarChange);
+    g_cvDM_remove_cash.AddChangeHook(Event_CvarChange);
     g_cvDM_armor.AddChangeHook(Event_CvarChange);
+    g_cvDM_remove_chickens.AddChangeHook(Event_CvarChange);
+    g_cvDM_remove_spawn_weapons.AddChangeHook(Event_CvarChange);
+    g_cvDM_remove_dropped_weapons.AddChangeHook(Event_CvarChange);
+    g_cvDM_remove_objectives.AddChangeHook(Event_CvarChange);
+    g_cvDM_free_for_all.AddChangeHook(Event_CvarChange);
+    g_cvDM_gun_menu_mode.AddChangeHook(Event_CvarChange);
 }
 
 void RetrieveVariables()
@@ -213,11 +177,11 @@ void RetrieveVariables()
     g_cvHealthshot_health = FindConVar("healthshot_health");
 
     /* Retrieve Native Console Variable Values */
-    g_cvMP_ct_default_primary.GetString(g_cBackup_mp_ct_default_primary, sizeof(g_cBackup_mp_ct_default_primary));
-    g_cvMP_t_default_primary.GetString(g_cBackup_mp_t_default_primary, sizeof(g_cBackup_mp_t_default_primary));
-    g_cvMP_ct_default_secondary.GetString(g_cBackup_mp_ct_default_secondary, sizeof(g_cBackup_mp_ct_default_secondary));
-    g_cvMP_t_default_secondary.GetString(g_cBackup_mp_t_default_secondary, sizeof(g_cBackup_mp_t_default_secondary));
-    g_cvMP_items_prohibited.GetString(g_cBackup_mp_items_prohibited, sizeof(g_cBackup_mp_items_prohibited));
+    g_cvMP_ct_default_primary.GetString(g_sBackup_mp_ct_default_primary, sizeof(g_sBackup_mp_ct_default_primary));
+    g_cvMP_t_default_primary.GetString(g_sBackup_mp_t_default_primary, sizeof(g_sBackup_mp_t_default_primary));
+    g_cvMP_ct_default_secondary.GetString(g_sBackup_mp_ct_default_secondary, sizeof(g_sBackup_mp_ct_default_secondary));
+    g_cvMP_t_default_secondary.GetString(g_sBackup_mp_t_default_secondary, sizeof(g_sBackup_mp_t_default_secondary));
+    g_cvMP_items_prohibited.GetString(g_sBackup_mp_items_prohibited, sizeof(g_sBackup_mp_items_prohibited));
     g_iBackup_free_armor = g_cvMP_free_armor.IntValue;
     g_iBackup_max_armor = g_cvMP_max_armor.IntValue;
     g_iBackup_mp_randomspawn = g_cvMP_randomspawn.IntValue;
@@ -253,23 +217,34 @@ void LoadCookies()
     g_hWeapon_Primary_Cookie = RegClientCookie("dm_weapon_primary", "Primary Weapon Selection", CookieAccess_Private);
     g_hWeapon_Secondary_Cookie = RegClientCookie("dm_weapon_secondary", "Secondary Weapon Selection", CookieAccess_Private);
     g_hWeapon_Remember_Cookie = RegClientCookie("dm_weapon_remember", "Remember Weapon Selection", CookieAccess_Private);
-    g_hWeapon_First_Cookie = RegClientCookie("dm_weapon_first", "First Weapon Selection", CookieAccess_Private);
     g_hDamage_Panel_Cookie = RegClientCookie("dm_damage_panel", "Damage Panel", CookieAccess_Protected);
     g_hDamage_Popup_Cookie = RegClientCookie("dm_damage_popup", "Damage Popup", CookieAccess_Protected);
     g_hDamage_Text_Cookie = RegClientCookie("dm_damage_text", "Damage Text", CookieAccess_Protected);
-    g_hKillFeed_Cookie = RegClientCookie("dm_killfeed", "Kill Feed", CookieAccess_Protected);
-    g_hHSOnly_Cookie = RegClientCookie("dm_hsonly", "Headshot Only", CookieAccess_Protected);
+    g_hKillFeed_Cookie = RegClientCookie("dm_filter_killfeed", "Kill Feed", CookieAccess_Protected);
+    g_hSoundDeath_Cookie = RegClientCookie("dm_filter_sound_death", "Filter Death Sounds", CookieAccess_Protected);
+    g_hSoundGunShots_Cookie = RegClientCookie("dm_filter_sound_gunshots", "Filter Gun Shot Sounds", CookieAccess_Protected);
+    g_hSoundBodyShots_Cookie = RegClientCookie("dm_filter_sound_bodyshots", "Filter Body Shot Sounds", CookieAccess_Protected);
+    g_hSoundHSShots_Cookie = RegClientCookie("dm_filter_soundhsshots", "Filter Headshot Shot Sounds", CookieAccess_Protected);
+    g_hHSOnly_Cookie = RegClientCookie("dm_headshot_only", "Headshot Only", CookieAccess_Protected);
+    g_hBellKill_Cookie = RegClientCookie("dm_bellkill", "Bell Kill", CookieAccess_Protected);
+    g_hBellHit_Cookie = RegClientCookie("dm_bellhit", "Bell Hit", CookieAccess_Protected);
+    g_hBellHeadshot_Cookie = RegClientCookie("dm_bellheadshot", "Bell Headshot", CookieAccess_Protected);
 
+    /* Cookie Menu */
     SetCookieMenu(g_hDamage_Panel_Cookie, CookieMenu_OnOff_Int, "Deathmatch Damage Panel", Cookiemenu_DisplayCallback);
     SetCookieMenu(g_hDamage_Popup_Cookie, CookieMenu_OnOff_Int, "Deathmatch Damage Popup", Cookiemenu_DisplayCallback);
     SetCookieMenu(g_hDamage_Text_Cookie, CookieMenu_OnOff_Int, "Deathmatch Damage Text", Cookiemenu_DisplayCallback);
-    SetCookieMenu(g_hKillFeed_Cookie, CookieMenu_OnOff_Int, "Deathmatch Kill Feed", Cookiemenu_DisplayCallback);
-    SetCookieMenu(g_hHSOnly_Cookie, CookieMenu_OnOff_Int, "Deathmatch Headshot Only", Cookiemenu_HSOnlyCallback);
+    SetCookieMenu(g_hKillFeed_Cookie, CookieMenu_YesNo_Int, "Deathmatch Filter Kill Feed", Cookiemenu_DisplayCallback);
+    SetCookieMenu(g_hSoundDeath_Cookie, CookieMenu_OnOff_Int, "Deathmatch Filter Death Sounds", Cookiemenu_DisplayCallback);
+    SetCookieMenu(g_hSoundGunShots_Cookie, CookieMenu_OnOff_Int, "Deathmatch Filter Gun Shot Sounds", Cookiemenu_DisplayCallback);
+    SetCookieMenu(g_hSoundBodyShots_Cookie, CookieMenu_OnOff_Int, "Deathmatch Filter Body Shot Sounds", Cookiemenu_DisplayCallback);
+    SetCookieMenu(g_hSoundHSShots_Cookie, CookieMenu_OnOff_Int, "Deathmatch Filter Headshot Shot Sounds", Cookiemenu_DisplayCallback);
+    SetCookieMenu(g_hHSOnly_Cookie, CookieMenu_OnOff_Int, "Deathmatch Headshot Only", Cookiemenu_DisplayCallback);
 
     /* Late Load Cookies */
     for (int i = 1; i <= MaxClients; i++)
     {
-        if (IsClientConnected(i) && !IsFakeClient(i))
-            OnClientCookiesCached(i);
+        if (!IsClientInGame(i) || IsFakeClient(i)) continue;
+        OnClientCookiesCached(i);
     }
 }

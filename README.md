@@ -1,26 +1,10 @@
 <p align="center">
-	<a href="https://www.maxximou5.com/">
-		<img src="https://maxximou5.com/sourcemod/assests/img/csgo_deathmatch.png" alt="csgo deathmatch plugin">
-	</a>
-	<br>
-	<a href="https://github.com/Maxximou5/csgo-deathmatch/releases">
-		<img src="https://img.shields.io/github/release/Maxximou5/csgo-deathmatch.svg?style=flat-square" alt="Version">
-	</a>
-	<a href="https://github.com/Maxximou5/csgo-deathmatch/stargazers">
-		<img src="https://img.shields.io/github/stars/Maxximou5/csgo-deathmatch.svg?style=flat-square" alt="Stars">
-	</a>
-	<a href="https://github.com/Maxximou5/csgo-deathmatch/network">
-		<img src="https://img.shields.io/github/forks/Maxximou5/csgo-deathmatch.svg?style=flat-square" alt="Forks">
-	</a>
-	<a href="https://github.com/Maxximou5/csgo-deathmatch/releases">
-		<img src="https://img.shields.io/github/downloads/Maxximou5/csgo-deathmatch/total.svg?style=flat-square" alt="Downloads">
-	</a>
-	<a href="https://github.com/Maxximou5/csgo-deathmatch/issues">
-		<img src="https://img.shields.io/github/issues/Maxximou5/csgo-deathmatch.svg?style=flat-square" alt="Issues">
-	</a>
-	<a href="https://travis-ci.org/Maxximou5/csgo-deathmatch">
-		<img src="https://img.shields.io/travis/Maxximou5/csgo-deathmatch.svg?style=flat-square" alt="Build Status">
-	</a>
+	<a href="https://maxximou5.com/"><img src="https://maxximou5.com/static/img/banners/csgo-deathmatch.png" alt="CS:GO Deathmatch Sourcemod Plugin"></a><br>
+    <a href="https://github.com/Maxximou5/csgo-deathmatch/releases"><img src="https://img.shields.io/github/release/Maxximou5/csgo-deathmatch.svg?style=flat-square" alt="Version"></a>
+    <a href="https://github.com/Maxximou5/csgo-deathmatch/stargazers"><img src="https://img.shields.io/github/stars/Maxximou5/csgo-deathmatch.svg?style=flat-square" alt="Stars"></a>
+    <a href="https://github.com/Maxximou5/csgo-deathmatch/network"><img src="https://img.shields.io/github/forks/Maxximou5/csgo-deathmatch.svg?style=flat-square" alt="Forks"></a>
+    <a href="https://raw.githubusercontent.com/Maxximou5/csgo-deathmatch/master/LICENSE"><img src="https://img.shields.io/badge/license-GPLv3-blue.svg?style=flat-square" alt="License"></a>
+	<a href="https://github.com/Maxximou5/csgo-deathmatch/issues"><img src="https://img.shields.io/github/issues/Maxximou5/csgo-deathmatch.svg?style=flat-square" alt="Issues"></a>
 </p>
 
 #### **[CS:GO] Deathmatch** - Enables deathmatch style gameplay (respawning, gun selection, spawn protection, etc).
@@ -78,11 +62,9 @@
 	dm_spawn_menu - Opens the Spawn Editor Menu.
 	dm_respawn_all - Respawns all players.
 	dm_settings - Opens the Deathmatch Settings Menu.
-	dm_stats - Displays spawn statistics.
-	dm_stats_reset  - Resets spawn statistics.
-
-	Deathmatch Loader:
-	dm_reload - Reloads the loader configuration file.
+	dm_spawn_stats - Displays spawn statistics.
+	dm_spawn_reset - Resets spawn statistics.
+	dm_weapon_stats - Displays weapon statistics.
 
 ### ConVars
 
@@ -131,7 +113,7 @@
 	dm_replenish_ammo_reload - (Default) "0" - Replenish ammo on reload action.
 	dm_replenish_ammo_kill - (Default) "1" - Replenish ammo on kill.
 	dm_replenish_ammo_type - (Default) "2" - Replenish type. 1) Clip only. 2) Reserve only. 3) Both.
-	dm_replenish_ammo_hs_kill - (Default) "0" - Replenish ammo  on headshot kill.
+	dm_replenish_ammo_hs_kill - (Default) "0" - Replenish ammo on headshot kill.
 	dm_replenish_ammo_hs_type - (Default) "1" - Replenish type. 1) Clip only. 2) Reserve only. 3) Both.
 	dm_replenish_grenade - (Default) "0" - Unlimited player grenades.
 	dm_replenish_grenade_kill - (Default) "0" - Give players their grenade back on successful kill.
@@ -173,11 +155,6 @@
 	dm_nades_tactical - (Default) "0" - Number of tactical grenades to give each player.
 	dm_armor - (Default) "2" - Give players armor. 0) Disable. 1) Chest. 2) Chest + Helmet.
 
-	Deathmatch Loader:
-	dm_loader_enabled - (Default) 1 - Enable/disable executing configs
-	dm_loader_include_bots - (Default) 1 - Enable/disable including bots when counting number of clients
-	dm_loader_include_spec - (Default) 1 - Enable/disable including spectators when counting number of clients
-
 ### Compatibility
 
 This plugin is tested on the following Sourcemod & Metamod Versions.
@@ -187,7 +164,7 @@ This plugin is tested on the following Sourcemod & Metamod Versions.
 
 ### Requirements
 
-None.
+- <a href="https://github.com/c0rp3n/colorlib-sm">ColorLib</a> (necessary only for compiling)
 
 ### Instructions
 
@@ -197,9 +174,7 @@ None.
 - /configs/deathmatch/config_loader.ini (necessary only for deathmatch loader)
 - /configs/deathmatch/spawns/*.txt
 - /plugins/deathmatch.smx
-- /plugins/deathmatch_loader.smx
 - /scripting/deathmatch.sp (necessary only for compiling)
-- /scripting/deathmatch_loader.sp (necessary only for compiling)
 
 ### Changelog
 
@@ -208,7 +183,7 @@ To view the most recent changelog visit the <a href="https://github.com/Maxximou
 ### Download
 
 Once installed, the plugin will update itself as long as you've done as described in the requirements section; otherwise, downloaded the latest release below.
-Please download the latest **deathmatch.zip** file from <a href="https://github.com/Maxximou5/csgo-deathmatch/releases">my releases</a>.
+Please download the latest **deathmatch.zip** file from <a href="https://github.com/Maxximou5/csgo-deathmatch/releases">releases</a>.
 
 ### Bugs
 
@@ -232,6 +207,8 @@ A thank you to those who helped:
 - <a href="https://github.com/k4tyxd">k4tyxd</a> (Japanese Translation)
 - <a href="https://github.com/b3none">b3none</a> (Improvements)
 - <a href="https://github.com/Drixevel">Drixevel</a> (Improvements)
+- <a href="https://github.com/HugoJF/">HugoJF</a> (Improvements)
+- <a href="https://steamcommunity.com/id/Dmfrenzy/">UntitledSoldier</a> (Debugging and Testing)
 
 ### Donate
 
@@ -239,3 +216,9 @@ If you think I am doing a good job or you want to buy me a beer or feed my cat, 
 Thanks!
 
 <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VSHQ7J8HR95SG"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" alt="csgo deathmatch plugin donate"/></a>
+
+### Donators
+
+People who have shown how much they have enjoyed this plugin:
+
+- <a href="https://steamcommunity.com/id/Dmfrenzy/">UntitledSoldier</a> $80

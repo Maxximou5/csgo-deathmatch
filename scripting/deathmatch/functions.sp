@@ -40,18 +40,38 @@ void State_Validate()
 
 void State_EnableDM()
 {
+    State_ResetDM();
+
     for (int i = 1; i <= MaxClients; i++)
     {
-        if (IsClientConnected(i))
-            Client_ResetClientSettings(i);
+        if (!IsClientInGame(i))
+            continue;
+        Client_ResetClientSettings(i);
+        g_bInfoMessage[i] = false;
+        g_bWelcomeMessage[i] = false;
     }
+
+    if (g_cvDM_gun_menu_mode.IntValue != 6)
+    {
+        for (int i = 1; i <= MaxClients; i++)
+        {
+            if (!IsClientInGame(i))
+                continue;
+            if (!IsFakeClient(i))
+                CancelClientMenu(i);
+            if (g_cvDM_gun_menu_mode.IntValue >= 4)
+                SetClientGunModeSettings(i);
+        }
+    }
+
+    Spawns_RespawnAll();
+}
+
+void State_ResetDM()
+{
     g_bInEditMode = false;
-    RespawnDead();
-    char status[10];
-    status = (g_cvDM_remove_objectives.BoolValue) ? "Disable" : "Enable";
-    State_SetObjectives(status);
-    status = (g_cvDM_remove_buyzones.BoolValue) ? "Disable" : "Enable";
-    State_SetBuyZones(status);
+    State_SetObjectives(g_cvDM_remove_objectives.BoolValue ? "Disable" : "Enable");
+    State_SetBuyZones(g_cvDM_remove_buyzones.BoolValue ? "Disable" : "Enable");
     State_SetGrenade();
     State_SetHealthshot();
     State_SetArmor();
@@ -68,49 +88,34 @@ void State_EnableDM()
     if (g_cvDM_remove_objectives.BoolValue)
         State_SetNoC4();
     if (g_cvDM_free_for_all.BoolValue)
-        State_EnableFFA();
+        State_SetFFA();
     else
-        State_DisableFFA();
+        State_RestoreFFA();
     if (!g_cvDM_spawn_default.BoolValue && g_cvDM_respawn_valve.BoolValue)
         State_SetSpawnPoints();
-    if (g_cvDM_gun_menu_mode.IntValue != 6)
-    {
-        for (int i = 1; i <= MaxClients; i++)
-        {
-            if (g_cvDM_gun_menu_mode.IntValue >= 4)
-                CancelClientMenu(i);
-            if (IsClientConnected(i))
-                SetClientGunModeSettings(i);
-        }
-    }
 }
 
 void State_DisableDM()
 {
     for (int i = 1; i <= MaxClients; i++)
     {
-        Timer_DisableSpawnProtection(INVALID_HANDLE, i);
-        if (g_hCookieMenus[i] != INVALID_HANDLE)
-            CancelMenu(g_hCookieMenus[i])
-        if (g_hWeaponsMenus[i] != INVALID_HANDLE)
-            CancelMenu(g_hWeaponsMenus[i]);
-        if (g_hPrimaryMenus[i] != INVALID_HANDLE)
-            CancelMenu(g_hPrimaryMenus[i]);
-        if (g_hSecondaryMenus[i] != INVALID_HANDLE)
-            CancelMenu(g_hSecondaryMenus[i]);
+        if (!IsClientInGame(i))
+            continue;
+        Timer_DisableSpawnProtection(null, i);
+        OnClientDisconnect(i);
         CancelClientMenu(i);
     }
-    State_SetBuyZones("Enable");
-    State_SetObjectives("Enable");
-    State_RestoreSpawnPoints();
-    State_RestoreSpawnWeapons();
-    State_RestoreDropWeapons();
     State_RestoreC4();
     State_RestoreCash();
     State_RestoreArmor();
     State_RestoreGrenade();
     State_RestoreHealthshot();
+    State_RestoreDropWeapons();
+    State_RestoreSpawnPoints();
+    State_RestoreSpawnWeapons();
     State_RestoreGrenadeRadio();
+    State_SetBuyZones("Enable");
+    State_SetObjectives("Enable");
 }
 
 void State_SetNoCash()
@@ -121,8 +126,8 @@ void State_SetNoCash()
 
     for (int i = 1; i <= MaxClients; i++)
     {
-        if (IsClientInGame(i))
-            SetEntProp(i, Prop_Send, "m_iAccount", 0);
+        if (!IsClientInGame(i)) continue;
+        SetEntProp(i, Prop_Send, "m_iAccount", 0);
     }
 }
 
@@ -134,8 +139,8 @@ void State_RestoreCash()
 
     for (int i = 1; i <= MaxClients; i++)
     {
-        if (IsClientInGame(i))
-            SetEntProp(i, Prop_Send, "m_iAccount", g_iBackup_mp_startmoney);
+        if (!IsClientInGame(i)) continue;
+        SetEntProp(i, Prop_Send, "m_iAccount", g_iBackup_mp_startmoney);
     }
 }
 
@@ -144,7 +149,7 @@ void State_SetNoChickens()
     char chicken = -1;
     while ((chicken = FindEntityByClassname(chicken, "chicken")) != -1)
     if (IsValidEdict(chicken))
-        AcceptEntityInput(chicken, "Kill");
+        RemoveEntity(chicken);
 }
 
 void State_SetGrenade()
@@ -219,7 +224,7 @@ void State_RestoreDropWeapons()
 
 void State_SetArmor()
 {
-    g_cvMP_free_armor.SetInt(g_cvDM_armor.IntValue);
+    g_cvMP_free_armor.SetInt(0);
     g_cvMP_max_armor.SetInt(g_cvDM_armor.IntValue);
 }
 
@@ -254,14 +259,14 @@ void State_SetNoSpawnWeapons()
 
 void State_RestoreSpawnWeapons()
 {
-    g_cvMP_ct_default_primary.SetString(g_cBackup_mp_ct_default_primary);
-    g_cvMP_t_default_primary.SetString(g_cBackup_mp_t_default_primary);
-    g_cvMP_ct_default_secondary.SetString(g_cBackup_mp_ct_default_secondary);
-    g_cvMP_t_default_secondary.SetString(g_cBackup_mp_t_default_secondary);
-    g_cvMP_items_prohibited.SetString(g_cBackup_mp_items_prohibited);
+    g_cvMP_ct_default_primary.SetString(g_sBackup_mp_ct_default_primary);
+    g_cvMP_t_default_primary.SetString(g_sBackup_mp_t_default_primary);
+    g_cvMP_ct_default_secondary.SetString(g_sBackup_mp_ct_default_secondary);
+    g_cvMP_t_default_secondary.SetString(g_sBackup_mp_t_default_secondary);
+    g_cvMP_items_prohibited.SetString(g_sBackup_mp_items_prohibited);
 }
 
-void State_EnableFFA()
+void State_SetFFA()
 {
     g_cvMP_teammates_are_enemies.SetInt(1);
     g_cvMP_friendlyfire.SetInt(1);
@@ -272,7 +277,7 @@ void State_EnableFFA()
     g_cvFF_damage_reduction_other.SetFloat(1.0);
 }
 
-void State_DisableFFA()
+void State_RestoreFFA()
 {
     g_cvMP_teammates_are_enemies.SetInt(g_iBackup_mp_teammates_are_enemies);
     g_cvMP_friendlyfire.SetInt(g_iBackup_mp_friendlyfire);
@@ -290,12 +295,10 @@ void State_SetBuyZones(const char[] status)
 
     for (int i = MaxClients + 1; i < MaxEntities; i++)
     {
-        if (IsValidEdict(i))
-        {
-            GetEdictClassname(i, class, sizeof(class));
-            if (StrEqual(class, "func_buyzone"))
-                AcceptEntityInput(i, status);
-        }
+        if (!IsValidEdict(i)) continue;
+        GetEdictClassname(i, class, sizeof(class));
+        if (strcmp(class, "func_buyzone") == 0)
+            AcceptEntityInput(i, status);
     }
 }
 
@@ -306,12 +309,10 @@ void State_SetObjectives(const char[] status)
 
     for (int i = MaxClients + 1; i < MaxEntities; i++)
     {
-        if (IsValidEdict(i))
-        {
-            GetEdictClassname(i, class, sizeof(class));
-            if (StrEqual(class, "func_bomb_target") || StrEqual(class, "func_hostage_rescue"))
-                AcceptEntityInput(i, status);
-        }
+        if (!IsValidEdict(i)) continue;
+        GetEdictClassname(i, class, sizeof(class));
+        if (strcmp(class, "func_bomb_target") == 0 || strcmp(class, "func_hostage_rescue") == 0)
+            AcceptEntityInput(i, status);
     }
 }
 
@@ -322,12 +323,10 @@ void State_SetHostages()
 
     for (int i = MaxClients + 1; i < MaxEntities; i++)
     {
-        if (IsValidEdict(i))
-        {
-            GetEdictClassname(i, class, sizeof(class));
-            if (StrEqual(class, "hostage_entity"))
-                RemoveEntity(i);
-        }
+        if (!IsValidEdict(i)) continue;
+        GetEdictClassname(i, class, sizeof(class));
+        if (strcmp(class, "hostage_entity") == 0)
+            RemoveEntity(i);
     }
 }
 
@@ -341,24 +340,65 @@ void State_RestoreC4()
     g_cvMP_give_player_c4.SetInt(g_iBackup_mp_give_player_c4);
 }
 
-bool Client_StripC4(int client)
+public bool Client_StripC4(int client)
 {
-    if (client && IsPlayerAlive(client))
+    int entityIndex;
+    char entityName[64];
+    if ((entityIndex = GetPlayerWeaponSlot(client, CS_SLOT_C4)) != -1)
     {
-        int entityIndex;
-        char entityName[64];
-        if ((entityIndex = GetPlayerWeaponSlot(client, CS_SLOT_C4)) != -1)
+        GetEntityClassname(entityIndex, entityName, sizeof(entityName));
+        if (strcmp(entityName, "weapon_c4") == 0)
         {
-            GetEntityClassname(entityIndex, entityName, sizeof(entityName));
-            if (StrEqual(entityName, "weapon_c4"))
-            {
-                RemovePlayerItem(client, entityIndex);
-                RemoveEntity(entityIndex);
-                return true;
-            }
+            RemovePlayerItem(client, entityIndex);
+            RemoveEntity(entityIndex);
+            return true;
         }
     }
+
     return false;
+}
+
+void Client_SetArmor(int client)
+{
+    switch (g_cvDM_armor.IntValue)
+    {
+        case 0: /* Give no armor and no helmet */
+        {
+            SetEntProp(client, Prop_Send, "m_ArmorValue", 0);
+            SetEntProp(client, Prop_Send, "m_bHasHelmet", 0);
+        }
+        case 1: /* Give only armor but no helmet */
+        {
+            SetEntProp(client, Prop_Send, "m_ArmorValue", 100);
+            SetEntProp(client, Prop_Send, "m_bHasHelmet", 0);
+        }
+        case 2: /* Give both armor and helmet */
+        {
+            SetEntProp(client, Prop_Send, "m_ArmorValue", 100);
+            SetEntProp(client, Prop_Send, "m_bHasHelmet", 1);
+        }
+    }
+}
+
+void Client_GiveWeaponsOrBuildMenu(int client)
+{
+    if (g_bRememberChoice[client] || IsFakeClient(client))
+    {
+        switch (g_cvDM_gun_menu_mode.IntValue)
+        {
+            case 1: GiveSavedWeapons(client, true, true); /* Give normal loadout if remembered. */
+            case 2: GiveSavedWeapons(client, true, false); /* Give only primary weapons if remembered. */
+            case 3: GiveSavedWeapons(client, false, true); /* Give only secondary weapons if remembered. */
+            case 4: GiveSavedWeapons(client, false, false); /* Give only knife weapons if remembered. */
+            case 5: GiveSavedWeapons(client, true, true); /* Give normal loadout if remembered. */
+        }
+    }
+    else if (!IsFakeClient(client))
+    {
+        /* Display the gun menu to new users. */
+        if (g_cvDM_gun_menu_mode.IntValue <= 3)
+            BuildWeaponsMenu(client);
+    }
 }
 
 void Client_RemoveRagdoll(int client)
@@ -371,28 +411,12 @@ void Client_RemoveRagdoll(int client)
     }
 }
 
-void Client_SetHSOnly(int client)
-{
-    char buffer[64];
-    char cEnable[32];
-    char cHSOnly[16];
-    GetClientCookie(client, g_hHSOnly_Cookie, cHSOnly, sizeof(cHSOnly));
-    g_bHSOnlyClient[client] = view_as<bool>(StringToInt(cHSOnly));
-    cEnable = g_bHSOnlyClient[client] ? "Enabled" : "Disabled";
-    cHSOnly =  g_bHSOnlyClient[client] ? "1" : "0";
-    Format(buffer, sizeof(buffer), "HS Only Client %s", cEnable);
-    CPrintToChat(client, "%t %t", "Chat Tag", buffer);
-}
-
 void Client_ToggleHSOnly(int client)
 {
-    g_bHSOnlyClient[client] = !g_bHSOnlyClient[client];
     char buffer[64];
-    char cEnable[32];
     char cHSOnly[16];
-    cEnable = g_bHSOnlyClient[client] ? "Enabled" : "Disabled";
-    cHSOnly =  g_bHSOnlyClient[client] ? "1" : "0";
-    Format(buffer, sizeof(buffer), "HS Only Client %s", cEnable);
+    g_bHSOnlyClient[client] = !g_bHSOnlyClient[client];
+    Format(buffer, sizeof(buffer), "Headshot Only %s", g_bHSOnlyClient[client] ? "Enabled" : "Disabled");
     CPrintToChat(client, "%t %t", "Chat Tag", buffer);
     SetClientCookie(client, g_hHSOnly_Cookie, cHSOnly);
 }
@@ -400,12 +424,41 @@ void Client_ToggleHSOnly(int client)
 void Client_ResetClientSettings(int client)
 {
     if (g_bInEditModeClient[client])
-        DisableEditorMode(client);
+        Spawns_DisableEditorMode(client);
     g_iLastEditorSpawnPoint[client] = -1;
     SetClientGunModeSettings(client);
-    g_bInfoMessage[client] = false;
     g_bWeaponsGivenThisRound[client] = false;
+    g_bGiveFullLoadout[client] = false;
     g_bPlayerMoved[client] = false;
     g_bPlayerHasZeus[client] = false;
     g_iHealthshotCount[client] = 0;
+    if (!IsFakeClient(client))
+    {
+        g_sPrimaryWeaponPrevious[client] = "none";
+        g_sSecondaryWeaponPrevious[client] = "none";
+    }
+    for (int i = 1; i <= MaxClients; i++)
+    {
+        g_iDamageDone[client][i] = 0;
+        g_iDamageDoneHits[client][i] = 0;
+    }
+}
+
+void Client_ResetScoreboard(int client)
+{
+    SetEntProp(client, Prop_Data, "m_iFrags", 0);
+    SetEntProp(client, Prop_Data, "m_iDeaths", 0);
+    CS_SetMVPCount(client, 0);
+    CS_SetClientAssists(client, 0);
+    CS_SetClientContributionScore(client, 0);
+    CPrintToChat(client, "%t %t", "Chat Tag", "Reset Score");
+}
+
+bool IsValidClient(int client, bool bots = false)
+{
+    if (!(1 <= client <= MaxClients) || !IsClientInGame(client) || (IsFakeClient(client) && !bots) || IsClientSourceTV(client) || IsClientReplay(client))
+    {
+        return false;
+    }
+    return true;
 }
