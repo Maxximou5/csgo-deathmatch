@@ -40,11 +40,11 @@ jobs:
     name: SM version ${{ matrix.sm-version }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Setup SourcePawn Compiler
       id: setup
-      uses: rumblefrog/setup-sp@v1.0.0
+      uses: rumblefrog/setup-sp@master
       with: 
           version: ${{ matrix.sm-version }}
 
