@@ -8,24 +8,24 @@ jobs:
 
     strategy:
       matrix:
-        sm-version: [ '1.10.x', '1.11.x' ]
+        sm-version: [ '1.11.x' ]
 
     name: SM version ${{ matrix.sm-version }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       
     - name: Setup SourcePawn Compiler
       id: setup
-      uses: rumblefrog/setup-sp@v1.0.0
+      uses: rumblefrog/setup-sp@master
       with: 
           version: ${{ matrix.sm-version }}
 
     - name: Create plugins directory
-      run: mkdir plugins
-      
-    - run: spcomp -i scripting/include scripting/deathmatch.sp -o plugins/deathmatch.smx
-    - run: spcomp -i scripting/include scripting/deathmatch_loader.sp -o plugins/deathmatch_loader.smx
+      run: mkdir -p plugins
+
+    - run: spcomp -i ./scripting/include ./scripting/deathmatch.sp -o ./plugins/deathmatch.smx
+    - run: spcomp -i ./scripting/include ./scripting/deathmatch_loader.sp -o ./plugins/deathmatch_loader.smx
 
     - name: Prepare files for artifact
       run: |
