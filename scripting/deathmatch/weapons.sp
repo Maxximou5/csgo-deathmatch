@@ -359,7 +359,7 @@ public int GetWeaponAmmoCount(char[] weaponName, bool currentClip)
     else if (strcmp(weaponName, "weapon_m4a1_silencer") == 0)
         return currentClip ? 20 : 80;
     else if (strcmp(weaponName, "weapon_awp") == 0)
-        return currentClip ? 10 : 30;
+        return currentClip ? 5 : 30;
     else if (strcmp(weaponName, "weapon_sg552") == 0)
         return currentClip ? 30 : 90;
     else if (strcmp(weaponName, "weapon_aug") == 0)
